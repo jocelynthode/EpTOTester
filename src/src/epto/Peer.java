@@ -12,6 +12,7 @@ import java.nio.channels.SocketChannel;
  */
 public class Peer extends Connection{
 
+    StabilityOracle oracle = new StabilityOracle();
     OrderingComponent orderingComponent = new OrderingComponent();
     DisseminationComponent disseminationComponent = new DisseminationComponent();
 
