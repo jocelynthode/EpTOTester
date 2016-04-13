@@ -58,10 +58,11 @@ public class DisseminationComponent extends Periodic {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
             if (event.getTtl() < TTL) {
-                // TODO check if the condition is correct
-                if (nextBall.containsKey(eventId) && nextBall.get(eventId).getTtl() < event.getTtl()) {
-                    nextBall.get(eventId).setTtl(event.getTtl());
-                    // update TTL todo why ?
+                if (nextBall.containsKey(eventId)) {
+                    if (nextBall.get(eventId).getTtl() < event.getTtl()) {
+                        nextBall.get(eventId).setTtl(event.getTtl());
+                        // update TTL todo why ?
+                    }
                 } else {
                     nextBall.put(eventId, event);
                 }
