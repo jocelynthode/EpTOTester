@@ -3,22 +3,38 @@ package epto;
 import epto.utilities.Event;
 
 /**
- * Created by jocelyn on 12.04.16.
+ * Implementation of the stability oracle. This class implements the logical clock.
  */
 public class StabilityOracle {
 
-    int logicalClock = 0;
+    long logicalClock = 0;
 
+    /**
+     * This function tells us if the event is ready to be delivered or not according to the TTL.
+     *
+     * @param event
+     * @return wether the event is deliverable or not
+     */
     public boolean isDeliverable(Event event) {
         return event.getTtl() > DisseminationComponent.getTTL();
     }
 
-    public int incrementAndGetClock() {
+    /**
+     * Increment and then return the clock.
+     *
+     * @return the incremented clock
+     */
+    public long incrementAndGetClock() {
         logicalClock++;
         return logicalClock;
     }
 
-    public void updateClock(int ts) {
+    /**
+     * Update the clock with the new timestamp to synchronize it.
+     *
+     * @param ts
+     */
+    public void updateClock(long ts) {
         if (ts > logicalClock)
             logicalClock = ts;
     }
