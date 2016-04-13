@@ -53,7 +53,7 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-    public void receive(Map<UUID, Event> ball) {
+    public void receive(Map<UUID, Event> ball) { //TODO upon receive
         for (Map.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
@@ -61,7 +61,7 @@ public class DisseminationComponent extends Periodic {
                 if (nextBall.containsKey(eventId)) {
                     if (nextBall.get(eventId).getTtl() < event.getTtl()) {
                         nextBall.get(eventId).setTtl(event.getTtl());
-                        // update TTL todo why ?
+                        // update TTL todo TTL or event.ttl ?
                     }
                 } else {
                     nextBall.put(eventId, event);
@@ -78,9 +78,9 @@ public class DisseminationComponent extends Periodic {
     public void run() {
         nextBall.forEach((id, event) -> event.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, K)
+            //create peers + peers <- Random(view, K) TODO how to get random ?
             //peers.foreach
-                //  send using peer.send(nextBall, q.getPeer().getPort())
+                //  send using peer.send(nextBall, q.getPeer().getPort()) TODO convert to ByteBuffer
         }
         //OrderEvents(nextBall); todo static ?
         nextBall.clear();
