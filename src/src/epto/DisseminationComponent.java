@@ -14,9 +14,9 @@ import java.util.Random;
  */
 public class DisseminationComponent extends Periodic {
 
-    private ArrayList<Peer> view = new ArrayList<>();
-    private static int TTL = 0;
-    private int K = 0;
+    private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
+    private static int TTL = 3;
+    private int K = 5;
     private Map<Integer, Event> nextBall = new HashMap<>();
     private StabilityOracle  oracle;
 
@@ -28,7 +28,7 @@ public class DisseminationComponent extends Periodic {
     public void broadcast(Event event) {
         event.setTimeStamp(oracle.incrementAndGetClock());
         event.setTtl(0);
-        //event.setSourceId() todo id
+        //event.setSourceId() todo Peer Id
         nextBall.put(event.getId(), event);
     }
 
@@ -36,9 +36,11 @@ public class DisseminationComponent extends Periodic {
     public void run() {
         nextBall.forEach((k, v) -> v.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, k)
-            //peers.foreach
+            //create peers + peers <- Random(view, K)
+            //peers.foreach send todo peer == process ?
         }
+        //OrderEvents(nextBall); todo static ?
+        nextBall.clear();
     }
 
     public static int getTTL() {
