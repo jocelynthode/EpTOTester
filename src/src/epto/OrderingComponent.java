@@ -12,11 +12,13 @@ public class OrderingComponent {
 
     private Map<Integer, Event> received;
     private Map<Integer, Event> delivered;
+    private StabilityOracle so;
     private long lastDeliveredTs;
 
     public OrderingComponent(){
         received = new HashMap<>();
         delivered = new HashMap<>();
+        so = new StabilityOracle();
         lastDeliveredTs = 0;
     }
 
@@ -32,8 +34,8 @@ public class OrderingComponent {
             Event event = received.get(key);
             if(!delivered.containsKey(key) && event.getTimeStamp() > lastDeliveredTs){
                 if (received.containsKey(key)){
-                    if(received.get(key).getTtl() < event.ttl){ //TODO check later
-                        received.get(key).setTtl(event.ttl);
+                    if(received.get(key).getTtl() < event.getTtl()){ //TODO check later
+                        received.get(key).setTtl(event.getTtl());
                     }
                 }
                 else {
@@ -49,7 +51,7 @@ public class OrderingComponent {
 
         for (Integer key : received.keySet()){
             Event event = received.get(key);
-            if (isDeliverable(event)){
+            if (so.isDeliverable(event)){
                 if(!deliverableEvents.containsKey(key))
                     deliverableEvents.put(key, event);
             }
@@ -75,7 +77,7 @@ public class OrderingComponent {
                 delivered.put(key, event);
             lastDeliveredTs = event.getTimeStamp();
             //TODO deliver??
-            Deliver(event);
+            //Deliver(event);
 
         }
 
