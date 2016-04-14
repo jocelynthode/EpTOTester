@@ -51,7 +51,7 @@ public class OrderingComponent {
                     }
                 }
                 else {
-                    received.put(event.getId(), event);
+                    received.put(key, event);
                 }
             }
         }
@@ -82,7 +82,7 @@ public class OrderingComponent {
                 received.remove(key);
             }
         }
-        //TODO sort deliverablesEventsby Ts and ID
+        //TODO sort deliverablesEvents by Ts and ID
         for (Integer key : deliverableEvents.keySet()){
             Event event = received.get(key);
             if(!delivered.containsKey(key))
