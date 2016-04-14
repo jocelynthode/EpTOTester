@@ -4,6 +4,7 @@ import epto.utilities.Event;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Implementation of the Ordering Component.
@@ -14,18 +15,18 @@ import java.util.Map;
  */
 public class OrderingComponent {
 
-    private Map<Integer, Event> received;
-    private Map<Integer, Event> delivered;
-    private StabilityOracle so;
+    private Map<UUID, Event> received; //TODO change it to queue of known ?
+    private Map<UUID, Event> delivered; //TODO change it to queue of known ?
+    private StabilityOracle oracle;
     private long lastDeliveredTs;
 
     /**
      * Initialize order component.
      */
-    public OrderingComponent(){
+    public OrderingComponent(StabilityOracle oracle){
         received = new HashMap<>();
         delivered = new HashMap<>();
-        so = new StabilityOracle();
+        this.oracle = oracle;
         lastDeliveredTs = 0;
     }
 
@@ -34,15 +35,15 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public void OrderEvents(HashMap<Integer, Event> ball) {
+    public void OrderEvents(HashMap<UUID, Event> ball) {
         // update TTL of received events
-        for (Integer key : received.keySet()){
+        for (UUID key : received.keySet()){
             Event event = received.get(key);
             event.setTtl(event.getTtl()+1);
         }
 
         // update set of received events with events in the ball
-        for (Integer key : ball.keySet()){
+        for (UUID key : ball.keySet()){
             Event event = received.get(key);
             if(!delivered.containsKey(key) && event.getTimeStamp() > lastDeliveredTs){
                 if (received.containsKey(key)){
@@ -59,11 +60,11 @@ public class OrderingComponent {
         // timestamp of non deliverable events
 
         long minQueuedTs  = Integer.MAX_VALUE;
-        Map<Integer, Event> deliverableEvents = new HashMap<>();
+        Map<UUID, Event> deliverableEvents = new HashMap<>();
 
-        for (Integer key : received.keySet()){
+        for (UUID key : received.keySet()){
             Event event = received.get(key);
-            if (so.isDeliverable(event)){ //TODO isDeliverable static ?
+            if (oracle.isDeliverable(event)){
                 if(!deliverableEvents.containsKey(key))
                     deliverableEvents.put(key, event);
             }
@@ -71,7 +72,7 @@ public class OrderingComponent {
                 minQueuedTs = event.getTimeStamp();
             }
         }
-        for (Integer key : deliverableEvents.keySet()){
+        for (UUID key : deliverableEvents.keySet()){
             Event event = received.get(key);
             if (event.getTimeStamp() > minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
@@ -83,7 +84,7 @@ public class OrderingComponent {
             }
         }
         //TODO sort deliverablesEvents by Ts and ID
-        for (Integer key : deliverableEvents.keySet()){
+        for (UUID key : deliverableEvents.keySet()){
             Event event = received.get(key);
             if(!delivered.containsKey(key))
                 delivered.put(key, event);

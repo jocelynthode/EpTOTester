@@ -15,7 +15,7 @@ public class Peer extends Connection{
 
     private final int DELTA = 5;
     private StabilityOracle oracle = new StabilityOracle();
-    private OrderingComponent orderingComponent = new OrderingComponent();
+    private OrderingComponent orderingComponent = new OrderingComponent(oracle);
     private DisseminationComponent disseminationComponent;
 
     /**
