@@ -4,45 +4,92 @@ import epto.utilities.Event;
 import net.sf.neem.impl.Periodic;
 import net.sf.neem.impl.Transport;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
- * Created by jocelyn on 12.04.16.
+ * Implementation of the Dissemination Component  of EpTO. This class is in charge of
+ * sending and collecting events to/from other peers.
  */
 public class DisseminationComponent extends Periodic {
 
     private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
     private static int TTL = 3;
     private int K = 5;
-    private Map<Integer, Event> nextBall = new HashMap<>();
+    private Map<UUID, Event> nextBall = new HashMap<>();
     private StabilityOracle  oracle;
+    private Peer peer;
 
-    public DisseminationComponent(Random rand, Transport trans, int interval, StabilityOracle oracle) {
+
+    /**
+     * Creates a new instance of DisseminationComponent
+     *
+     * @param rand The random number generator
+     * @param trans The Transport object
+     * @param interval The interval to run the periodic function
+     * @param oracle The Stability oracle
+     * @param peer The peer that owns this component
+     */
+    public DisseminationComponent(Random rand, Transport trans, int interval, StabilityOracle oracle, Peer peer) {
         super(rand, trans, interval);
+        this.peer = peer;
         this.oracle = oracle;
     }
 
+    /**
+     * Add the event to nextBall
+     *
+     * @param event The new event
+     */
     public void broadcast(Event event) {
         event.setTimeStamp(oracle.incrementAndGetClock());
         event.setTtl(0);
-        //event.setSourceId() todo Peer Id
+        event.setSourceId(peer.id);
         nextBall.put(event.getId(), event);
     }
 
+    /**
+     * Updates nextBall events with the new ball events only if the TTL is smaller and finally updates
+     * the clock.
+     *
+     * @param ball The received ball
+     */
+    public void receive(Map<UUID, Event> ball) { //TODO upon receive
+        for (Map.Entry<UUID, Event> entry : ball.entrySet()) {
+            UUID eventId = entry.getKey();
+            Event event = entry.getValue();
+            if (event.getTtl() < TTL) {
+                if (nextBall.containsKey(eventId)) {
+                    if (nextBall.get(eventId).getTtl() < event.getTtl()) {
+                        nextBall.get(eventId).setTtl(event.getTtl());
+                        // update TTL todo TTL or event.ttl ?
+                    }
+                } else {
+                    nextBall.put(eventId, event);
+                }
+            }
+            oracle.updateClock(event.getTimeStamp()); //only needed with logical time
+        }
+     }
+
+    /**
+     * Periodic functions that sends nextBall to K random peers
+     */
     @Override
     public void run() {
-        nextBall.forEach((k, v) -> v.incrementTtl());
+        nextBall.forEach((id, event) -> event.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, K)
-            //peers.foreach send todo peer == process ?
+            //create peers + peers <- Random(view, K) TODO how to get random ?
+            //peers.foreach
+                //  send using peer.send(nextBall, q.getPeer().getPort()) TODO convert to ByteBuffer
         }
         //OrderEvents(nextBall); todo static ?
         nextBall.clear();
     }
 
+    /**
+     * Returns the TTL constant
+     * @return The TTL constant
+     */
     public static int getTTL() {
         return TTL;
     }
