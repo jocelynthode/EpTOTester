@@ -6,7 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by jocelyn on 12.04.16.
+ * Implementation of the Ordering Component.
+ * The main task of this procedure is to move events from
+ * the received set to the delivered set, preserving the total
+ * order of the events.
+ *
  */
 public class OrderingComponent {
 
@@ -15,6 +19,9 @@ public class OrderingComponent {
     private StabilityOracle so;
     private long lastDeliveredTs;
 
+    /**
+     * Initialize order component.
+     */
     public OrderingComponent(){
         received = new HashMap<>();
         delivered = new HashMap<>();
@@ -22,7 +29,12 @@ public class OrderingComponent {
         lastDeliveredTs = 0;
     }
 
-    public void run(HashMap<Integer, Event> ball){
+    /**
+     * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
+     *
+     * @param ball
+     */
+    public void OrderEvents(HashMap<Integer, Event> ball) {
         // update TTL of received events
         for (Integer key : received.keySet()){
             Event event = received.get(key);
@@ -51,7 +63,7 @@ public class OrderingComponent {
 
         for (Integer key : received.keySet()){
             Event event = received.get(key);
-            if (so.isDeliverable(event)){
+            if (so.isDeliverable(event)){ //TODO isDeliverable static ?
                 if(!deliverableEvents.containsKey(key))
                     deliverableEvents.put(key, event);
             }
