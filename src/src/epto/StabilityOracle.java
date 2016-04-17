@@ -16,7 +16,7 @@ public class StabilityOracle {
      * @return wether the event is deliverable or not
      */
     public boolean isDeliverable(Event event) {
-        return event.getTtl() > DisseminationComponent.getTTL();
+        return event.getTtl() > DisseminationComponent.TTL;
     }
 
     /**

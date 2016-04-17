@@ -1,6 +1,7 @@
 package epto;
 
 import epto.utilities.Event;
+import net.sf.neem.impl.Overlay;
 import net.sf.neem.impl.Periodic;
 import net.sf.neem.impl.Transport;
 
@@ -12,12 +13,13 @@ import java.util.*;
  */
 public class DisseminationComponent extends Periodic {
 
+    private final Overlay overlay;
     private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
-    private static int TTL = 3;
-    private int K = 5;
+    public final static int TTL = 3;
+    public final static int K = 5;
     private Map<UUID, Event> nextBall = new HashMap<>();
-    private StabilityOracle  oracle;
-    private Peer peer;
+    private final StabilityOracle  oracle;
+    private final Peer peer;
 
 
     /**
@@ -25,14 +27,15 @@ public class DisseminationComponent extends Periodic {
      *
      * @param rand The random number generator
      * @param trans The Transport object
-     * @param interval The interval to run the periodic function
      * @param oracle The Stability oracle
      * @param peer The peer that owns this component
+     * @param overlay The overlay it is part of
      */
-    public DisseminationComponent(Random rand, Transport trans, int interval, StabilityOracle oracle, Peer peer) {
-        super(rand, trans, interval);
+    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, Overlay overlay) {
+        super(rand, trans, Peer.DELTA);
         this.peer = peer;
         this.oracle = oracle;
+        this.overlay = overlay;
     }
 
     /**
@@ -78,19 +81,11 @@ public class DisseminationComponent extends Periodic {
     public void run() {
         nextBall.forEach((id, event) -> event.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, K) TODO how to get random ?
+            //create peers + peers <- Random(view, K) We have a perfect view (getPeers ?)
             //peers.foreach
                 //  send using peer.send(nextBall, q.getPeer().getPort()) TODO convert to ByteBuffer
         }
         //OrderEvents(nextBall); todo static ?
         nextBall.clear();
-    }
-
-    /**
-     * Returns the TTL constant
-     * @return The TTL constant
-     */
-    public static int getTTL() {
-        return TTL;
     }
 }
