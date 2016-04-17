@@ -31,7 +31,7 @@ public class Peer extends Connection{
     Peer(Transport trans, InetSocketAddress bind, InetSocketAddress remote, Overlay overlay) throws IOException {
         super(trans, bind, remote);
         this.overlay = overlay;
-        new DisseminationComponent(new Random(), trans, oracle, this, overlay);
+        new DisseminationComponent(new Random(), trans, oracle, this, overlay, orderingComponent);
     }
 
     /**
@@ -44,6 +44,6 @@ public class Peer extends Connection{
     Peer(Transport trans, SocketChannel sock, Overlay overlay) throws IOException {
         super(trans, sock);
         this.overlay = overlay;
-        new DisseminationComponent(new Random(), trans, oracle, this, overlay);
+        new DisseminationComponent(new Random(), trans, oracle, this, overlay, orderingComponent);
     }
 }

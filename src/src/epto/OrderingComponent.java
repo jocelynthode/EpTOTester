@@ -3,7 +3,6 @@ package epto;
 import epto.utilities.Event;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -15,8 +14,8 @@ import java.util.UUID;
  */
 public class OrderingComponent {
 
-    private Map<UUID, Event> received; //TODO change it to queue of known ?
-    private Map<UUID, Event> delivered; //TODO change it to queue of known ?
+    private HashMap<UUID, Event> received; //TODO change it to queue of known ?
+    private HashMap<UUID, Event> delivered; //TODO change it to queue of known ?
     private StabilityOracle oracle;
     private long lastDeliveredTs;
 
@@ -35,7 +34,7 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public void OrderEvents(HashMap<UUID, Event> ball) {
+    public void orderEvents(HashMap<UUID, Event> ball) {
         // update TTL of received events
         for (UUID key : received.keySet()){
             Event event = received.get(key);
@@ -60,7 +59,7 @@ public class OrderingComponent {
         // timestamp of non deliverable events
 
         long minQueuedTs  = Integer.MAX_VALUE;
-        Map<UUID, Event> deliverableEvents = new HashMap<>();
+        HashMap<UUID, Event> deliverableEvents = new HashMap<>();
 
         for (UUID key : received.keySet()){
             Event event = received.get(key);

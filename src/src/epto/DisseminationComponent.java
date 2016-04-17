@@ -14,10 +14,11 @@ import java.util.*;
 public class DisseminationComponent extends Periodic {
 
     private final Overlay overlay;
+    private final OrderingComponent orderingComponent;
     private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
     public final static int TTL = 3;
     public final static int K = 5;
-    private Map<UUID, Event> nextBall = new HashMap<>();
+    private HashMap<UUID, Event> nextBall = new HashMap<>();
     private final StabilityOracle  oracle;
     private final Peer peer;
 
@@ -31,11 +32,13 @@ public class DisseminationComponent extends Periodic {
      * @param peer The peer that owns this component
      * @param overlay The overlay it is part of
      */
-    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, Overlay overlay) {
+    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, Overlay overlay,
+                                  OrderingComponent orderingComponent) {
         super(rand, trans, Peer.DELTA);
         this.peer = peer;
         this.oracle = oracle;
         this.overlay = overlay;
+        this.orderingComponent = orderingComponent;
     }
 
     /**
@@ -56,8 +59,8 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-    public void receive(Map<UUID, Event> ball) { //TODO upon receive
-        for (Map.Entry<UUID, Event> entry : ball.entrySet()) {
+    public void receive(HashMap<UUID, Event> ball) { //TODO upon receive
+        for (HashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
             if (event.getTtl() < TTL) {
@@ -85,7 +88,7 @@ public class DisseminationComponent extends Periodic {
             //peers.foreach
                 //  send using peer.send(nextBall, q.getPeer().getPort()) TODO convert to ByteBuffer
         }
-        //OrderEvents(nextBall); todo static ?
+        orderingComponent.orderEvents(nextBall);
         nextBall.clear();
     }
 }
