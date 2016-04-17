@@ -16,7 +16,7 @@ public class Peer extends Connection{
 
     public final static int DELTA = 5;
     private StabilityOracle oracle = new StabilityOracle();
-    private OrderingComponent orderingComponent = new OrderingComponent();
+    private OrderingComponent orderingComponent = new OrderingComponent(oracle);
     private DisseminationComponent disseminationComponent;
     private final Overlay overlay;
 
