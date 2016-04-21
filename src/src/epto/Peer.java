@@ -1,5 +1,6 @@
 package epto;
 
+import net.sf.neem.MulticastChannel;
 import net.sf.neem.impl.Connection;
 import net.sf.neem.impl.Overlay;
 import net.sf.neem.impl.Transport;
@@ -18,7 +19,7 @@ public class Peer extends Connection{
     private StabilityOracle oracle = new StabilityOracle();
     private OrderingComponent orderingComponent = new OrderingComponent(oracle);
     private DisseminationComponent disseminationComponent;
-    private final Overlay overlay;
+    private final MulticastChannel neem;
 
 
     /**
@@ -28,10 +29,10 @@ public class Peer extends Connection{
      * @param remote
      * @throws IOException
      */
-    Peer(Transport trans, InetSocketAddress bind, InetSocketAddress remote, Overlay overlay) throws IOException {
+    Peer(Transport trans, InetSocketAddress bind, InetSocketAddress remote, MulticastChannel neem) throws IOException {
         super(trans, bind, remote);
-        this.overlay = overlay;
-        new DisseminationComponent(new Random(), trans, oracle, this, overlay, orderingComponent);
+        this.neem = neem;
+        new DisseminationComponent(new Random(), trans, oracle, this, neem, orderingComponent);
     }
 
     /**
@@ -41,9 +42,9 @@ public class Peer extends Connection{
      * @param sock
      * @throws IOException
      */
-    Peer(Transport trans, SocketChannel sock, Overlay overlay) throws IOException {
+    Peer(Transport trans, SocketChannel sock, MulticastChannel neem) throws IOException {
         super(trans, sock);
-        this.overlay = overlay;
-        new DisseminationComponent(new Random(), trans, oracle, this, overlay, orderingComponent);
+        this.neem = neem;
+        new DisseminationComponent(new Random(), trans, oracle, this, neem, orderingComponent);
     }
 }

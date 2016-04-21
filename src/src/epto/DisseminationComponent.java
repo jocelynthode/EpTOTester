@@ -1,6 +1,7 @@
 package epto;
 
 import epto.utilities.Event;
+import net.sf.neem.MulticastChannel;
 import net.sf.neem.impl.Overlay;
 import net.sf.neem.impl.Periodic;
 import net.sf.neem.impl.Transport;
@@ -13,7 +14,7 @@ import java.util.*;
  */
 public class DisseminationComponent extends Periodic {
 
-    private final Overlay overlay;
+    private final MulticastChannel neem;
     private final OrderingComponent orderingComponent;
     private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
     public final static int TTL = 3;
@@ -32,12 +33,12 @@ public class DisseminationComponent extends Periodic {
      * @param peer The peer that owns this component
      * @param overlay The overlay it is part of
      */
-    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, Overlay overlay,
+    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
                                   OrderingComponent orderingComponent) {
         super(rand, trans, Peer.DELTA);
         this.peer = peer;
         this.oracle = oracle;
-        this.overlay = overlay;
+        this.neem = neem;
         this.orderingComponent = orderingComponent;
     }
 
@@ -84,9 +85,9 @@ public class DisseminationComponent extends Periodic {
     public void run() {
         nextBall.forEach((id, event) -> event.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, K) We have a perfect view (getPeers ?)
+            //create peers + peers <- Random(view, K) We have a perfect view (getPeers ?) connect ?
             //peers.foreach
-                //  send using peer.send(nextBall, q.getPeer().getPort()) TODO convert to ByteBuffer
+                //  send using neem.write(nextBall) TODO convert to ByteBuffer + Import MultiCastChannel instead of Overlay
         }
         orderingComponent.orderEvents(nextBall);
         nextBall.clear();
