@@ -1,0 +1,131 @@
+\documentclass[10pt,conference,a4paper]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% Correct date format in references but with american hyphenation, quotes, ...
+% Trick from http://tex.stackexchange.com/a/129209
+\usepackage[australian,american]{babel}
+
+% *** GRAPHICS RELATED PACKAGES ***
+\ifCLASSINFOpdf
+  \usepackage[pdftex]{graphicx}
+\else
+  \usepackage[dvips]{graphicx}
+\fi
+
+% *** MATH PACKAGES ***
+\usepackage{amssymb}
+\usepackage[cmex10]{amsmath}
+
+% Figure captions in small font
+\makeatletter
+\let\MYcaption\@makecaption
+\makeatother
+\usepackage[font=footnotesize]{subcaption}
+\makeatletter
+\let\@makecaption\MYcaption
+\makeatother
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.11}
+%TODO minted ?
+\usepackage[binary-units]{siunitx}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage{tikz}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=ieee,minbibnames=1,maxbibnames=3]{biblatex}
+\usepackage{url}
+%\usepackage[backgroundcolor=lightgray]{todonotes}
+\usepackage[hidelinks]{hyperref}
+
+\bibliography{paper}
+% Small font for references
+\renewcommand*{\bibfont}{\small}
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+\def\mytitle{EpTO: An Epidemic Total Order Algorithm for Large-Scale Distributed Systems}
+\title{\mytitle}
+
+% author names and affiliations
+% use a multiple column layout for up to three different
+% affiliations
+\def\jocelyn{Jocelyn Thode}
+\def\ehsan{Ehsan Farhadi}
+\author{\IEEEauthorblockN{\jocelyn\IEEEauthorrefmark{1},
+\ehsan\IEEEauthorrefmark{2}}
+\IEEEauthorblockA{Université de Neuchâtel\\
+Neuchâtel, Switzerland\\
+Email: \IEEEauthorrefmark{1}\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@unifr.ch},
+\IEEEauthorrefmark{2}\href{mailto:ehsan.farhadi@unine.ch}{ehsan.farhadi@unine.ch}}}
+
+% Set PDF file properties
+\hypersetup{
+	pdftitle=\mytitle,
+}
+
+% Tick marks
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+% Columns balancing
+\renewbibmacro{finentry}{%
+  \iffieldequalstr{entrykey}{jujjuri2010virtfs}%<- key after which you want the break
+   {\finentry\newpage}
+   {\finentry}}
+
+\begin{document}
+\graphicspath{{figures/}}
+
+
+% make the title area
+\maketitle
+
+
+\begin{abstract}
+%TODO
+asdfasdf
+\end{abstract}
+
+
+\section{Introduction}
+%TODO
+
+
+\section{TODO}
+
+
+\begin{figure}
+\includegraphics[width=\linewidth]{figures/epto-architecture.png}
+\caption{test\protect\footnotemark{}.}
+\label{fig:test}
+\end{figure}
+
+
+
+
+
+\section{Conclusion}
+%TODO
+
+
+% conference papers do not normally have an appendix
+
+
+% use section* for acknowledgement
+\section*{Acknowledgment}
+
+
+
+
+
+% references section, with correct date format
+\begin{otherlanguage}{australian}
+\printbibliography
+\end{otherlanguage}
+
+% that's all folks
+\end{document}
