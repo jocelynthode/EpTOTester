@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Implementation of the events. This class implements the structure of an event as described in EpTO.
  */
-public class Event {
+public class Event implements Comparable<Event> {
     private UUID id;
     private long timeStamp;
     private int ttl;
@@ -94,5 +94,27 @@ public class Event {
      */
     public void incrementTtl() {
         this.ttl++;
+    }
+
+    /**
+     * compareTo method for Event class
+     *
+     * @param event a not-null Event
+     * @return int (1 if before, -1 if after)
+     */
+    public int compareTo(Event event) {
+        final int BEFORE = -1;
+        final int EQUAL = 0;
+        final int AFTER = 1;
+
+        if (this.timeStamp > event.getTimeStamp()) return AFTER;
+        if (this.timeStamp < event.getTimeStamp()) return BEFORE;
+
+        //in case of tie
+        if (this.sourceId.compareTo(event.getSourceId()) == 1) return AFTER;
+        if (this.sourceId.compareTo(event.getSourceId()) == -1) return BEFORE;
+
+        return EQUAL;
+
     }
 }
