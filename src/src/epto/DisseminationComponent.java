@@ -6,6 +6,11 @@ import net.sf.neem.impl.Overlay;
 import net.sf.neem.impl.Periodic;
 import net.sf.neem.impl.Transport;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.*;
 
 /**
@@ -16,7 +21,7 @@ public class DisseminationComponent extends Periodic {
 
     private final MulticastChannel neem;
     private final OrderingComponent orderingComponent;
-    private ArrayList<Peer> view = new ArrayList<>(); //todo use overlay to get all peers ?
+    //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
     public final static int TTL = 3;
     public final static int K = 5;
     private HashMap<UUID, Event> nextBall = new HashMap<>();
@@ -27,11 +32,12 @@ public class DisseminationComponent extends Periodic {
     /**
      * Creates a new instance of DisseminationComponent
      *
-     * @param rand The random number generator
-     * @param trans The Transport object
-     * @param oracle The Stability oracle
-     * @param peer The peer that owns this component
-     * @param overlay The overlay it is part of
+     * @param rand Random
+     * @param trans
+     * @param oracle
+     * @param peer
+     * @param neem
+     * @param orderingComponent
      */
     public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
                                   OrderingComponent orderingComponent) {
@@ -50,7 +56,7 @@ public class DisseminationComponent extends Periodic {
     public void broadcast(Event event) {
         event.setTimeStamp(oracle.incrementAndGetClock());
         event.setTtl(0);
-        event.setSourceId(peer.id);
+        event.setSourceId(peer.getUuid());
         nextBall.put(event.getId(), event);
     }
 
@@ -60,7 +66,7 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-    public void receive(HashMap<UUID, Event> ball) { //TODO upon receive
+    protected synchronized void receive(HashMap<UUID, Event> ball) { //TODO upon receive
         for (HashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
@@ -85,9 +91,19 @@ public class DisseminationComponent extends Periodic {
     public void run() {
         nextBall.forEach((id, event) -> event.incrementTtl());
         if (!nextBall.isEmpty()) {
-            //create peers + peers <- Random(view, K) We have a perfect view (getPeers ?) connect ?
-            //peers.foreach
-                //  send using neem.write(nextBall) TODO convert to ByteBuffer + Import MultiCastChannel instead of Overlay
+            //TODO for now write assuming entire membership
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            try {
+                ObjectOutputStream out = new ObjectOutputStream(byteOut);
+                out.writeObject(nextBall);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                neem.write(ByteBuffer.wrap(byteOut.toByteArray()));
+            } catch (ClosedChannelException e) {
+                e.printStackTrace();
+            }
         }
         orderingComponent.orderEvents(nextBall);
         nextBall.clear();
