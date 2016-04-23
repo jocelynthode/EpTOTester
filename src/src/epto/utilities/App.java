@@ -1,7 +1,13 @@
 package epto.utilities;
 
-/**
- * Created by sam on 4/23/16.
- */
-public class App {
+
+import net.sf.neem.impl.Application;
+
+import java.nio.ByteBuffer;
+
+public class App implements Application{
+    @Override
+    public void deliver(ByteBuffer[] byteBuffers) {
+
+    }
 }

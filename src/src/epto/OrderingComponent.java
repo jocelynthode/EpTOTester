@@ -1,7 +1,13 @@
 package epto;
 
 import epto.utilities.Event;
+import epto.utilities.App;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -17,15 +23,17 @@ public class OrderingComponent {
     private HashMap<UUID, Event> received; //TODO change it to queue of known ?
     private HashMap<UUID, Event> delivered; //TODO change it to queue of known ?
     private StabilityOracle oracle;
+    App app;
     private long lastDeliveredTs;
 
     /**
      * Initialize order component.
      */
-    public OrderingComponent(StabilityOracle oracle){
+    public OrderingComponent(StabilityOracle oracle, App app){
         received = new HashMap<>();
         delivered = new HashMap<>();
         this.oracle = oracle;
+        this.app = app;
         lastDeliveredTs = 0;
     }
 
@@ -92,8 +100,18 @@ public class OrderingComponent {
             if(!delivered.containsKey(key))
                 delivered.put(key, event);
             lastDeliveredTs = event.getTimeStamp();
-            //TODO deliver??
-            //Deliver(event);
+            //TODO it should deliver the msg inside the event, not the event itself. Right?
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            try {
+                ObjectOutputStream out = new ObjectOutputStream(byteOut);
+                out.writeObject(event);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //delivering the event
+            ByteBuffer[] byteoutArray = new ByteBuffer[1];
+            byteoutArray[0] = ByteBuffer.wrap(byteOut.toByteArray());
+            app.deliver(byteoutArray);
 
         }
 
