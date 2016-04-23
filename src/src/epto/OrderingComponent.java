@@ -82,7 +82,11 @@ public class OrderingComponent {
                 received.remove(key);
             }
         }
-        //TODO sort deliverablesEvents by Ts and ID
+        //sort deliverablesEvents by Ts and ID, descending
+        deliverableEvents.entrySet()
+                .stream()
+                .sorted(HashMap.Entry.<UUID, Event>comparingByValue().reversed());
+
         for (UUID key : deliverableEvents.keySet()){
             Event event = received.get(key);
             if(!delivered.containsKey(key))

@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Implementation of the events. This class implements the structure of an event as described in EpTO.
  */
-public class Event {
+public class Event implements Comparable<Event> {
     private UUID id;
     private long timeStamp;
     private int ttl;
