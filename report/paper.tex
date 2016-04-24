@@ -128,13 +128,29 @@ These tasks will be split in two tasks. The first task will assume that all peer
 	\label{fig:epto-architecture}
 \end{figure}
 \subsection{Definitions}
-\todo[inline]{In this section we will define what events and process means in the context of EpTO}
-\subsection{EpTO Dissemination Component}
-\todo[inline]{We will explain what is the role of the dissemination component}
-\subsection{EpTO Ordering Component}
-\todo[inline]{We will explain what is the role of the ordering component}
-\subsection{EpTO Stability Oracle}
-\todo[inline]{We will explain what is the role of the stability clock and how it doesn't affect performances}
+A process or peer is defined as an actor in our system running the application that needs total order. Each process will communicate with other processes in the distributed systems and exchange events and order them together.
+\par
+An event is defined as something that happens at a given time. For example, we could imagine a system where each process publish some sort of data. The moment where this data is published combined with the data is called an event.
+\par
+A ball is a set of events bundled together and sent as one package. We use balls in EpTO to reduce network traffic and make it scalable in terms of processes and events.
+
+EpTO is scalable in the sense that \todo[inline]{Explain the logarithmic scalability}
+
+\todo[inline]{Maybe speak about holes created by the probabilistic nature of the algorithm}
+\subsection{Dissemination Component}
+The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}. It is in charge of receiving balls, open them , pass them to the Ordering component and then forward them to \textit{K} other processes, where K denotes the fan-out of the gossip.
+\par
+When an application wants to publish an event, it will broadcast this event to the Dissemination component.
+
+\subsection{Ordering Component}
+The Ordering component is the component that orders the events before delivering them to the application.
+\todo[inline]{Explain how it orders the different events and how it can order them with a high probability}
+\subsection{Stability Oracle}
+The Stability oracle is the component that outputs timestamps. It will increment its local clock every round as well as synchronize itself using timestamps of newly received events, to make sure the local clock does not drift too much.
+\par
+This Stability oracle offers an API to the Ordering component letting it know when an event is mature enough to be delivered to the application.
+\par
+As this component is local and only correct itself when we receive new events, it generates no network traffic. This means it doesn't impact the scalability of EpTO.
 \section{Performance Comparisons}
 \todo[inline]{Here we will present the different test we ran, the methodology used and the result we obtained}
 \subsection{Methodology}
