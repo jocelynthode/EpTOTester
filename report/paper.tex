@@ -35,10 +35,10 @@
 \usepackage{csquotes}
 \usepackage[backend=biber,style=ieee,minbibnames=1,maxbibnames=3]{biblatex}
 \usepackage{url}
-%\usepackage[backgroundcolor=lightgray]{todonotes}
+\usepackage[backgroundcolor=lightgray]{todonotes}
 \usepackage[hidelinks]{hyperref}
 
-\addbibresource{paper.bib}
+\bibliography{paper}
 % Small font for references
 \renewcommand*{\bibfont}{\small}
 
@@ -86,49 +86,66 @@ Email: \IEEEauthorrefmark{1}\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@u
 
 
 \begin{abstract}
-One of the fundamental problems of distributed computing, is the ordering of events through all peers. From all the available orderings, total ordering is of particular interest as it provides a powerful abstraction for building reliable distributed applications. unfortunately, existing algorithms can not provide reliability, scalability, resiliency and total ordering in one package.	 EpTO is a total order algorithm with probabilistic agreement that scales both in the number of processes and events. EpTO provides deterministic safety and probabilistic liveness: integrity, total order and validity are always preserved, while agreement is achieved with arbitrarily high probability. We are going to implement EpTO using NeEM library and show EpTO is well-suited for large-scale dynamic distributed systems, and afterwards we will evaluate this algorithm by comparing it with currently being used ordering algorithms.
+One of the fundamental problems of distributed computing, is the ordering of events through all peers. From all the available orderings, total ordering is of particular interest as it provides a powerful abstraction for building reliable distributed applications. unfortunately, existing algorithms can not provide reliability, scalability, resiliency and total ordering in one package. EpTO \autocite{matos2015epto} is a total order algorithm with probabilistic agreement that scales both in the number of processes and events. EpTO provides deterministic safety and probabilistic liveness: integrity, total order and validity are always preserved, while agreement is achieved with arbitrarily high probability. We are going to implement EpTO using the NeEM \autocite{neem} library and show EpTO is well-suited for large-scale dynamic distributed systems, and afterwards we will evaluate this algorithm by comparing it with currently being used ordering algorithms.
 \end{abstract}
 
 \section{Introduction}
-%TODO
-The ordering of events is one of the most fundamental problems in distributed systems, and it has been studied over past few decades. A lot of researchers have been working on an algorithm with different guarantees and tradeoffs such as synchronization, agreement or state machine replication. But because these properties are strong guarantees, the algorithms that implements them do not scale very well. Existing probabilistic protocols are highly scalable and resilient, but they can not provide total ordering in large scale distributed systems, and existing deterministic protocols which provide total ordering, are not resilient and scalable.
+The ordering of events is one of the most fundamental problems in distributed systems and it has been studied over past few decades. A lot of researchers have been working on an algorithm with different guarantees and trade-offs such as synchronization, agreement or state machine replication \todo{Cite papers}
+. But because these properties are strong guarantees, the algorithms that implements them do not scale very well. Existing probabilistic protocols are highly scalable and resilient, but they can not provide total ordering in large scale distributed systems, and existing deterministic protocols which provide total ordering, are not resilient and are scalable.
 \par
-The problem with existing deterministic total ordering protocols, is that they need some sort of agreement between all peers in the system. An agreement on the order of messages, which cause a massive amount of network traffic and overhead on the system.
-Plus, an agreement feature for an asynchronous system requires to
+The problem with existing deterministic total ordering protocols, is that they need some sort of agreement between all peers in the system on the order of messages. This causes a massive amount of network traffic and overhead on the system.
+Moreover, an agreement feature for an asynchronous system requires to
 explicitly maintain a group and have access to a failure detector. Due to the faults and churn in large-scale distributed systems, failure detector turns into bottleneck of the system and thus, limits scalability of the algorithm.
 \subsection{Contribution}
-EpTO guarantees that processes eventually agree on the set of received events with high probability and deliver these events in total order to the application. The intuition behind EpTO is that events are available quickly at all nodes with high probability,
-Once events are thought to be available in every peer, each peer deterministically order them by timestamp of each event and breaking ties with the id of the broadcaster peer, and deliver them to the application accordingly.
+EpTO guarantees that processes eventually agree on the set of received events with high probability and deliver these in total order to the application. The intuition behind EpTO is that events are available quickly at all nodes with high probability,
+Once events are thought to be available in every peer, each peer deterministically order them using the timestamp of each event and breaking ties with the id of the broadcaster peer, deliver them to the application accordingly.
 \par
-The main insight behind EpTO dissemination protocol is a \textit{balls-and-bins} approach. \textit{Balls-and-bins} is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin, completely random and independent from other balls.
+The main insight behind EpTO dissemination protocol is a \textit{balls-and-bins} approach. The \textit{balls-and-bins} problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin, completely random and independent from other balls.
 \par
-A balls-and-bins approach abstract peers as bins and messages (events) as balls, and studies how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability. using this approach The number of messages transmitted per process per round is logarithmic in the number of processes, and the total number of messages
+A balls-and-bins approach abstracts peers as bins and messages (events) as balls, and studies how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, and the total number of messages
 transmitted in the network before an event is delivered is low and uniform over all peers.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/BnB.jpeg}
-\caption{balls-and-bins\protect\footnotemark{}.}
+\caption{Balls-and-Bins\protect\footnotemark{}.}
 \label{fig:balls-and-bins}
 \end{figure}
+\par
+In this paper, we will implement EpTO and compare it against a known deterministic total order algorithm, namely JGroups \autocite{jgroups}.
 
-\section{EPTO ALGORITHM DESCRIPTION}
-\subsubsection{EpTO Dissemination Component}
-\subsubsection{EpTO Ordering Component}
-\subsubsection{EpTO Stability Oracle}
-\section{TODO}
-\section{Work Plan}
+These tasks will be split in two tasks. The first task will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. The second task will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service}. We will also update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2\footnote{Non-blocking I/O available from Java 7}.
+
+\section{Ordering Algorithms}
+\todo[inline]{We will explain why Ordering algorithms are necessary, the difference between partial order and Total order and why partial order might not be sufficient in some cases}
+\subsection{Partial Order Algorithms}
+\subsection{Total Order Algorithms}
+
+\section{EpTO}
+\todo[inline]{Here we will present EpTO and the different components}
 \begin{figure}
-\includegraphics[width=\linewidth]{figures/epto-architecture.png}
-\caption{test\protect\footnotemark{}.}
-\label{fig:test}
+	\includegraphics[width=\linewidth]{figures/epto-architecture.png}
+	\caption{\todo[inline]{We need a better quality figure (SVG)}\protect\footnotemark{}.}
+	\label{fig:epto-architecture}
 \end{figure}
-
-
-
-
+\subsection{Definitions}
+\todo[inline]{In this section we will define what events and process means in the context of EpTO}
+\subsection{EpTO Dissemination Component}
+\todo[inline]{We will explain what is the role of the dissemination component}
+\subsection{EpTO Ordering Component}
+\todo[inline]{We will explain what is the role of the ordering component}
+\subsection{EpTO Stability Oracle}
+\todo[inline]{We will explain what is the role of the stability clock and how it doesn't affect performances}
+\section{Performance Comparisons}
+\todo[inline]{Here we will present the different test we ran, the methodology used and the result we obtained}
+\subsection{Methodology}
+\todo[inline]{Here we explain how we ran our tests and on what type of machines}
+\subsection{Peer membership known}
+\todo[inline]{We will present the results obtained and try to explain the results}
+\subsection{Peer membership unknown}
+\todo[inline]{We will present the results obtained and try to explain the results}
 
 \section{Conclusion}
-%TODO
+\todo[inline]{He we will summarize the results we found and present some future tasks that could be accomplished on EpTO}
 
 
 % conference papers do not normally have an appendix
