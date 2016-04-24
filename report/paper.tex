@@ -38,7 +38,7 @@
 %\usepackage[backgroundcolor=lightgray]{todonotes}
 \usepackage[hidelinks]{hyperref}
 
-\addbibresource{•}{paper.bib}
+\addbibresource{paper.bib}
 % Small font for references
 \renewcommand*{\bibfont}{\small}
 
@@ -93,7 +93,7 @@ One of the fundamental problems of distributed computing, is the ordering of eve
 %TODO
 The ordering of events is one of the most fundamental problems in distributed systems, and it has been studied over past few decades. A lot of researchers have been working on an algorithm with different guarantees and tradeoffs such as synchronization, agreement or state machine replication. But because these properties are strong guarantees, the algorithms that implements them do not scale very well. Existing probabilistic protocols are highly scalable and resilient, but they can not provide total ordering in large scale distributed systems, and existing deterministic protocols which provide total ordering, are not resilient and scalable.
 \par
-The problem with current deterministic total ordering protocols, deterministic total ordering algorithm, is that they need some sort of agreement between all peers in the system. An agreement on the order of messages, which cause a massive amount of network traffic and overhead on the system.
+The problem with existing deterministic total ordering protocols, is that they need some sort of agreement between all peers in the system. An agreement on the order of messages, which cause a massive amount of network traffic and overhead on the system.
 Plus, an agreement feature for an asynchronous system requires to
 explicitly maintain a group and have access to a failure detector. Due to the faults and churn in large-scale distributed systems, failure detector turns into bottleneck of the system and thus, limits scalability of the algorithm.
 \subsection{Contribution}
