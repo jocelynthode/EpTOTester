@@ -102,12 +102,12 @@ Once events are thought to be available in every peer, each peer deterministical
 \par
 The main insight behind EpTO dissemination protocol is a \textit{balls-and-bins} approach. The \textit{balls-and-bins} problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin, completely random and independent from other balls.
 \par
-A balls-and-bins approach abstracts peers as bins and messages (events) as balls, and studies how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, and the total number of messages
+A balls-and-bins approach abstracts peers as bins and messages (events) as balls, and studies how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability \autocite{Koldehofe02simplegossiping}. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, and the total number of messages
 transmitted in the network before an event is delivered is low and uniform over all peers.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/BnB.jpeg}
-\caption{Balls-and-Bins\protect\footnotemark{}.}
+\caption{Balls-and-Bins}
 \label{fig:balls-and-bins}
 \end{figure}
 \par
@@ -117,8 +117,24 @@ These tasks will be split in two tasks. The first task will assume that all peer
 
 \section{Ordering Algorithms}
 \todo[inline]{We will explain why Ordering algorithms are necessary, the difference between partial order and Total order and why partial order might not be sufficient in some cases}
+
+Distributed systems, like centralized systems needs to preserve the temporal order of event produced by concurrent process in the system. When there are spatially separated processes that can only communicate through messages, you can’t tell what in the system happened before something else.
+Therefore we need ordering algorithms to overcome this problem.
+\par
+We have two types of order \autocite{lamport1978time}:
 \subsection{Partial Order Algorithms}
+Assuming S is partially ordered under $\leq$, then the following statements hold for all a, b and c in S:
+\begin{itemize}
+	\item Reflexivity: $a \leq a$ for all $a \in S$.
+	\item Antisymmetry: $a \leq b$ and $b \leq a$ implies $a=b$ .
+	\item Transitivity: $a \leq b$  and $b \leq c$  implies $a \leq c$.
+\end{itemize}
+
 \subsection{Total Order Algorithms}
+A totally ordered set of events is a partially ordered set which satisfies one additional property:
+\begin{itemize}
+	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
+\end{itemize}
 
 \section{EpTO}
 \todo[inline]{Here we will present EpTO and the different components}
@@ -137,14 +153,18 @@ A ball is a set of events bundled together and sent as one package. We use balls
 EpTO is scalable in the sense that \todo[inline]{Explain the logarithmic scalability}
 
 \todo[inline]{Maybe speak about holes created by the probabilistic nature of the algorithm}
+\par
+Since EpTO is using a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this case there will be a hole in the sequence of delivered events but even in this case, the order of the delivered event will be protected by EpTO's deterministic ordering algorithm and total order property is preserved.
 \subsection{Dissemination Component}
 The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}. It is in charge of receiving balls, open them , pass them to the Ordering component and then forward them to \textit{K} other processes, where K denotes the fan-out of the gossip.
 \par
 When an application wants to publish an event, it will broadcast this event to the Dissemination component.
 
 \subsection{Ordering Component}
-The Ordering component is the component that orders the events before delivering them to the application.
-\todo[inline]{Explain how it orders the different events and how it can order them with a high probability}
+The Ordering component is responsible for orders events before delivering them to the application.
+To do so, this component has a \textit{received} hashmap of (\textit{id}, \textit{event}) pairs containing all the events which are received by the peer, but not yet delivered to the application and a \textit{delivered} hashmap containing all the events which are delivered.
+\par
+In brief, ordering component first increment the timestamp of all the events which has been received in previous rounds to indicate the start of a new round. Then it process new events in the received ball by discarding events that have been received already (delivered events or events with timestamp smaller than the last delivered event) to prevent delivering duplicate event, remaining event in the received ball will add to the \textit{received} hashmap, and wait to be delivered based on the stability oracle and other undelivered events on each round.
 \subsection{Stability Oracle}
 The Stability oracle is the component that outputs timestamps. It will increment its local clock every round as well as synchronize itself using timestamps of newly received events, to make sure the local clock does not drift too much.
 \par
