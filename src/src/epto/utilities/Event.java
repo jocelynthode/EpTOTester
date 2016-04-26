@@ -117,4 +117,17 @@ public class Event implements Comparable<Event> {
         return EQUAL;
 
     }
+
+    /**
+     * @return A string representing the Event object
+     */
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", timeStamp=" + timeStamp +
+                ", ttl=" + ttl +
+                ", sourceId=" + sourceId +
+                '}';
+    }
 }
