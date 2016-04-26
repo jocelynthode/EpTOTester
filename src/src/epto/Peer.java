@@ -52,7 +52,7 @@ public class Peer implements Runnable{
                 ByteBuffer bb = ByteBuffer.wrap(buf);
 
                 neem.read(bb);
-                ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray()); //TODO fix this
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(buf); //TODO Check correctness
                 ObjectInputStream in = new ObjectInputStream(byteIn);
                 disseminationComponent.receive((HashMap<UUID, Event>) in.readObject());
             }
