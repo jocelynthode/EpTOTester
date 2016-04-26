@@ -87,7 +87,7 @@ Email: \IEEEauthorrefmark{1}\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@u
 
 
 \begin{abstract}
-
+One of the fundamental problems of distributed systems is that a message between two processes, may be delivered zero, or many times. This is way ordering events and messages is an essence in distrusted systems. There has been many algorithm to overcome this problem. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems. EpTO is the first algorithm that claim to provide total order and scalability at the same time. We are going to verify this claim by implementing EpTO and evaluate it in a real-world condition.
 \end{abstract}
 \section{Introduction}
 Ordering of events is one the fundamental problems of distributed systems. Creating an algorithm which provide scalability, integrity and validity, along with an ordering for the event through all the peers and processes is one the hot topics in distributed systems research areas for many years. One of the recently designed algorithms on this topic is EpTO \autocite{matos2015epto}. EpTO is an algorithm which is claimed to provide integrity, validity and total order throughout a distributed system. In addition, EpTO is designed to work without a global clock or synchronization process, that is why EpTO is well-suited for dynamic large-scale distributed systems.
@@ -98,13 +98,9 @@ The problem with existing deterministic total ordering protocols, is that they n
 Moreover, an agreement feature for an asynchronous system requires to
 explicitly maintain a group and have access to a failure detector \autocites[]{chandra1996weakest}[]{chandra1996unreliable}. Due to the faults and churn in large-scale distributed systems, failure detector turns into bottleneck of the system and thus, limits the scalability of the algorithm.
 \par
-As an alternative for deterministic algorithms, there are probabilistic algorithms, focusing on scalability and resiliency against failures using a probabilistic dissemination approach \autocites []{birman1999bimodal}[]{carvalho2007emergent}[]{demers1987epidemic}[]{eugster2003lightweight}[]{felber2002probabilistic}[]{hayden1996probabilistic}[]{kim2004gossip}[]{Koldehofe02simplegossiping}. These algorithms guarantee to disseminate events through the system with high probability. In this way, there is not need for failure detectors and redundant traffic thus, these algorithms can be quit scalable. Although because these type of algorithms focus on reliability of dissemination, they often ignore other needed properties such as ordering.
+As an alternative for deterministic algorithms, there are probabilistic algorithms, focusing on scalability and resiliency against failures using a probabilistic dissemination approach \autocites []{birman1999bimodal}[]{carvalho2007emergent}[]{demers1987epidemic}[]{eugster2003lightweight}[]{felber2002probabilistic}[]{hayden1996probabilistic}[]{kim2004gossip}[]{Koldehofe02simplegossiping}. These algorithms guarantee to disseminate events through the system with high probability. In this way, there is not need for failure detectors and redundant traffic. Thus, these algorithms can be quit scalable. Although because these type of algorithms focus on reliability of dissemination, they often ignore other needed properties such as ordering.
 \par
-This is where EpTO is coming into the light. EpTO with mixing these two types of algorithms, provide total order along with scalability, validity and integrity. 
-
-
-\subsection{Contribution}
-EpTO consists of two parts. First part is probabilistic dissemination. EpTO guarantees that all peers will receive an event with high probability. Second part of EpTO is deterministic ordering. Once peers receive all events, they will deterministically order them using the events timestamp, and in case of a tie using event's broadcaster's id.
+This is where EpTO is coming into the light. EpTO with mixing these two types of algorithms, provide total order along with scalability, validity and integrity. EpTO consists of two parts. First part is probabilistic dissemination. EpTO guarantees that all peers will receive an event with high probability. Second part of EpTO is deterministic ordering. Once peers receive all events, they will deterministically order them using the events timestamp, and in case of a tie using event's broadcaster's id.
 \par
 For the first part, EpTO is using \textit{balls-and-bins} approach \autocite{Koldehofe02simplegossiping}. The balls-and-bins problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin completely random and independent from other balls. In this scenario, one the natural questions that comes to mind is that: what is the minimum number of balls that should be thrown, so that every bin has at least one ball?
 \begin{figure}
@@ -115,10 +111,10 @@ For the first part, EpTO is using \textit{balls-and-bins} approach \autocite{Kol
 \par
 Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Using these approaches, EpTO becomes highly scalable and resilient, having in mind that it also provides total order.
 
+\subsection{Contribution}
+Until now, the creators of EpTO test this algorithm in a simulated environment, and not in a real-world scenario. We are going implement EpTO in pure JAVA using NeEM library \autocite{neem}. Afterwards we will evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. This comparison help us to verify if EpTO is actually perform as expected in real-world conditions or not.
 \par
-Until now, the creators of EpTO test this algorithm in a simulated environment, and not in real-world conditions. We are going implement EpTO in pure JAVA using NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. Afterwards we will evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems.
-\par
-These tasks will be split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. I the second part of the tasks, will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service}. We will also update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2\footnote{Non-blocking I/O available from Java 7}.
+These tasks will be split into two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. I the second part of the tasks, will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service}. We will also update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2\footnote{Non-blocking I/O available from Java 7}.
 
 \section{Ordering Algorithms}
 \todo[inline]{We will explain why Ordering algorithms are necessary, the difference between partial order and Total order and why partial order might not be sufficient in some cases}
@@ -142,7 +138,7 @@ A totally ordered set of events is a partially ordered set which satisfies one a
 \end{itemize}
 \todo[inline]{Explain advantages and usefulness of both systems}
 \par
-In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement but, in some cases where the order of all events is important, for example in order to have an exact image of the state of the system at all time, we have to use total order.
+In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement but, in some cases where the order of all events is important, for example when we need an exact image of the state of the system at all time, we have to use total order.
 
 \section{EpTO}
 \begin{figure}
