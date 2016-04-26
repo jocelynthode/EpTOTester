@@ -38,6 +38,7 @@
 \usepackage[backgroundcolor=lightgray]{todonotes}
 \usepackage[hidelinks]{hyperref}
 
+
 \bibliography{paper}
 % Small font for references
 \renewcommand*{\bibfont}{\small}
@@ -86,24 +87,22 @@ Email: \IEEEauthorrefmark{1}\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@u
 
 
 \begin{abstract}
-One of the fundamental problems of distributed computing, is the ordering of events through all peers. From all the available orderings, total ordering is of particular interest as it provides a powerful abstraction for building reliable distributed applications. unfortunately, existing algorithms can not provide reliability, scalability, resiliency and total ordering in one package. EpTO is a total order algorithm with probabilistic agreement that scales both in the number of processes and events. EpTO provides deterministic safety and probabilistic liveness: integrity, total order and validity are always preserved, while agreement is achieved with arbitrarily high probability. We are going to implement EpTO using the NeEM library and show EpTO is well-suited for large-scale dynamic distributed systems, and afterwards we will evaluate this algorithm by comparing it with currently being used ordering algorithms.
+One of the fundamental problems of distributed computing, is the ordering of events through all peers. Between different types of ordering, total ordering is of particular interest as it provides a powerful abstraction for building reliable distributed applications. unfortunately, existing algorithms can not provide reliability, scalability, resiliency and total ordering in one package. EpTO is a total order algorithm with probabilistic agreement that scales both in the number of processes and events. EpTO uses a probabilistic agreement to disseminate events through the system with high probability, and also provides integrity, total order and validity. We are going to implement EpTO using the NeEM library and show that EpTO is well-suited for large-scale dynamic distributed systems, and afterwards we will evaluate this algorithm by comparing it with a currently being used ordering algorithm.
 \end{abstract}
 
 \section{Introduction}
-The ordering of events is one of the most fundamental problems in distributed systems and it has been studied over past few decades. A lot of researchers have been working on an algorithm with different guarantees and trade-offs such as synchronization, agreement or state machine replication \todo{Cite papers}
-. But because these properties are strong guarantees, the algorithms that implements them do not scale very well. Existing probabilistic protocols are highly scalable and resilient, but they can not provide total ordering in large scale distributed systems, and existing deterministic protocols which provide total ordering, are not resilient and are scalable.
+The ordering of events is one of the most fundamental problems in distributed systems and it has been studied over past few decades. Many researches have been done to create algorithms with different properties and trade-offs such as synchronization, agreement or state machine replication \autocites[]{defago2004total}[]{lamport1978time}. But due the fact that these properties are strong guarantees, the algorithms that implements them do not scale as expected because of the churn and failures in an non-ideal environment. Because of scalability problem of deterministic approaches, probabilistic protocols emerged. Nowadays, existing probabilistic protocols are highly scalable and resilient, but they do not provide total ordering.
 \par
 The problem with existing deterministic total ordering protocols, is that they need some sort of agreement between all peers in the system on the order of messages. This causes a massive amount of network traffic and overhead on the system.
 Moreover, an agreement feature for an asynchronous system requires to
 explicitly maintain a group and have access to a failure detector. Due to the faults and churn in large-scale distributed systems, failure detector turns into bottleneck of the system and thus, limits scalability of the algorithm.
 \subsection{Contribution}
-EpTO \autocite{matos2015epto} guarantees that processes eventually agree on the set of received events with high probability and deliver these in total order to the application. The intuition behind EpTO is that events are available quickly at all nodes with high probability,
-Once events are thought to be available in every peer, each peer deterministically order them using the timestamp of each event and breaking ties with the id of the broadcaster peer, deliver them to the application accordingly.
+EpTO \autocite{matos2015epto} guarantees that all processes eventually agree on the set of received events with high probability and deliver these in total order to the application. The intuition behind EpTO is make events available in all processes quickly with high probability,
+Once events are available in every peer, each peer deterministically order them using the timestamp of each event and breaking ties with the id of the broadcaster peer, and afterwards deliver them to the application accordingly.
 \par
-The main insight behind EpTO dissemination protocol is a \textit{balls-and-bins} approach. The \textit{balls-and-bins} problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin, completely random and independent from other balls.
+The main insight behind EpTO dissemination protocol is a \textit{balls-and-bins} approach \autocite{Koldehofe02simplegossiping}. \textit{Balls-and-bins} problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin, completely random and independent from other balls.
 \par
-A balls-and-bins approach abstracts peers as bins and messages (events) as balls, and studies how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability \autocite{Koldehofe02simplegossiping}. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, and the total number of messages
-transmitted in the network before an event is delivered is low and uniform over all peers.
+Using balls-and-bins approach we model processes an bins and events (or set of events) as balls. Base on this model we will calculate how many balls need to be \textit{thrown} such that each bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore number of messages sent in the system is low and uniform over all processes. Using these approaches, EpTO becomes highly scalable and resilient, having in mind that it also provide total order.
 
 
 \begin{figure}
@@ -137,7 +136,8 @@ A totally ordered set of events is a partially ordered set which satisfies one a
 	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
 \end{itemize}
 \todo[inline]{Explain advantages and usefulness of both systems}
-
+\par
+In other words, total order is an ordering that defines the exact order of every event in the system, But partial ordering only defines the order between certain key event that depend on each other. Partial order can be useful since it is less costly to implement but, in some cases where the order of all events is important, for example in order to have an exact image of the state of the system at all time, we have to use total order.
 
 \section{EpTO}
 \begin{figure}
