@@ -13,9 +13,17 @@ import java.nio.ByteBuffer;
 
 /**
  * Implementation of an Application
- * TODO broadcast + create a start application
+ * TODO broadcast ?
  */
 public class App implements Application{
+
+    private Peer peer;
+    private MulticastChannel neem;
+
+    public App(MulticastChannel neem) {
+        this.neem = neem;
+        this.peer = new Peer(neem, this);
+    }
 
     /**
      * {@inheritDoc}
@@ -37,6 +45,10 @@ public class App implements Application{
         }
     }
 
+    private void start() {
+        new Thread(peer).start();
+    }
+
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -53,13 +65,14 @@ public class App implements Application{
             if (neem.getLocalSocketAddress().getAddress().isLoopbackAddress())
                 System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
 
-            App app = new App();
+
             //Todo should use start ?
-            Peer peer = new Peer(neem, app);
-            new Thread(peer).start();
+            App app = new App(neem);
 
             for (int i = 1; i < args.length; i++)
                 neem.connect(Addresses.parse(args[i], false));
+
+            app.start();
 
             neem.close();
 
