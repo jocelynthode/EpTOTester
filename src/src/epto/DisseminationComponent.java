@@ -2,7 +2,6 @@ package epto;
 
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
-import net.sf.neem.impl.Overlay;
 import net.sf.neem.impl.Periodic;
 import net.sf.neem.impl.Transport;
 
@@ -11,7 +10,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of

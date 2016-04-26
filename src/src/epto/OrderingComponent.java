@@ -1,13 +1,12 @@
 package epto;
 
-import epto.utilities.Event;
 import epto.utilities.App;
+import epto.utilities.Event;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -109,9 +108,9 @@ public class OrderingComponent {
                 e.printStackTrace();
             }
             //delivering the event
-            ByteBuffer[] byteoutArray = new ByteBuffer[1];
-            byteoutArray[0] = ByteBuffer.wrap(byteOut.toByteArray());
-            app.deliver(byteoutArray);
+            ByteBuffer[] byteOutArray = new ByteBuffer[1];
+            byteOutArray[0] = ByteBuffer.wrap(byteOut.toByteArray());
+            app.deliver(byteOutArray);
 
         }
 
