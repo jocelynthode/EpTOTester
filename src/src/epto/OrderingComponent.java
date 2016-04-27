@@ -53,7 +53,7 @@ public class OrderingComponent {
             Event event = received.get(key);
             if(!delivered.containsKey(key) && event.getTimeStamp() > lastDeliveredTs){
                 if (received.containsKey(key)){
-                    if(received.get(key).getTtl() < event.getTtl()){ //TODO check later
+                    if(received.get(key).getTtl() < event.getTtl()){
                         received.get(key).setTtl(event.getTtl());
                     }
                 }
@@ -82,7 +82,7 @@ public class OrderingComponent {
             Event event = received.get(key);
             if (event.getTimeStamp() > minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
-                deliverableEvents.remove(key); //TODO check later
+                deliverableEvents.remove(key);
             }
             else {
                 // event can be delivered, remove from received events

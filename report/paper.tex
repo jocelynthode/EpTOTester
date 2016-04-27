@@ -98,11 +98,11 @@
 Total ordering has always been of interest in large-scale distributed systems. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
 \end{abstract}
 \section{Introduction}
-Creating an algorithm which provides scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO \autocite{matos2015epto}. EpTO is an algorithm which claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, that is why EpTO is well-suited for dynamic large-scale distributed systems.
+Creating an algorithm providing scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO \autocite{matos2015epto}. EpTO is an algorithm which claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, thus is well-suited for dynamic large-scale distributed systems.
 \par 
 There are many other algorithms for disseminating and ordering events in a distributed system. There are some deterministic algorithms, which guarantee total order, agreement or other strong properties. Unfortunately, these types of algorithm are not scalable enough to be used in a large-scale distributed system \autocites[]{defago2004total}[]{lamport1978time}.
 \par
-The problem with existing deterministic total ordering protocols, is that they need some sort of agreement between all peers in the system. This causes a massive amount of network traffic and overhead on the system.
+The problem with existing deterministic total ordering protocols is that they need some sort of agreement between all peers in the system. This causes a massive amount of network traffic and overhead on the system.
 Moreover, an agreement feature for an asynchronous system requires to
 explicitly maintain a group and have access to a failure detector \autocites[]{chandra1996weakest}[]{chandra1996unreliable}. Due to faults and churn in large-scale distributed systems, failure detector turns into a bottleneck for the system and thus, limits the scalability of the algorithm.
 \par
@@ -121,12 +121,13 @@ To model the first part, EpTO is using a \textit{balls-and-bins} approach \autoc
 Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Using these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
 
 \subsection{Contribution}
-Until now, the creators of EpTO have only tested this algorithm in a simulated environment. We are going to implement EpTO in pure Java using the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. Afterwards we will evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
+Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, We are going to implement EpTO in pure Java using the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
+\todo[inline]{Here we present our conclusion briefly}
 \par
-These tasks will be split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2\footnote{Non-blocking I/O available from Java 7}.
+These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \todo{NIO2?} \autocite{nio}.
 
 \section{Ordering Algorithms}
-Distributed systems, like centralized systems need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
+Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
 Therefore we need ordering algorithms to overcome this problem.
 \par
 We have two types of ordering algorithms \autocite{lamport1978time}: the partial order algorithms and the total order algorithms.
@@ -148,8 +149,8 @@ In other words, total order is an ordering that defines the exact order of every
 
 \section{EpTO}
 \begin{figure}
-	\includegraphics[width=\linewidth]{figures/epto-architecture.png}
-	\caption{\todo[inline]{We need a better quality figure (SVG)}\protect\footnotemark{}.}
+	\includegraphics[width=\linewidth]{figures/architecture.pdf}
+	\caption{EpTO architecture \autocite{matos2015epto}}
 	\label{fig:epto-architecture}
 \end{figure}
 \subsection{Definitions}
@@ -166,7 +167,7 @@ in the number of processes, ...''
 \par
 Since EpTO is using a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this case there will be a hole in the sequence of delivered events but even in this case, the order of the delivered event will be protected by EpTO's deterministic ordering algorithm and total order property is preserved.
 \subsection{Dissemination Component}
-The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}, it is in charge of receiving balls, open them , pass them to the Ordering component and then forward them to \textit{K} other processes, where K denotes the gossip fan-out.
+The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in  \todo{Hugues comment} Figure \ref*{fig:epto-architecture}, it is in charge of receiving balls it opens them, passes them to the Ordering component and then forwards them to \textit{K} other processes, where K denotes the gossip fan-out.
 \par
 When an application wants to publish an event, it will broadcast this event to the Dissemination component.
 
@@ -180,7 +181,7 @@ The Stability oracle is the component that outputs timestamps. It will increment
 \par
 This Stability oracle offers an API to the Ordering component letting it know when an event is mature enough to be delivered to the application.
 \par
-As this component is local and only correct itself when we receive new events, it generates no network traffic. This means it does not impact the scalability of EpTO.
+As this component is local and only corrects itself when we receive new events, it generates no network traffic. This means it does not impact the scalability of EpTO.
 \section{Performance Comparisons}
 \todo[inline]{Here we will present the different test we ran, the methodology used and the result we obtained}
 \subsection{Methodology}
