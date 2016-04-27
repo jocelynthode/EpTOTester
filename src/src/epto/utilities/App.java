@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
  * Implementation of an Application
  * TODO broadcast ?
  */
-public class App implements Application{
+public class App implements Application {
 
     private Peer peer;
     private MulticastChannel neem;
@@ -52,7 +52,7 @@ public class App implements Application{
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.err.println("Usage: apps.Chat local peer1 ... peerN");
+            System.err.println("Usage: apps.App local peer1 ... peerN");
             System.exit(1);
         }
 
@@ -66,7 +66,6 @@ public class App implements Application{
                 System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
 
 
-            //Todo should use start ?
             App app = new App(neem);
 
             for (int i = 1; i < args.length; i++)
