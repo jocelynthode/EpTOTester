@@ -122,9 +122,9 @@ Using the balls-and-bins approach we model processes as bins and events as balls
 
 \subsection{Contribution}
 Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, We are going to implement EpTO in pure Java using the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
-\todo[inline]{Here we present our conclusion briefly}
+\todo[inline]{Here we will present our conclusion briefly}
 \par
-These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \todo{NIO2?} \autocite{nio}.
+These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \autocite{nio}.
 
 \section{Ordering Algorithms}
 Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
@@ -167,7 +167,7 @@ in the number of processes, ...''
 \par
 Since EpTO is using a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this case there will be a hole in the sequence of delivered events but even in this case, the order of the delivered event will be protected by EpTO's deterministic ordering algorithm and total order property is preserved.
 \subsection{Dissemination Component}
-The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in  \todo{Hugues comment} Figure \ref*{fig:epto-architecture}, it is in charge of receiving balls it opens them, passes them to the Ordering component and then forwards them to \textit{K} other processes, where K denotes the gossip fan-out.
+The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}, it receives balls, it opens them, it passes them to the Ordering component and then it forwards them to \textit{K} other processes, where K denotes the gossip fan-out.
 \par
 When an application wants to publish an event, it will broadcast this event to the Dissemination component.
 
