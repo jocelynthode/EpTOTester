@@ -6,10 +6,10 @@ import net.sf.neem.MulticastChannel;
 import net.sf.neem.apps.Addresses;
 import net.sf.neem.impl.Application;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Implementation of an Application
@@ -50,6 +50,30 @@ public class App implements Application {
     }
 
 
+    //TODO broadcasts events every 1 second
+    private void broadcast() {
+        int i = 0;
+        while(true){
+            Event event = new Event(UUID.randomUUID(),i++,5,UUID.randomUUID());
+            HashMap<UUID, Event> output_hash = new HashMap<>();
+            output_hash.put(UUID.randomUUID(), event);
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            try {
+                ObjectOutputStream out = new ObjectOutputStream(byteOut);
+                out.writeObject(output_hash);
+                this.neem.write(ByteBuffer.wrap(byteOut.toByteArray()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: apps.App local peer1 ... peerN");
@@ -72,11 +96,12 @@ public class App implements Application {
                 neem.connect(Addresses.parse(args[i], false));
 
             app.start();
-
+            app.broadcast();
             neem.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }
