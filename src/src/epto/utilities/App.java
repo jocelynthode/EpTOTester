@@ -52,7 +52,7 @@ public class App implements Application {
     //TODO broadcasts events every 1 second
     private void broadcast() {
         int i = 0;
-        while(i < 5){
+        while(true){
             Event event = new Event(UUID.randomUUID(),i++,0,peer.getUuid());
             peer.getDisseminationComponent().broadcast(event);
             try {

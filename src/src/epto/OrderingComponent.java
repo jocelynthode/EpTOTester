@@ -50,16 +50,15 @@ public class OrderingComponent {
         }
 
         // update set of received events with events in the ball
-        for (UUID key : ball.keySet()){
-            Event event = received.get(key);
-            if(!delivered.containsKey(key) && event.getTimeStamp() > lastDeliveredTs){
-                if (received.containsKey(key)){
-                    if(received.get(key).getTtl() < event.getTtl()){
-                        received.get(key).setTtl(event.getTtl());
+        for (Event event : ball.values()){
+            if(!delivered.containsKey(event.getId()) && event.getTimeStamp() > lastDeliveredTs){
+                if (received.containsKey(event.getId())){
+                    if(received.get(event.getId()).getTtl() < event.getTtl()){
+                        received.get(event.getId()).setTtl(event.getTtl());
                     }
                 }
                 else {
-                    received.put(key, event);
+                    received.put(event.getId(), event);
                 }
             }
         }
@@ -95,10 +94,9 @@ public class OrderingComponent {
                 .stream()
                 .sorted(HashMap.Entry.<UUID, Event>comparingByValue().reversed());
 
-        for (UUID key : deliverableEvents.keySet()){
-            Event event = received.get(key);
-            if(!delivered.containsKey(key))
-                delivered.put(key, event);
+        for (Event event : deliverableEvents.values()){
+            if(!delivered.containsKey(event.getId()))
+                delivered.put(event.getId(), event);
             lastDeliveredTs = event.getTimeStamp();
             //TODO it should deliver the msg inside the event, not the event itself. Right?
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
