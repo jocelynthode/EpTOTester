@@ -13,7 +13,6 @@ import java.util.UUID;
 
 /**
  * Implementation of an Application
- * TODO broadcast ?
  */
 public class App implements Application {
 
@@ -53,18 +52,9 @@ public class App implements Application {
     //TODO broadcasts events every 1 second
     private void broadcast() {
         int i = 0;
-        while(true){
-            Event event = new Event(UUID.randomUUID(),i++,5,UUID.randomUUID());
-            HashMap<UUID, Event> output_hash = new HashMap<>();
-            output_hash.put(UUID.randomUUID(), event);
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(byteOut);
-                out.writeObject(output_hash);
-                this.neem.write(ByteBuffer.wrap(byteOut.toByteArray()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        while(i < 5){
+            Event event = new Event(UUID.randomUUID(),i++,0,peer.getUuid());
+            peer.getDisseminationComponent().broadcast(event);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

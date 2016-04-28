@@ -3,6 +3,7 @@ package epto;
 import epto.utilities.App;
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
+import net.sf.neem.impl.Application;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
@@ -29,7 +30,7 @@ public class Peer implements Runnable{
      *
      * @param neem MultiCast object
      */
-    public Peer(MulticastChannel neem, App app){
+    public Peer(MulticastChannel neem, Application app){
         this.neem = neem;
         this.oracle = new StabilityOracle();
         this.orderingComponent = new OrderingComponent(oracle, app);
@@ -40,6 +41,10 @@ public class Peer implements Runnable{
 
     public UUID getUuid() {
         return uuid;
+    }
+
+    public DisseminationComponent getDisseminationComponent() {
+        return disseminationComponent;
     }
 
     @Override

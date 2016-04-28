@@ -2,6 +2,7 @@ package epto;
 
 import epto.utilities.App;
 import epto.utilities.Event;
+import net.sf.neem.impl.Application;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,13 +23,13 @@ public class OrderingComponent {
     private HashMap<UUID, Event> received; //TODO change it to queue of known ?
     private HashMap<UUID, Event> delivered; //TODO change it to queue of known ?
     private StabilityOracle oracle;
-    App app;
+    Application app;
     private long lastDeliveredTs;
 
     /**
      * Initialize order component.
      */
-    public OrderingComponent(StabilityOracle oracle, App app){
+    public OrderingComponent(StabilityOracle oracle, Application app){
         received = new HashMap<>();
         delivered = new HashMap<>();
         this.oracle = oracle;
