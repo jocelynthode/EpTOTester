@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -44,61 +45,55 @@ public class OrderingComponent {
      */
     public void orderEvents(HashMap<UUID, Event> ball) {
         // update TTL of received events
-        for (UUID key : received.keySet()){
-            Event event = received.get(key);
-            event.setTtl(event.getTtl()+1);
-        }
+        received.values().forEach(event -> event.setTtl(event.getTtl()+1));
 
         // update set of received events with events in the ball
-        for (Event event : ball.values()){
-            if(!delivered.containsKey(event.getId()) && event.getTimeStamp() > lastDeliveredTs){
-                if (received.containsKey(event.getId())){
-                    if(received.get(event.getId()).getTtl() < event.getTtl()){
-                        received.get(event.getId()).setTtl(event.getTtl());
+        ball.values().stream()
+                .filter(event -> !delivered.containsKey(event.getId()) && event.getTimeStamp() >= lastDeliveredTs)
+                .forEach(event -> {
+                    if (received.containsKey(event.getId())) {
+                        if (received.get(event.getId()).getTtl() < event.getTtl()) {
+                            received.get(event.getId()).setTtl(event.getTtl());
+                        }
+                    } else {
+                        received.put(event.getId(), event);
                     }
-                }
-                else {
-                    received.put(event.getId(), event);
-                }
-            }
-        }
+                });
         // collect deliverable events and determine smallest
         // timestamp of non deliverable events
 
-        long minQueuedTs  = Integer.MAX_VALUE;
-        HashMap<UUID, Event> deliverableEvents = new HashMap<>();
+        long minQueuedTs  = Long.MAX_VALUE;
+        ArrayList<Event> deliverableEvents = new ArrayList<>();
 
-        for (UUID key : received.keySet()){
-            Event event = received.get(key);
+        for (Event event : received.values()){
             if (oracle.isDeliverable(event)){
-                if(!deliverableEvents.containsKey(key))
-                    deliverableEvents.put(key, event);
+                if (!deliverableEvents.contains(event))
+                    deliverableEvents.add(event);
             }
             else if (minQueuedTs > event.getTimeStamp()){
                 minQueuedTs = event.getTimeStamp();
             }
         }
-        for (UUID key : deliverableEvents.keySet()){
-            Event event = received.get(key);
+        for (Event event : deliverableEvents){
             if (event.getTimeStamp() > minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
-                deliverableEvents.remove(key);
+                deliverableEvents.remove(event);
             }
             else {
                 // event can be delivered, remove from received events
-                received.remove(key);
+                received.remove(event.getId());
             }
         }
         //sort deliverablesEvents by Ts and ID, descending
-        deliverableEvents.entrySet()
-                .stream()
-                .sorted(HashMap.Entry.<UUID, Event>comparingByValue().reversed());
+        //TODO are we sure about descending ?
+        deliverableEvents.sort((e1, e2) -> e2.compareTo(e1));
 
-        for (Event event : deliverableEvents.values()){
+        for (Event event : deliverableEvents){
             if(!delivered.containsKey(event.getId()))
                 delivered.put(event.getId(), event);
+
             lastDeliveredTs = event.getTimeStamp();
-            //TODO it should deliver the msg inside the event, not the event itself. Right?
+
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
             try {
                 ObjectOutputStream out = new ObjectOutputStream(byteOut);
