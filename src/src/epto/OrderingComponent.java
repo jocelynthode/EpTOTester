@@ -1,6 +1,6 @@
 package epto;
 
-import epto.utilities.App;
+
 import epto.utilities.Event;
 import net.sf.neem.impl.Application;
 
@@ -8,9 +8,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of the Ordering Component.
@@ -21,8 +20,8 @@ import java.util.UUID;
  */
 public class OrderingComponent {
 
-    private HashMap<UUID, Event> received; //TODO change it to queue of known ?
-    private HashMap<UUID, Event> delivered; //TODO change it to queue of known ?
+    private ConcurrentHashMap<UUID, Event> received; //TODO change it to queue of known ?
+    private ConcurrentHashMap<UUID, Event> delivered; //TODO change it to queue of known ?
     private StabilityOracle oracle;
     Application app;
     private long lastDeliveredTs;
@@ -31,8 +30,8 @@ public class OrderingComponent {
      * Initialize order component.
      */
     public OrderingComponent(StabilityOracle oracle, Application app){
-        received = new HashMap<>();
-        delivered = new HashMap<>();
+        received = new ConcurrentHashMap<>();
+        delivered = new ConcurrentHashMap<>();
         this.oracle = oracle;
         this.app = app;
         lastDeliveredTs = 0;
@@ -43,7 +42,7 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public void orderEvents(HashMap<UUID, Event> ball) {
+    public void orderEvents(ConcurrentHashMap<UUID, Event> ball) {
         // update TTL of received events
         received.values().forEach(event -> event.setTtl(event.getTtl()+1));
 
@@ -63,7 +62,7 @@ public class OrderingComponent {
         // timestamp of non deliverable events
 
         long minQueuedTs  = Long.MAX_VALUE;
-        ArrayList<Event> deliverableEvents = new ArrayList<>();
+        List<Event> deliverableEvents = new ArrayList<>();
 
         for (Event event : received.values()){
             if (oracle.isDeliverable(event)){
@@ -74,16 +73,20 @@ public class OrderingComponent {
                 minQueuedTs = event.getTimeStamp();
             }
         }
+
+        List<Event> eventsToRemove = new ArrayList<>();
+
         for (Event event : deliverableEvents){
             if (event.getTimeStamp() > minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
-                deliverableEvents.remove(event);
+                eventsToRemove.add(event);
             }
             else {
                 // event can be delivered, remove from received events
                 received.remove(event.getId());
             }
         }
+        deliverableEvents.removeAll(eventsToRemove);
         //sort deliverablesEvents by Ts and ID, descending
         //TODO are we sure about descending ?
         deliverableEvents.sort((e1, e2) -> e2.compareTo(e1));

@@ -13,6 +13,7 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
@@ -23,9 +24,9 @@ public class DisseminationComponent extends Periodic {
     private final MulticastChannel neem;
     private final OrderingComponent orderingComponent;
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
-    public final static int TTL = 3;
-    public final static int K = 5;
-    private HashMap<UUID, Event> nextBall = new HashMap<>();
+    public final static int TTL = 17; //for 20 processes
+    public final static int K = 15; //for 20 processes
+    private ConcurrentHashMap<UUID, Event> nextBall = new ConcurrentHashMap<>();
     private final StabilityOracle  oracle;
     private final Peer peer;
 
@@ -67,15 +68,14 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-    protected synchronized void receive(HashMap<UUID, Event> ball) { //TODO upon receive
-        for (HashMap.Entry<UUID, Event> entry : ball.entrySet()) {
+    protected void receive(ConcurrentHashMap<UUID, Event> ball) {
+        for (ConcurrentHashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
             if (event.getTtl() < TTL) {
                 if (nextBall.containsKey(eventId)) {
                     if (nextBall.get(eventId).getTtl() < event.getTtl()) {
                         nextBall.get(eventId).setTtl(event.getTtl());
-                        // update TTL todo TTL or event.ttl ?
                     }
                 } else {
                     nextBall.put(eventId, event);

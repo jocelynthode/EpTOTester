@@ -12,13 +12,15 @@ import java.nio.channels.AsynchronousCloseException;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.
  */
 public class Peer implements Runnable{
 
-    public final static int DELTA = 5;
+    public final static int DELTA = 5000;
     private StabilityOracle oracle;
     private OrderingComponent orderingComponent;
     private DisseminationComponent disseminationComponent;
@@ -51,15 +53,15 @@ public class Peer implements Runnable{
     public void run() {
         disseminationComponent.start();
         try {
-            //TODO recheck this oart
+            //TODO recheck this part
             while (true) {
-                byte[] buf = new byte[1000];
+                byte[] buf = new byte[2048];
                 ByteBuffer bb = ByteBuffer.wrap(buf);
 
                 neem.read(bb);
                 ByteArrayInputStream byteIn = new ByteArrayInputStream(bb.array());
                 ObjectInputStream in = new ObjectInputStream(byteIn);
-                disseminationComponent.receive((HashMap<UUID, Event>) in.readObject());
+                disseminationComponent.receive((ConcurrentHashMap<UUID, Event>) in.readObject());
             }
         } catch (AsynchronousCloseException ace) {
             // Exiting.

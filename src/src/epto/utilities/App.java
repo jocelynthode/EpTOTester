@@ -48,7 +48,7 @@ public class App implements Application {
     }
 
 
-    //TODO broadcasts events every 1 second
+    //TODO broadcasts events every 5 seconds
     private void broadcast() {
         int i = 0;
         while(true){
@@ -80,6 +80,7 @@ public class App implements Application {
 
 
             App app = new App(neem);
+            System.out.format("Peer ID : %s", app.peer.getUuid().toString());
 
             for (int i = 1; i < args.length; i++)
                 neem.connect(Addresses.parse(args[i], false));
