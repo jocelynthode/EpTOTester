@@ -55,17 +55,9 @@ public class App implements Application {
 
     //TODO broadcasts one event
     public void broadcast(Event event) throws InterruptedException {
-        //while(true){
             Thread.sleep(5000);
             if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
-            /*
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } */
-        //}
     }
 
     public static void main(String[] args) {

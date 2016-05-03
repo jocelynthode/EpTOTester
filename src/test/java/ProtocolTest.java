@@ -93,7 +93,7 @@ public class ProtocolTest {
         while(app.events.size() != 8
                 && app1.events.size() != 8
                 && app2.events.size() != 8)
-        {Thread.sleep(1000);}
+        {Thread.sleep(5000);}
 
         Assert.assertArrayEquals(app.events.toArray(), app1.events.toArray());
         Assert.assertArrayEquals(app1.events.toArray(), app2.events.toArray());
