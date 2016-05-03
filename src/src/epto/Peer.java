@@ -55,7 +55,7 @@ public class Peer implements Runnable{
         try {
             //TODO recheck this part
             while (true) {
-                byte[] buf = new byte[2048];
+                byte[] buf = new byte[100000];
                 ByteBuffer bb = ByteBuffer.wrap(buf);
 
                 neem.read(bb);
