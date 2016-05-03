@@ -8,6 +8,7 @@ import net.sf.neem.impl.Application;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -27,7 +28,7 @@ public class App implements Application {
      * {@inheritDoc}
      */
     @Override
-    public void deliver(ByteBuffer[] byteBuffers) {
+    public synchronized void deliver(ByteBuffer[] byteBuffers) {
         for (ByteBuffer byteBuffer : byteBuffers) {
             byte[] content = byteBuffer.array();
             ByteArrayInputStream byteIn = new ByteArrayInputStream(content);
@@ -43,22 +44,24 @@ public class App implements Application {
         }
     }
 
-    private void start() {
+    public void start() {
         new Thread(peer).start();
     }
 
 
-    //TODO broadcasts events every 1 seconds
-    private void broadcast() {
-        while(true){
+    //TODO broadcasts one event
+    public void broadcast() throws InterruptedException {
+        //while(true){
+            Thread.sleep(new Random().nextInt(3)*1000);
             Event event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
+            /*
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-        }
+            } */
+        //}
     }
 
 
@@ -79,14 +82,15 @@ public class App implements Application {
 
 
             App app = new App(neem);
-            System.out.format("Peer ID : %s", app.peer.getUuid().toString());
+            System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
 
             for (int i = 1; i < args.length; i++)
                 neem.connect(Addresses.parse(args[i], false));
 
             app.start();
             app.broadcast();
-            neem.close();
+            while (true) {Thread.sleep(1000);}
+            //neem.close();
 
         } catch (Exception e) {
             e.printStackTrace();
