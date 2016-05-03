@@ -105,9 +105,8 @@ public class DisseminationComponent extends Periodic {
             } catch (ClosedChannelException e) {
                 e.printStackTrace();
             }
-            orderingComponent.orderEvents(nextBall);
-            nextBall.clear();
         }
-
+        orderingComponent.orderEvents(nextBall);
+        nextBall.clear();
     }
 }

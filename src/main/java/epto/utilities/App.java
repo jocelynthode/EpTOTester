@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
 
@@ -66,10 +68,6 @@ public class App implements Application {
         //}
     }
 
-    public Peer getPeer() {
-        return peer;
-    }
-
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: apps.App local peer1 ... peerN");
@@ -86,7 +84,7 @@ public class App implements Application {
                 System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
 
 
-            App app = new App(neem, 50, 18);
+            App app = new App(neem, 25, 18);
             System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
 
             for (int i = 1; i < args.length; i++)
