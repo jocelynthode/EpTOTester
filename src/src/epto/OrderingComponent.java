@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class OrderingComponent {
 
-    private ConcurrentHashMap<UUID, Event> received; //TODO change it to queue of known ?
-    private ConcurrentHashMap<UUID, Event> delivered; //TODO change it to queue of known ?
+    private ConcurrentHashMap<UUID, Event> received;
+    private ConcurrentHashMap<UUID, Event> delivered;
     private StabilityOracle oracle;
     Application app;
     private long lastDeliveredTs;
@@ -42,9 +42,9 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public void orderEvents(ConcurrentHashMap<UUID, Event> ball) {
+    public synchronized void orderEvents(ConcurrentHashMap<UUID, Event> ball) {
         // update TTL of received events
-        received.values().forEach(event -> event.setTtl(event.getTtl()+1));
+        received.values().forEach(event -> event.incrementTtl());
 
         // update set of received events with events in the ball
         ball.values().stream()
@@ -66,8 +66,7 @@ public class OrderingComponent {
 
         for (Event event : received.values()){
             if (oracle.isDeliverable(event)){
-                if (!deliverableEvents.contains(event))
-                    deliverableEvents.add(event);
+                deliverableEvents.add(event);
             }
             else if (minQueuedTs > event.getTimeStamp()){
                 minQueuedTs = event.getTimeStamp();
@@ -87,13 +86,11 @@ public class OrderingComponent {
             }
         }
         deliverableEvents.removeAll(eventsToRemove);
-        //sort deliverablesEvents by Ts and ID, descending
-        //TODO are we sure about descending ?
-        deliverableEvents.sort((e1, e2) -> e2.compareTo(e1));
+        //sort deliverablesEvents by Ts and ID, ascending
+        deliverableEvents.sort(null);
 
         for (Event event : deliverableEvents){
-            if(!delivered.containsKey(event.getId()))
-                delivered.put(event.getId(), event);
+            delivered.put(event.getId(), event);
 
             lastDeliveredTs = event.getTimeStamp();
 
@@ -108,7 +105,6 @@ public class OrderingComponent {
             ByteBuffer[] byteOutArray = new ByteBuffer[1];
             byteOutArray[0] = ByteBuffer.wrap(byteOut.toByteArray());
             app.deliver(byteOutArray);
-
         }
 
     }
