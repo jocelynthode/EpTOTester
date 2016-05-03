@@ -21,9 +21,9 @@ public class App implements Application {
     private Peer peer;
     private MulticastChannel neem;
 
-    public App(MulticastChannel neem) {
+    public App(MulticastChannel neem, int TTL, int K) {
         this.neem = neem;
-        this.peer = new Peer(neem, this);
+        this.peer = new Peer(neem, this, TTL, K);
     }
 
     /**
@@ -54,7 +54,7 @@ public class App implements Application {
     //TODO broadcasts one event
     public void broadcast(Event event) throws InterruptedException {
         //while(true){
-            Thread.sleep(new Random().nextInt(3)*1000);
+            Thread.sleep(5000);
             if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
             /*
@@ -66,6 +66,9 @@ public class App implements Application {
         //}
     }
 
+    public Peer getPeer() {
+        return peer;
+    }
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -83,7 +86,7 @@ public class App implements Application {
                 System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
 
 
-            App app = new App(neem);
+            App app = new App(neem, 50, 18);
             System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
 
             for (int i = 1; i < args.length; i++)

@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Peer implements Runnable{
 
-    public final static int DELTA = 5000;
+    public final static int DELTA = 1000;
     private StabilityOracle oracle;
     private OrderingComponent orderingComponent;
     private DisseminationComponent disseminationComponent;
@@ -29,13 +29,13 @@ public class Peer implements Runnable{
      *
      * @param neem MultiCast object
      */
-    public Peer(MulticastChannel neem, Application app){
+    public Peer(MulticastChannel neem, Application app, int TTL, int K){
         this.neem = neem;
-        this.oracle = new StabilityOracle();
+        this.oracle = new StabilityOracle(TTL);
         this.orderingComponent = new OrderingComponent(oracle, app);
         this.uuid = neem.getProtocolMBean().getLocalId();
-        this.disseminationComponent = new DisseminationComponent(new Random(), neem.getNet(), oracle, this, neem, orderingComponent);
-        neem.getProtocolMBean().setGossipFanout(DisseminationComponent.K);
+        this.disseminationComponent = new DisseminationComponent(new Random(), neem.getNet(), oracle, this, neem, orderingComponent, K);
+        neem.getProtocolMBean().setGossipFanout(disseminationComponent.K);
     }
 
     public UUID getUuid() {

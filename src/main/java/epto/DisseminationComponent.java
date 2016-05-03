@@ -23,8 +23,7 @@ public class DisseminationComponent extends Periodic {
     private final MulticastChannel neem;
     private final OrderingComponent orderingComponent;
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
-    public final static int TTL = 50; //for 20 processes
-    public final static int K = 18; //for 20 processes
+    public final int K; //for 20 processes
     private ConcurrentHashMap<UUID, Event> nextBall;
     private final StabilityOracle  oracle;
     private final Peer peer;
@@ -41,13 +40,14 @@ public class DisseminationComponent extends Periodic {
      * @param orderingComponent
      */
     public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
-                                  OrderingComponent orderingComponent) {
+                                  OrderingComponent orderingComponent, int K) {
         super(rand, trans, Peer.DELTA);
         this.peer = peer;
         this.oracle = oracle;
         this.neem = neem;
         this.orderingComponent = orderingComponent;
         this.nextBall = new ConcurrentHashMap<>();
+        this.K = K;
     }
 
     /**
@@ -72,7 +72,7 @@ public class DisseminationComponent extends Periodic {
         for (ConcurrentHashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
-            if (event.getTtl() < TTL) {
+            if (event.getTtl() < oracle.TTL) {
                 if (nextBall.containsKey(eventId)) {
                     if (nextBall.get(eventId).getTtl() < event.getTtl()) {
                         nextBall.get(eventId).setTtl(event.getTtl());
@@ -105,8 +105,9 @@ public class DisseminationComponent extends Periodic {
             } catch (ClosedChannelException e) {
                 e.printStackTrace();
             }
+            orderingComponent.orderEvents(nextBall);
+            nextBall.clear();
         }
-        orderingComponent.orderEvents(nextBall);
-        nextBall.clear();
+
     }
 }

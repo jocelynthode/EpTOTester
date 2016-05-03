@@ -8,6 +8,11 @@ import epto.utilities.Event;
 public class StabilityOracle {
 
     long logicalClock = 0;
+    public final int TTL;
+
+    public StabilityOracle(int TTL) {
+        this.TTL = TTL;
+    }
 
     /**
      * This function tells us if the event is ready to be delivered or not according to the TTL.
@@ -16,7 +21,7 @@ public class StabilityOracle {
      * @return wether the event is deliverable or not
      */
     public boolean isDeliverable(Event event) {
-        return event.getTtl() > DisseminationComponent.TTL;
+        return event.getTtl() > TTL;
     }
 
     /**
