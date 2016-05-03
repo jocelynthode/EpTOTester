@@ -1,11 +1,17 @@
+import epto.DisseminationComponent;
 import epto.OrderingComponent;
 import epto.StabilityOracle;
+import epto.utilities.App;
 import epto.utilities.Event;
+import net.sf.neem.MulticastChannel;
+import net.sf.neem.apps.Addresses;
 import net.sf.neem.impl.Application;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.swing.plaf.multi.MultiInternalFrameUI;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -17,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by jocelyn on 03.05.16.
  */
-public class OrderingTest {
+public class DisseminationTest {
 
     private Event event;
     private Event event1;
@@ -27,7 +33,9 @@ public class OrderingTest {
     private Event event5;
 
     private TestApp app;
-    private OrderingComponent orderingComponent;
+    private TestApp app1;
+    private MulticastChannel neem;
+    private MulticastChannel neem1;
 
     @Before
     public void setup() throws IOException {
@@ -37,35 +45,48 @@ public class OrderingTest {
         event3 = new Event(new UUID(45775,233123),1,51,new UUID(2221,2222));
         event4 = new Event(new UUID(9823498,3409834),1,51,new UUID(11,32344));
         event5 = new Event(new UUID(439495775,34034),1,51,new UUID(22,34048488));
-        app = new TestApp();
-        orderingComponent = new OrderingComponent(new StabilityOracle(), app);
 
+        neem = new MulticastChannel(Addresses.parse("localhost:8000", true));
+        neem1 = new MulticastChannel(Addresses.parse("localhost:8001", true));
+
+        neem.connect(Addresses.parse("localhost:8001", false));
+        neem1.connect(Addresses.parse("localhost:8000", false));
+
+        app = new TestApp(neem);
+        app1 = new TestApp(neem1);
+
+        app.start();
+        app1.start();
     }
+
+    @After
+    public void kill() {
+        neem.close();
+        neem1.close();
+    }
+
 
     @Test
-    public void testOrderEvents() {
-        ConcurrentHashMap<UUID, Event> map = new ConcurrentHashMap<UUID, Event>(){{
-            put(event.getId(), event);
-            put(event1.getId(), event1);
-            put(event2.getId(), event2);
-            put(event3.getId(), event3);
-            put(event4.getId(), event4);
-            put(event5.getId(), event5);
-        }};
+    public void testDissemination() throws InterruptedException {
+        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
+        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
+        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
+        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
+        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
+        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
 
-        orderingComponent.orderEvents(map);
+        System.out.println("test");
 
-        Assert.assertEquals(event4, app.events.get(0));
-        Assert.assertEquals(event5, app.events.get(1));
-        Assert.assertEquals(event, app.events.get(2));
-        Assert.assertEquals(event3, app.events.get(3));
-        Assert.assertEquals(event2, app.events.get(4));
-        Assert.assertEquals(event1, app.events.get(5));
     }
 
-    private class TestApp implements Application {
+
+    private class TestApp extends App {
 
         public ArrayList<Event> events = new ArrayList<>();
+
+        public TestApp(MulticastChannel neem) {
+            super(neem);
+        }
 
         @Override
         public void deliver(ByteBuffer[] byteBuffers) {

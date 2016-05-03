@@ -52,10 +52,10 @@ public class App implements Application {
 
 
     //TODO broadcasts one event
-    public void broadcast() throws InterruptedException {
+    public void broadcast(Event event) throws InterruptedException {
         //while(true){
             Thread.sleep(new Random().nextInt(3)*1000);
-            Event event = new Event(UUID.randomUUID(),0,0,null);
+            if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
             /*
             try {
@@ -90,7 +90,7 @@ public class App implements Application {
                 neem.connect(Addresses.parse(args[i], false));
 
             app.start();
-            app.broadcast();
+            app.broadcast(null);
             while (true) {Thread.sleep(1000);}
             //neem.close();
 
