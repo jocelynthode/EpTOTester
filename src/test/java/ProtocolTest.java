@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 /**
- * Created by jocelyn on 03.05.16.
+ * Class testing the whole protocol
  */
 public class ProtocolTest {
 

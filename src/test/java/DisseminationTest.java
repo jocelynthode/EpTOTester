@@ -23,7 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by jocelyn on 03.05.16.
+ * Class testing the dissemination component
  */
 public class DisseminationTest {
 
@@ -37,25 +37,24 @@ public class DisseminationTest {
     @Before
     public void setUp() throws IOException {
 
-        InetSocketAddress address8000 = new InetSocketAddress("localhost", 8000);
-        InetSocketAddress address8001 = new InetSocketAddress("localhost", 8001);
-        InetSocketAddress address8002 = new InetSocketAddress("localhost", 8002);
+        InetSocketAddress address10000 = new InetSocketAddress("localhost", 10000);
+        InetSocketAddress address10001 = new InetSocketAddress("localhost", 10001);
+        InetSocketAddress address10002 = new InetSocketAddress("localhost", 10002);
 
+        neem = new MulticastChannel(address10000);
+        neem1 = new MulticastChannel(address10001);
+        neem2 = new MulticastChannel(address10002);
 
-        neem = new MulticastChannel(address8000);
-        neem1 = new MulticastChannel(address8001);
-        neem2 = new MulticastChannel(address8001);
+        neem.connect(address10001);
+        neem.connect(address10002);
+        neem1.connect(address10000);
+        neem1.connect(address10002);
+        neem2.connect(address10000);
+        neem2.connect(address10001);
 
-        neem.connect(address8001);
-        neem.connect(address8002);
-        neem1.connect(address8000);
-        neem1.connect(address8002);
-        neem2.connect(address8000);
-        neem2.connect(address8001);
-
-        app = new TestApp(neem, 5, 1);
-        app1 = new TestApp(neem1, 5, 1);
-        app2 = new TestApp(neem2, 5, 1);
+        app = new TestApp(neem, 5, 2);
+        app1 = new TestApp(neem1, 5, 2);
+        app2 = new TestApp(neem2, 5, 2);
 
         app.start();
         app1.start();
@@ -71,6 +70,7 @@ public class DisseminationTest {
     }
 
 
+    //TODO maybe waiting a time is not good enough
     @Test
     public void testDissemination() throws Exception {
 
@@ -83,8 +83,11 @@ public class DisseminationTest {
         app.broadcast(new Event(new UUID(11234511,2222),0,0,null));
         app2.broadcast(new Event(new UUID(11,22252),0,0,null));
 
-        while (true) {Thread.sleep(1000);}
+        Thread.sleep(10000);
 
+        Assert.assertTrue(app.events.size() == 8);
+        Assert.assertTrue(app1.events.size() == 8);
+        Assert.assertTrue(app2.events.size() == 8);
 
     }
 

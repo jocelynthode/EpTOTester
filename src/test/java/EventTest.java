@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Created by jocelyn on 03.05.16.
+ * Class testing the events methods
  */
 public class EventTest {
 

@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by jocelyn on 03.05.16.
+ * Class testing the ordering component
  */
 public class OrderingTest {
 
@@ -60,19 +60,19 @@ public class OrderingTest {
         orderingComponent.orderEvents(map);
 
         Assert.assertTrue(app.events.size() == 6);
-        Assert.assertEquals(event4, app.events.get(0));
-        Assert.assertEquals(event5, app.events.get(1));
-        Assert.assertEquals(event, app.events.get(2));
-        Assert.assertEquals(event3, app.events.get(3));
-        Assert.assertEquals(event2, app.events.get(4));
-        Assert.assertEquals(event1, app.events.get(5));
-        Assert.assertFalse(app.events.contains(event6));
-        Assert.assertFalse(app.events.contains(event7));
+        Assert.assertEquals(event4.getId(), app.events.get(0));
+        Assert.assertEquals(event5.getId(), app.events.get(1));
+        Assert.assertEquals(event.getId(), app.events.get(2));
+        Assert.assertEquals(event3.getId(), app.events.get(3));
+        Assert.assertEquals(event2.getId(), app.events.get(4));
+        Assert.assertEquals(event1.getId(), app.events.get(5));
+        Assert.assertFalse(app.events.contains(event6.getId()));
+        Assert.assertFalse(app.events.contains(event7.getId()));
     }
 
     private class TestApp implements Application {
 
-        public ArrayList<Event> events = new ArrayList<>();
+        public ArrayList<UUID> events = new ArrayList<>();
 
         @Override
         public void deliver(ByteBuffer[] byteBuffers) {
@@ -82,7 +82,7 @@ public class OrderingTest {
                 try {
                     ObjectInputStream in = new ObjectInputStream(byteIn);
                     Event event = (Event) in.readObject();
-                    events.add(event);
+                    events.add(event.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
