@@ -15,6 +15,8 @@ import javax.swing.plaf.multi.MultiInternalFrameUI;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -25,57 +27,64 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DisseminationTest {
 
-    private Event event;
-    private Event event1;
-    private Event event2;
-    private Event event3;
-    private Event event4;
-    private Event event5;
-
     private TestApp app;
     private TestApp app1;
+    private TestApp app2;
     private MulticastChannel neem;
     private MulticastChannel neem1;
+    private MulticastChannel neem2;
 
     @Before
-    public void setup() throws IOException {
-        event = new Event(new UUID(23333,233123),1,51,new UUID(1111,2222));
-        event1 = new Event(new UUID(44444,324645),2,51,new UUID(4444,2222));
-        event2 = new Event(new UUID(847392,848123),1,51,new UUID(4444,2222));
-        event3 = new Event(new UUID(45775,233123),1,51,new UUID(2221,2222));
-        event4 = new Event(new UUID(9823498,3409834),1,51,new UUID(11,32344));
-        event5 = new Event(new UUID(439495775,34034),1,51,new UUID(22,34048488));
+    public void setUp() throws IOException {
 
-        neem = new MulticastChannel(Addresses.parse("localhost:8000", true));
-        neem1 = new MulticastChannel(Addresses.parse("localhost:8001", true));
+        InetSocketAddress address8000 = new InetSocketAddress("localhost", 8000);
+        InetSocketAddress address8001 = new InetSocketAddress("localhost", 8001);
+        InetSocketAddress address8002 = new InetSocketAddress("localhost", 8002);
 
-        neem.connect(Addresses.parse("localhost:8001", false));
-        neem1.connect(Addresses.parse("localhost:8000", false));
 
-        app = new TestApp(neem);
-        app1 = new TestApp(neem1);
+        neem = new MulticastChannel(address8000);
+        neem1 = new MulticastChannel(address8001);
+        neem2 = new MulticastChannel(address8001);
+
+        neem.connect(address8001);
+        neem.connect(address8002);
+        neem1.connect(address8000);
+        neem1.connect(address8002);
+        neem2.connect(address8000);
+        neem2.connect(address8001);
+
+        app = new TestApp(neem, 5, 1);
+        app1 = new TestApp(neem1, 5, 1);
+        app2 = new TestApp(neem2, 5, 1);
 
         app.start();
         app1.start();
+        app2.start();
+
     }
 
     @After
-    public void kill() {
+    public void tearDown() {
         neem.close();
         neem1.close();
+        neem2.close();
     }
 
 
     @Test
-    public void testDissemination() throws InterruptedException {
-        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
-        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
-        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
-        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
-        app1.broadcast(new Event(new UUID(1111,2222),0,0,null));
-        app.broadcast(new Event(new UUID(1111,2222),0,0,null));
+    public void testDissemination() throws Exception {
 
-        System.out.println("test");
+        app.broadcast(new Event(new UUID(11911,22292),0,0,null));
+        app1.broadcast(new Event(new UUID(112511,255222),0,0,null));
+        app1.broadcast(new Event(new UUID(11151,225345222),0,0,null));
+        app.broadcast(new Event(new UUID(1152311,22522),0,0,null));
+        app2.broadcast(new Event(new UUID(19111,225422),0,0,null));
+        app1.broadcast(new Event(new UUID(115511,22292),0,0,null));
+        app.broadcast(new Event(new UUID(11234511,2222),0,0,null));
+        app2.broadcast(new Event(new UUID(11,22252),0,0,null));
+
+        while (true) {Thread.sleep(1000);}
+
 
     }
 
@@ -84,8 +93,8 @@ public class DisseminationTest {
 
         public ArrayList<Event> events = new ArrayList<>();
 
-        public TestApp(MulticastChannel neem) {
-            super(neem);
+        public TestApp(MulticastChannel neem, int TTL, int K) {
+            super(neem, TTL, K);
         }
 
         @Override
