@@ -1,6 +1,5 @@
 package epto;
 
-import epto.utilities.App;
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
 import net.sf.neem.impl.Application;
@@ -9,11 +8,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.

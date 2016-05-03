@@ -1,16 +1,9 @@
-import epto.Peer;
-import epto.utilities.App;
 import epto.utilities.Event;
-import net.sf.neem.MulticastChannel;
-import net.sf.neem.apps.Addresses;
-import net.sf.neem.impl.Application;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.UUID;
 
 /**

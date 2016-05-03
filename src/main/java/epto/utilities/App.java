@@ -6,7 +6,9 @@ import net.sf.neem.MulticastChannel;
 import net.sf.neem.apps.Addresses;
 import net.sf.neem.impl.Application;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.UUID;

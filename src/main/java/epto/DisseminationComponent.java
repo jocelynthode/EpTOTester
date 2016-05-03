@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,9 +23,9 @@ public class DisseminationComponent extends Periodic {
     private final MulticastChannel neem;
     private final OrderingComponent orderingComponent;
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
-    public final static int TTL = 17; //for 20 processes
-    public final static int K = 15; //for 20 processes
-    private ConcurrentHashMap<UUID, Event> nextBall = new ConcurrentHashMap<>();
+    public final static int TTL = 50; //for 20 processes
+    public final static int K = 18; //for 20 processes
+    private ConcurrentHashMap<UUID, Event> nextBall;
     private final StabilityOracle  oracle;
     private final Peer peer;
 
@@ -34,7 +33,7 @@ public class DisseminationComponent extends Periodic {
     /**
      * Creates a new instance of DisseminationComponent
      *
-     * @param rand Random
+     * @param rand
      * @param trans
      * @param oracle
      * @param peer
@@ -48,6 +47,7 @@ public class DisseminationComponent extends Periodic {
         this.oracle = oracle;
         this.neem = neem;
         this.orderingComponent = orderingComponent;
+        this.nextBall = new ConcurrentHashMap<>();
     }
 
     /**
