@@ -41,7 +41,7 @@ import java.util.UUID;
      *
      * @param sourceId
      */
-    public void setSourceId(UUID sourceId) {
+    public synchronized void setSourceId(UUID sourceId) {
         this.sourceId = sourceId;
     }
 
@@ -68,7 +68,7 @@ import java.util.UUID;
      *
      * @param timeStamp
      */
-    public void setTimeStamp(long timeStamp) {
+    public synchronized void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 
@@ -86,14 +86,14 @@ import java.util.UUID;
      *
      * @param ttl
      */
-    public void setTtl(int ttl) {
+    public synchronized void setTtl(int ttl) {
         this.ttl = ttl;
     }
 
     /**
      * Increments the event's ttl
      */
-    public void incrementTtl() {
+    public synchronized void incrementTtl() {
         this.ttl++;
     }
 
@@ -104,19 +104,15 @@ import java.util.UUID;
      * @return int (1 if before, -1 if after)
      */
     public int compareTo(Event event) {
-        final int BEFORE = -1;
-        final int EQUAL = 0;
-        final int AFTER = 1;
 
-        if (this.timeStamp > event.getTimeStamp()) return AFTER;
-        if (this.timeStamp < event.getTimeStamp()) return BEFORE;
+        int compare = Long.compare(timeStamp, event.getTimeStamp());
 
-        //in case of tie
-        if (this.sourceId.compareTo(event.getSourceId()) == 1) return AFTER;
-        if (this.sourceId.compareTo(event.getSourceId()) == -1) return BEFORE;
-
-        return EQUAL;
-
+        if (compare == 0) {
+            //in case of tie
+            return sourceId.compareTo(event.getSourceId());
+        } else {
+            return compare;
+        }
     }
 
     /**
