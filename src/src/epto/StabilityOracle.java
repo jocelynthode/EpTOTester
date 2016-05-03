@@ -7,7 +7,7 @@ import epto.utilities.Event;
  */
 public class StabilityOracle {
 
-    volatile long logicalClock = 0;
+    long logicalClock = 0;
 
     /**
      * This function tells us if the event is ready to be delivered or not according to the TTL.
