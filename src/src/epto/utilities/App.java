@@ -34,7 +34,7 @@ public class App implements Application {
             try {
                 ObjectInputStream in = new ObjectInputStream(byteIn);
                 Event event = (Event) in.readObject();
-                System.out.println(event.toString());
+                System.out.println("Delivered : " + event.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -48,11 +48,10 @@ public class App implements Application {
     }
 
 
-    //TODO broadcasts events every 5 seconds
+    //TODO broadcasts events every 1 seconds
     private void broadcast() {
-        int i = 0;
         while(true){
-            Event event = new Event(UUID.randomUUID(),i++,0,peer.getUuid());
+            Event event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
             try {
                 Thread.sleep(1000);
