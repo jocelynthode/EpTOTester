@@ -25,21 +25,24 @@ public class OrderingTest {
     private Event event3;
     private Event event4;
     private Event event5;
+    private Event event6;
+    private Event event7;
 
     private TestApp app;
     private OrderingComponent orderingComponent;
 
     @Before
-    public void setup() throws IOException {
+    public void setUp() throws IOException {
         event = new Event(new UUID(23333,233123),1,51,new UUID(1111,2222));
         event1 = new Event(new UUID(44444,324645),2,51,new UUID(4444,2222));
         event2 = new Event(new UUID(847392,848123),1,51,new UUID(4444,2222));
         event3 = new Event(new UUID(45775,233123),1,51,new UUID(2221,2222));
         event4 = new Event(new UUID(9823498,3409834),1,51,new UUID(11,32344));
         event5 = new Event(new UUID(439495775,34034),1,51,new UUID(22,34048488));
+        event6 = new Event(new UUID(423441,340734),4,30,new UUID(2223345,34048488));
+        event7 = new Event(new UUID(15546,98734732),2,30,new UUID(2223345,34048488));
         app = new TestApp();
-        orderingComponent = new OrderingComponent(new StabilityOracle(), app);
-
+        orderingComponent = new OrderingComponent(new StabilityOracle(50), app);
     }
 
     @Test
@@ -51,16 +54,20 @@ public class OrderingTest {
             put(event3.getId(), event3);
             put(event4.getId(), event4);
             put(event5.getId(), event5);
+            put(event6.getId(), event6);
         }};
 
         orderingComponent.orderEvents(map);
 
+        Assert.assertTrue(app.events.size() == 6);
         Assert.assertEquals(event4, app.events.get(0));
         Assert.assertEquals(event5, app.events.get(1));
         Assert.assertEquals(event, app.events.get(2));
         Assert.assertEquals(event3, app.events.get(3));
         Assert.assertEquals(event2, app.events.get(4));
         Assert.assertEquals(event1, app.events.get(5));
+        Assert.assertFalse(app.events.contains(event6));
+        Assert.assertFalse(app.events.contains(event7));
     }
 
     private class TestApp implements Application {
