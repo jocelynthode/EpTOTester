@@ -62,23 +62,36 @@ public class ProtocolTest {
     //TODO for now compare if order is the same everywhere maybe make it so we can compare order too
     @Test
     public void testProtocol() throws Exception {
-        app.broadcast(new Event(new UUID(11911, 22292), 0, 0, null));
-        app1.broadcast(new Event(new UUID(112511, 255222), 0, 0, null));
-        app1.broadcast(new Event(new UUID(11151, 225345222), 0, 0, null));
-        app.broadcast(new Event(new UUID(1152311, 22522), 0, 0, null));
-        app2.broadcast(new Event(new UUID(19111, 225422), 0, 0, null));
-        app1.broadcast(new Event(new UUID(115511, 22292), 0, 0, null));
-        app.broadcast(new Event(new UUID(11234511, 2222), 0, 0, null));
-        app2.broadcast(new Event(new UUID(11, 22252), 0, 0, null));
+        Event event = new Event(new UUID(23333, 233123), 0, 0, null);
+        Event event1 = new Event(new UUID(44444, 324645), 0, 0, null);
+        Event event2 = new Event(new UUID(847392, 848123), 0, 0, null);
+        Event event3 = new Event(new UUID(45775, 233123), 0, 0, null);
+        Event event4 = new Event(new UUID(9823498, 3409834), 0, 49, null);
+        Event event5 = new Event(new UUID(439495775, 34034), 0, 49, null);
+        Event event6 = new Event(new UUID(423441, 340734), 0, 0, null);
+        Event event7 = new Event(new UUID(15546, 98734732), 0, 0, null);
+        Event event8 = new Event(new UUID(8384834, 34343l), 0, 0, null);
+
+        app.broadcast(event);
+        app1.broadcast(event1);
+        app.broadcast(event2);
+        app2.broadcast(event3);
+        app1.broadcast(event4);
+        app2.broadcast(event5);
+        app1.broadcast(event6);
+        app.broadcast(event7);
+        app.broadcast(event8);
 
         int retry = 0;
-        while ((retry != 5) && ((app.events.size() != 8)
-                || (app1.events.size() != 8)
-                || (app2.events.size() != 8))) {
+        while ((retry != 6) && ((app.events.size() != 9)
+                || (app1.events.size() != 9)
+                || (app2.events.size() != 9))) {
             Thread.sleep(5000);
             retry++;
         }
-
+        Assert.assertTrue(((app.events.size() == 9)
+                && (app1.events.size() == 9)
+                && (app2.events.size() == 9)));
         Assert.assertArrayEquals(app.events.toArray(), app1.events.toArray());
         Assert.assertArrayEquals(app1.events.toArray(), app2.events.toArray());
 
