@@ -1,8 +1,6 @@
 package mocks;
 
-import epto.utilities.App;
 import epto.utilities.Event;
-import net.sf.neem.MulticastChannel;
 import net.sf.neem.impl.Application;
 
 import java.io.ByteArrayInputStream;

@@ -1,7 +1,5 @@
 package mocks;
 
-import epto.Peer;
-import epto.StabilityOracle;
 import epto.utilities.App;
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
@@ -29,7 +27,7 @@ public class MockApp extends App {
     @Override
     public void broadcast(Event event) throws InterruptedException {
         Thread.sleep(200);
-        if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
+        if (event == null) event = new Event(UUID.randomUUID(), 0, 0, null);
         this.getPeer().getDisseminationComponent().broadcast(event);
     }
 

@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
@@ -62,14 +62,14 @@ public class DisseminationTest {
     @Test
     public void testDissemination() throws Exception {
 
-        app.broadcast(new Event(new UUID(11911,22292),0,0,null));
-        app1.broadcast(new Event(new UUID(112511,255222),0,0,null));
-        app1.broadcast(new Event(new UUID(11151,225345222),0,0,null));
-        app.broadcast(new Event(new UUID(1152311,22522),0,0,null));
-        app2.broadcast(new Event(new UUID(19111,225422),0,0,null));
-        app1.broadcast(new Event(new UUID(115511,22292),0,0,null));
-        app.broadcast(new Event(new UUID(11234511,2222),0,0,null));
-        app2.broadcast(new Event(new UUID(11,22252),0,0,null));
+        app.broadcast(new Event(new UUID(11911, 22292), 0, 0, null));
+        app1.broadcast(new Event(new UUID(112511, 255222), 0, 0, null));
+        app1.broadcast(new Event(new UUID(11151, 225345222), 0, 0, null));
+        app.broadcast(new Event(new UUID(1152311, 22522), 0, 0, null));
+        app2.broadcast(new Event(new UUID(19111, 225422), 0, 0, null));
+        app1.broadcast(new Event(new UUID(115511, 22292), 0, 0, null));
+        app.broadcast(new Event(new UUID(11234511, 2222), 0, 0, null));
+        app2.broadcast(new Event(new UUID(11, 22252), 0, 0, null));
 
         Thread.sleep(5000);
 

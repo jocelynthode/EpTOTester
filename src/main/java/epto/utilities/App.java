@@ -25,6 +25,40 @@ public class App implements Application {
         this.peer = new Peer(neem, this, TTL, K);
     }
 
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.err.println("Usage: apps.App local peer1 ... peerN");
+            System.exit(1);
+        }
+
+        try {
+
+            MulticastChannel neem = new MulticastChannel(Addresses.parse(args[0], true));
+
+            System.out.println("Started: " + neem.getLocalSocketAddress());
+
+            if (neem.getLocalSocketAddress().getAddress().isLoopbackAddress())
+                System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
+
+
+            App app = new App(neem, 25, 18);
+            System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
+
+            for (int i = 1; i < args.length; i++)
+                neem.connect(Addresses.parse(args[i], false));
+
+            app.start();
+            app.broadcast(null);
+            while (true) {
+                Thread.sleep(1000);
+            }
+            //neem.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -54,41 +88,9 @@ public class App implements Application {
     }
 
     public void broadcast(Event event) throws InterruptedException {
-            Thread.sleep(1000);
-            if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
-            peer.getDisseminationComponent().broadcast(event);
-    }
-
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Usage: apps.App local peer1 ... peerN");
-            System.exit(1);
-        }
-
-        try {
-
-            MulticastChannel neem = new MulticastChannel(Addresses.parse(args[0], true));
-
-            System.out.println("Started: " + neem.getLocalSocketAddress());
-
-            if (neem.getLocalSocketAddress().getAddress().isLoopbackAddress())
-                System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
-
-
-            App app = new App(neem, 25, 18);
-            System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
-
-            for (int i = 1; i < args.length; i++)
-                neem.connect(Addresses.parse(args[i], false));
-
-            app.start();
-            app.broadcast(null);
-            while (true) {Thread.sleep(1000);}
-            //neem.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
+        if (event == null) event = new Event(UUID.randomUUID(), 0, 0, null);
+        peer.getDisseminationComponent().broadcast(event);
     }
 
 }

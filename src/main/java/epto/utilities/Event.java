@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Implementation of the events. This class implements the structure of an event as described in EpTO.
  */
-    public class Event implements Comparable<Event>, Serializable {
+public class Event implements Comparable<Event>, Serializable {
     private UUID id;
     private long timeStamp;
     private int ttl;
@@ -37,7 +37,7 @@ import java.util.UUID;
     }
 
     /**
-     *  sets the source UUID
+     * sets the source UUID
      *
      * @param sourceId
      */

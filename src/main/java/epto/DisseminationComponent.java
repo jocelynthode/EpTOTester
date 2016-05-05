@@ -13,30 +13,31 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
+
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
  * sending and collecting events to/from other peers.
  */
 public class DisseminationComponent extends Periodic {
 
-    private final MulticastChannel neem;
-    private final OrderingComponent orderingComponent;
+    private static final Object nextBallLock = new Object(); //for synchronization of nextBall
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
     public final int K; //for 20 processes
-    private HashMap<UUID, Event> nextBall;
-    private final StabilityOracle  oracle;
+    private final MulticastChannel neem;
+    private final OrderingComponent orderingComponent;
+    private final StabilityOracle oracle;
     private final Peer peer;
-    private static final Object nextBallLock = new Object(); //for synchronization of nextBall
+    private HashMap<UUID, Event> nextBall;
 
 
     /**
      * Creates a new instance of DisseminationComponent
      *
-     * @param rand Random instance used for periods
-     * @param trans Transport component to gossip
-     * @param oracle StabilityOracle for the clock
-     * @param peer parent Peer
-     * @param neem MultiCastChannel to gossip
+     * @param rand              Random instance used for periods
+     * @param trans             Transport component to gossip
+     * @param oracle            StabilityOracle for the clock
+     * @param peer              parent Peer
+     * @param neem              MultiCastChannel to gossip
      * @param orderingComponent OrderingComponent to order events
      */
     public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
@@ -68,7 +69,7 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-     void receive(HashMap<UUID, Event> ball) {
+    void receive(HashMap<UUID, Event> ball) {
         for (HashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
@@ -85,7 +86,7 @@ public class DisseminationComponent extends Periodic {
             }
             oracle.updateClock(event.getTimeStamp()); //only needed with logical time
         }
-     }
+    }
 
     /**
      * Periodic functions that sends nextBall to K random peers

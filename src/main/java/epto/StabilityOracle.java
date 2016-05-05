@@ -7,8 +7,8 @@ import epto.utilities.Event;
  */
 public class StabilityOracle {
 
-    long logicalClock = 0;
     public final int TTL;
+    long logicalClock = 0;
 
     public StabilityOracle(int TTL) {
         this.TTL = TTL;

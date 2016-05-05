@@ -15,21 +15,21 @@ import java.util.UUID;
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.
  */
-public class Peer implements Runnable{
+public class Peer implements Runnable {
 
     final static int DELTA = 1000;
+    private final MulticastChannel neem;
+    private final UUID uuid;
     private StabilityOracle oracle;
     private OrderingComponent orderingComponent;
     private DisseminationComponent disseminationComponent;
-    private final MulticastChannel neem;
-    private final UUID uuid;
 
     /**
      * Initializes a peer
      *
      * @param neem MultiCast object
      */
-    public Peer(MulticastChannel neem, Application app, int TTL, int K){
+    public Peer(MulticastChannel neem, Application app, int TTL, int K) {
         this.neem = neem;
         this.oracle = new StabilityOracle(TTL);
         this.orderingComponent = new OrderingComponent(oracle, app);
@@ -49,6 +49,7 @@ public class Peer implements Runnable{
     public OrderingComponent getOrderingComponent() {
         return orderingComponent;
     }
+
     @Override
     public void run() {
         disseminationComponent.start();

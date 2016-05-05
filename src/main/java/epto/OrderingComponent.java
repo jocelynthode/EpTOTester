@@ -18,20 +18,19 @@ import java.util.UUID;
  * The main task of this procedure is to move events from
  * the received set to the delivered set, preserving the total
  * order of the events.
- *
  */
 public class OrderingComponent {
 
+    Application app;
     private HashMap<UUID, Event> received;
     private HashMap<UUID, Event> delivered;
     private StabilityOracle oracle;
-    Application app;
     private long lastDeliveredTs;
 
     /**
      * Initialize order component.
      */
-    public OrderingComponent(StabilityOracle oracle, Application app){
+    public OrderingComponent(StabilityOracle oracle, Application app) {
         received = new HashMap<>();
         delivered = new HashMap<>();
         this.oracle = oracle;
@@ -69,7 +68,7 @@ public class OrderingComponent {
      * @param deliverableEvents events mature enough to be delivered
      */
     private void deliver(List<Event> deliverableEvents) {
-        for (Event event : deliverableEvents){
+        for (Event event : deliverableEvents) {
             delivered.put(event.getId(), event);
 
             lastDeliveredTs = event.getTimeStamp();
@@ -100,26 +99,24 @@ public class OrderingComponent {
 
         // collect deliverable events and determine smallest
         // timestamp of non deliverable events
-        long minQueuedTs  = Long.MAX_VALUE;
+        long minQueuedTs = Long.MAX_VALUE;
         List<Event> deliverableEvents = new ArrayList<>();
 
-        for (Event event : received.values()){
-            if (oracle.isDeliverable(event)){
+        for (Event event : received.values()) {
+            if (oracle.isDeliverable(event)) {
                 deliverableEvents.add(event);
-            }
-            else if (minQueuedTs > event.getTimeStamp()){
+            } else if (minQueuedTs > event.getTimeStamp()) {
                 minQueuedTs = event.getTimeStamp();
             }
         }
 
         List<Event> eventsToRemove = new ArrayList<>();
 
-        for (Event event : deliverableEvents){
+        for (Event event : deliverableEvents) {
             if (event.getTimeStamp() > minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
                 eventsToRemove.add(event);
-            }
-            else {
+            } else {
                 // event can be delivered, remove from received events
                 received.remove(event.getId());
             }
