@@ -2,7 +2,7 @@ package epto;
 
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
-import net.sf.neem.impl.Periodic;
+import net.sf.neem.impl.ConstantPeriodic;
 import net.sf.neem.impl.Transport;
 
 import java.io.ByteArrayOutputStream;
@@ -18,7 +18,7 @@ import java.util.UUID;
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
  * sending and collecting events to/from other peers.
  */
-public class DisseminationComponent extends Periodic {
+public class DisseminationComponent extends ConstantPeriodic {
 
     private static final Object nextBallLock = new Object(); //for synchronization of nextBall
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
