@@ -10,10 +10,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
  * sending and collecting events to/from other peers.
@@ -24,20 +23,21 @@ public class DisseminationComponent extends Periodic {
     private final OrderingComponent orderingComponent;
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
     public final int K; //for 20 processes
-    private ConcurrentHashMap<UUID, Event> nextBall;
+    private HashMap<UUID, Event> nextBall;
     private final StabilityOracle  oracle;
     private final Peer peer;
+    private static final Object nextBallLock = new Object(); //for synchronization of nextBall
 
 
     /**
      * Creates a new instance of DisseminationComponent
      *
-     * @param rand
-     * @param trans
-     * @param oracle
-     * @param peer
-     * @param neem
-     * @param orderingComponent
+     * @param rand Random instance used for periods
+     * @param trans Transport component to gossip
+     * @param oracle StabilityOracle for the clock
+     * @param peer parent Peer
+     * @param neem MultiCastChannel to gossip
+     * @param orderingComponent OrderingComponent to order events
      */
     public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
                                   OrderingComponent orderingComponent, int K) {
@@ -46,7 +46,7 @@ public class DisseminationComponent extends Periodic {
         this.oracle = oracle;
         this.neem = neem;
         this.orderingComponent = orderingComponent;
-        this.nextBall = new ConcurrentHashMap<>();
+        this.nextBall = new HashMap<>();
         this.K = K;
     }
 
@@ -68,17 +68,19 @@ public class DisseminationComponent extends Periodic {
      *
      * @param ball The received ball
      */
-    protected void receive(ConcurrentHashMap<UUID, Event> ball) {
-        for (ConcurrentHashMap.Entry<UUID, Event> entry : ball.entrySet()) {
+     void receive(HashMap<UUID, Event> ball) {
+        for (HashMap.Entry<UUID, Event> entry : ball.entrySet()) {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
             if (event.getTtl() < oracle.TTL) {
-                if (nextBall.containsKey(eventId)) {
-                    if (nextBall.get(eventId).getTtl() < event.getTtl()) {
-                        nextBall.get(eventId).setTtl(event.getTtl());
+                synchronized (nextBallLock) {
+                    if (nextBall.containsKey(eventId)) {
+                        if (nextBall.get(eventId).getTtl() < event.getTtl()) {
+                            nextBall.get(eventId).setTtl(event.getTtl());
+                        }
+                    } else {
+                        nextBall.put(eventId, event);
                     }
-                } else {
-                    nextBall.put(eventId, event);
                 }
             }
             oracle.updateClock(event.getTimeStamp()); //only needed with logical time
@@ -107,6 +109,8 @@ public class DisseminationComponent extends Periodic {
             }
         }
         orderingComponent.orderEvents(nextBall);
-        nextBall.clear();
+        synchronized (nextBallLock) {
+            nextBall.clear();
+        }
     }
 }

@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Peer implements Runnable{
 
-    public final static int DELTA = 1000;
+    final static int DELTA = 1000;
     private StabilityOracle oracle;
     private OrderingComponent orderingComponent;
     private DisseminationComponent disseminationComponent;
@@ -58,7 +59,7 @@ public class Peer implements Runnable{
                 neem.read(bb);
                 ByteArrayInputStream byteIn = new ByteArrayInputStream(bb.array());
                 ObjectInputStream in = new ObjectInputStream(byteIn);
-                disseminationComponent.receive((ConcurrentHashMap<UUID, Event>) in.readObject());
+                disseminationComponent.receive((HashMap<UUID, Event>) in.readObject());
             }
         } catch (AsynchronousCloseException ace) {
             // Exiting.
