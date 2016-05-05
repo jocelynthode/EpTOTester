@@ -27,6 +27,7 @@ public class DisseminationComponent extends Periodic {
     private ConcurrentHashMap<UUID, Event> nextBall;
     private final StabilityOracle  oracle;
     private final Peer peer;
+    private static final Object nextballLock = new Object(); //for synchronization of nextball
 
 
     /**
@@ -73,12 +74,14 @@ public class DisseminationComponent extends Periodic {
             UUID eventId = entry.getKey();
             Event event = entry.getValue();
             if (event.getTtl() < oracle.TTL) {
-                if (nextBall.containsKey(eventId)) {
-                    if (nextBall.get(eventId).getTtl() < event.getTtl()) {
-                        nextBall.get(eventId).setTtl(event.getTtl());
+                synchronized (nextballLock) {
+                    if (nextBall.containsKey(eventId)) {
+                        if (nextBall.get(eventId).getTtl() < event.getTtl()) {
+                            nextBall.get(eventId).setTtl(event.getTtl());
+                        }
+                    } else {
+                        nextBall.put(eventId, event);
                     }
-                } else {
-                    nextBall.put(eventId, event);
                 }
             }
             oracle.updateClock(event.getTimeStamp()); //only needed with logical time
@@ -107,6 +110,8 @@ public class DisseminationComponent extends Periodic {
             }
         }
         orderingComponent.orderEvents(nextBall);
-        nextBall.clear();
+        synchronized (nextballLock) {
+            nextBall.clear();
+        }
     }
 }
