@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class OrderingComponent {
 
-    private ConcurrentHashMap<UUID, Event> received;
-    private ConcurrentHashMap<UUID, Event> delivered;
+    private HashMap<UUID, Event> received;
+    private HashMap<UUID, Event> delivered;
     private StabilityOracle oracle;
     Application app;
     private long lastDeliveredTs;
@@ -32,8 +33,8 @@ public class OrderingComponent {
      * Initialize order component.
      */
     public OrderingComponent(StabilityOracle oracle, Application app){
-        received = new ConcurrentHashMap<>();
-        delivered = new ConcurrentHashMap<>();
+        received = new HashMap<>();
+        delivered = new HashMap<>();
         this.oracle = oracle;
         this.app = app;
         lastDeliveredTs = 0;
@@ -44,9 +45,9 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public synchronized void orderEvents(ConcurrentHashMap<UUID, Event> ball) {
+    public synchronized void orderEvents(HashMap<UUID, Event> ball) {
         // update TTL of received events
-        received.values().forEach(event -> event.incrementTtl());
+        received.values().forEach(Event::incrementTtl);
 
         // update set of received events with events in the ball
         ball.values().stream()
@@ -79,6 +80,7 @@ public class OrderingComponent {
 
         for (Event event : deliverableEvents){
             if (event.getTimeStamp() > minQueuedTs) {
+                //TODO test in unit tests
                 // ignore deliverable events with timestamp greater than all non-deliverable events
                 eventsToRemove.add(event);
             }
@@ -88,7 +90,7 @@ public class OrderingComponent {
             }
         }
         deliverableEvents.removeAll(eventsToRemove);
-        //sort deliverablesEvents by Ts and ID, ascending
+        //sort deliverables Events by Ts and ID, ascending
         deliverableEvents.sort(null);
 
         for (Event event : deliverableEvents){
