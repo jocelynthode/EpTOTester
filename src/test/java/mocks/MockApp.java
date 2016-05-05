@@ -40,6 +40,7 @@ public class MockApp extends App {
                 ObjectInputStream in = new ObjectInputStream(byteIn);
                 Event event = (Event) in.readObject();
                 events.add(event.getId());
+                System.out.println(event.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {

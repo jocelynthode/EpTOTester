@@ -24,7 +24,7 @@ public class ProtocolTest {
     @Before
     public void setUp() throws Exception {
 
-        final int ttl = 20;
+        final int ttl = 30;
         final int k = 10;
 
         InetSocketAddress address10000 = new InetSocketAddress("localhost", 10000);
@@ -69,8 +69,6 @@ public class ProtocolTest {
         Event event4 = new Event(new UUID(9823498, 3409834), 0, 49, null);
         Event event5 = new Event(new UUID(439495775, 34034), 0, 49, null);
         Event event6 = new Event(new UUID(423441, 340734), 0, 0, null);
-        Event event7 = new Event(new UUID(15546, 98734732), 0, 0, null);
-        Event event8 = new Event(new UUID(8384834, 34343l), 0, 0, null);
 
         app.broadcast(event);
         app1.broadcast(event1);
@@ -79,14 +77,12 @@ public class ProtocolTest {
         app1.broadcast(event4);
         app2.broadcast(event5);
         app1.broadcast(event6);
-        app.broadcast(event7);
-        app.broadcast(event8);
 
         int retry = 0;
-        while ((retry != 6) && ((app.events.size() != 9)
+        while ((retry != 10) && ((app.events.size() != 9)
                 || (app1.events.size() != 9)
                 || (app2.events.size() != 9))) {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
             retry++;
         }
         Assert.assertTrue(((app.events.size() == 9)

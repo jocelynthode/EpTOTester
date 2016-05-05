@@ -25,6 +25,9 @@ public class DisseminationTest {
     @Before
     public void setUp() throws IOException {
 
+        final int ttl = 20;
+        final int k = 3;
+
         InetSocketAddress address10000 = new InetSocketAddress("localhost", 10000);
         InetSocketAddress address10001 = new InetSocketAddress("localhost", 10001);
         InetSocketAddress address10002 = new InetSocketAddress("localhost", 10002);
@@ -40,9 +43,9 @@ public class DisseminationTest {
         neem2.connect(address10000);
         neem2.connect(address10001);
 
-        app = new MockApp(neem, 50, 2);
-        app1 = new MockApp(neem1, 50, 2);
-        app2 = new MockApp(neem2, 50, 2);
+        app = new MockApp(neem, ttl, k);
+        app1 = new MockApp(neem1, ttl, k);
+        app2 = new MockApp(neem2, ttl, k);
 
         app.start();
         app1.start();
@@ -71,7 +74,7 @@ public class DisseminationTest {
         app.broadcast(new Event(new UUID(11234511, 2222), 0, 0, null));
         app2.broadcast(new Event(new UUID(11, 22252), 0, 0, null));
 
-        Thread.sleep(5000);
+        Thread.sleep(10000);
 
         Assert.assertTrue(app.getPeer().getOrderingComponent().getReceived().size() == 8);
         Assert.assertTrue(app1.getPeer().getOrderingComponent().getReceived().size() == 8);
