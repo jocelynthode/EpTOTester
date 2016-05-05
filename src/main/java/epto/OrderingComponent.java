@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of the Ordering Component.
@@ -41,11 +40,12 @@ public class OrderingComponent {
     }
 
     /**
-     * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
+     * Update the received hash map TTL values and either add the new events to received or
+     * update their ttl
      *
-     * @param ball
+     * @param ball the received ball
      */
-    public synchronized void orderEvents(HashMap<UUID, Event> ball) {
+    private void updateReceived(HashMap<UUID, Event> ball) {
         // update TTL of received events
         received.values().forEach(Event::incrementTtl);
 
@@ -61,38 +61,14 @@ public class OrderingComponent {
                         received.put(event.getId(), event);
                     }
                 });
-        // collect deliverable events and determine smallest
-        // timestamp of non deliverable events
+    }
 
-        long minQueuedTs  = Long.MAX_VALUE;
-        List<Event> deliverableEvents = new ArrayList<>();
-
-        for (Event event : received.values()){
-            if (oracle.isDeliverable(event)){
-                deliverableEvents.add(event);
-            }
-            else if (minQueuedTs > event.getTimeStamp()){
-                minQueuedTs = event.getTimeStamp();
-            }
-        }
-
-        List<Event> eventsToRemove = new ArrayList<>();
-
-        for (Event event : deliverableEvents){
-            if (event.getTimeStamp() > minQueuedTs) {
-                //TODO test in unit tests
-                // ignore deliverable events with timestamp greater than all non-deliverable events
-                eventsToRemove.add(event);
-            }
-            else {
-                // event can be delivered, remove from received events
-                received.remove(event.getId());
-            }
-        }
-        deliverableEvents.removeAll(eventsToRemove);
-        //sort deliverables Events by Ts and ID, ascending
-        deliverableEvents.sort(null);
-
+    /**
+     * Deliver events mature enough that haven't been yet delivered to the application
+     *
+     * @param deliverableEvents events mature enough to be delivered
+     */
+    private void deliver(List<Event> deliverableEvents) {
         for (Event event : deliverableEvents){
             delivered.put(event.getId(), event);
 
@@ -110,6 +86,53 @@ public class OrderingComponent {
             byteOutArray[0] = ByteBuffer.wrap(byteOut.toByteArray());
             app.deliver(byteOutArray);
         }
+    }
 
+
+    /**
+     * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
+     *
+     * @param ball
+     */
+    public synchronized void orderEvents(HashMap<UUID, Event> ball) {
+
+        updateReceived(ball);
+
+        // collect deliverable events and determine smallest
+        // timestamp of non deliverable events
+        long minQueuedTs  = Long.MAX_VALUE;
+        List<Event> deliverableEvents = new ArrayList<>();
+
+        for (Event event : received.values()){
+            if (oracle.isDeliverable(event)){
+                deliverableEvents.add(event);
+            }
+            else if (minQueuedTs > event.getTimeStamp()){
+                minQueuedTs = event.getTimeStamp();
+            }
+        }
+
+        List<Event> eventsToRemove = new ArrayList<>();
+
+        for (Event event : deliverableEvents){
+            if (event.getTimeStamp() > minQueuedTs) {
+                // ignore deliverable events with timestamp greater than all non-deliverable events
+                eventsToRemove.add(event);
+            }
+            else {
+                // event can be delivered, remove from received events
+                received.remove(event.getId());
+            }
+        }
+        deliverableEvents.removeAll(eventsToRemove);
+
+        //sort deliverable Events by Ts and ID, ascending
+        deliverableEvents.sort(null);
+
+        deliver(deliverableEvents);
+    }
+
+    public HashMap<UUID, Event> getReceived() {
+        return received;
     }
 }
