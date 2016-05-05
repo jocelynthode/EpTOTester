@@ -11,7 +11,6 @@ import java.nio.channels.AsynchronousCloseException;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.
@@ -47,6 +46,9 @@ public class Peer implements Runnable{
         return disseminationComponent;
     }
 
+    public OrderingComponent getOrderingComponent() {
+        return orderingComponent;
+    }
     @Override
     public void run() {
         disseminationComponent.start();

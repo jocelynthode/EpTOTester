@@ -10,9 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -48,14 +45,16 @@ public class App implements Application {
         }
     }
 
+    public Peer getPeer() {
+        return peer;
+    }
+
     public void start() {
         new Thread(peer).start();
     }
 
-
-    //TODO broadcasts one event
     public void broadcast(Event event) throws InterruptedException {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
             if (event == null) event = new Event(UUID.randomUUID(),0,0,null);
             peer.getDisseminationComponent().broadcast(event);
     }
