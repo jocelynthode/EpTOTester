@@ -1,17 +1,12 @@
-import epto.utilities.App;
 import epto.utilities.Event;
+import mocks.MockApp;
 import net.sf.neem.MulticastChannel;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -19,9 +14,9 @@ import java.util.UUID;
  */
 public class ProtocolTest {
 
-    private TestApp app;
-    private TestApp app1;
-    private TestApp app2;
+    private MockApp app;
+    private MockApp app1;
+    private MockApp app2;
     private MulticastChannel neem;
     private MulticastChannel neem1;
     private MulticastChannel neem2;
@@ -37,6 +32,10 @@ public class ProtocolTest {
 
     @Before
     public void setUp() throws Exception {
+
+        final int ttl = 10;
+        final int k = 2;
+
         event = new Event(new UUID(23333,233123),1,51,new UUID(1111,2222));
         event1 = new Event(new UUID(44444,324645),2,51,new UUID(4444,2222));
         event2 = new Event(new UUID(847392,848123),1,51,new UUID(4444,2222));
@@ -61,9 +60,9 @@ public class ProtocolTest {
         neem2.connect(address10000);
         neem2.connect(address10001);
 
-        app = new TestApp(neem, 10, 2);
-        app1 = new TestApp(neem1, 10, 2);
-        app2 = new TestApp(neem2, 10, 2);
+        app = new MockApp(neem, ttl, k);
+        app1 = new MockApp(neem1, ttl, k);
+        app2 = new MockApp(neem2, ttl, k);
 
         app.start();
         app1.start();
@@ -90,39 +89,17 @@ public class ProtocolTest {
         app.broadcast(new Event(new UUID(11234511,2222),0,0,null));
         app2.broadcast(new Event(new UUID(11,22252),0,0,null));
 
-        while(app.events.size() != 8
+        int retry = 0;
+        while(retry != 5 && app.events.size() != 8
                 && app1.events.size() != 8
                 && app2.events.size() != 8)
-        {Thread.sleep(5000);}
+        {
+            Thread.sleep(5000);
+            retry++;
+        }
 
         Assert.assertArrayEquals(app.events.toArray(), app1.events.toArray());
         Assert.assertArrayEquals(app1.events.toArray(), app2.events.toArray());
 
-    }
-
-    private class TestApp extends App {
-
-        public ArrayList<UUID> events = new ArrayList<>();
-
-        public TestApp(MulticastChannel neem, int TTL, int K) {
-            super(neem, TTL, K);
-        }
-
-        @Override
-        public void deliver(ByteBuffer[] byteBuffers) {
-            for (ByteBuffer byteBuffer : byteBuffers) {
-                byte[] content = byteBuffer.array();
-                ByteArrayInputStream byteIn = new ByteArrayInputStream(content);
-                try {
-                    ObjectInputStream in = new ObjectInputStream(byteIn);
-                    Event event = (Event) in.readObject();
-                    events.add(event.getId());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }

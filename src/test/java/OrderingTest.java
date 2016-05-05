@@ -1,18 +1,13 @@
 import epto.OrderingComponent;
 import epto.StabilityOracle;
 import epto.utilities.Event;
-import net.sf.neem.impl.Application;
+import mocks.MockApplication;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 /**
  * Class testing the ordering component
@@ -30,31 +25,33 @@ public class OrderingTest {
     private Event event8;
     private Event event9;
 
-    private TestApp app;
+    private MockApplication app;
     private OrderingComponent orderingComponent;
 
     @Before
     public void setUp() throws IOException {
-        //TODO rethink ordering
+
+        final int ttl = 50;
+
         event = new Event(new UUID(23333,233123),1,37,new UUID(1111,2222));
-        event1 = new Event(new UUID(44444,324645),2,51,new UUID(4444,2222));
-        event2 = new Event(new UUID(847392,848123),1,51,new UUID(4444,2222));
-        event3 = new Event(new UUID(45775,233123),1,51,new UUID(2221,2222));
-        event4 = new Event(new UUID(9823498,3409834),1,51,new UUID(11,32344));
-        event5 = new Event(new UUID(439495775,34034),1,51,new UUID(22,34048488));
+        event1 = new Event(new UUID(44444,324645),2,49,new UUID(4444,2222));
+        event2 = new Event(new UUID(847392,848123),1,49,new UUID(4444,2222));
+        event3 = new Event(new UUID(45775,233123),1,49,new UUID(2221,2222));
+        event4 = new Event(new UUID(9823498,3409834),1,49,new UUID(11,32344));
+        event5 = new Event(new UUID(439495775,34034),1,49,new UUID(22,34048488));
 
         event6 = new Event(new UUID(423441,340734),4,30,new UUID(2223345,3426356));
         event7 = new Event(new UUID(15546,98734732),2,30,new UUID(2223345,34566998));
-        event8 = new Event(new UUID(8384834,34343l),5,60,new UUID(22,34048488));
-        event9 = new Event(new UUID(23333,233123),1,51,new UUID(1111,2222));
+        event8 = new Event(new UUID(8384834,34343l),5,49,new UUID(22,34048488));
+        event9 = new Event(new UUID(23333,233123),1,49,new UUID(1111,2222));
 
-        app = new TestApp();
-        orderingComponent = new OrderingComponent(new StabilityOracle(50), app);
+        app = new MockApplication();
+        orderingComponent = new OrderingComponent(new StabilityOracle(ttl), app);
     }
 
     @Test
     public void testOrderEvents() {
-        ConcurrentHashMap<UUID, Event> map = new ConcurrentHashMap<UUID, Event>(){{
+        HashMap<UUID, Event> map = new HashMap<UUID, Event>(){{
             put(event.getId(), event);
             put(event1.getId(), event1);
             put(event2.getId(), event2);
@@ -63,7 +60,7 @@ public class OrderingTest {
             put(event5.getId(), event5);
         }};
 
-        ConcurrentHashMap<UUID, Event> map1 = new ConcurrentHashMap<UUID, Event>(){{
+        HashMap<UUID, Event> map1 = new HashMap<UUID, Event>(){{
             put(event9.getId(), event9);
             put(event6.getId(), event6);
             put(event7.getId(), event7);
@@ -72,41 +69,20 @@ public class OrderingTest {
 
         orderingComponent.orderEvents(map);
         orderingComponent.orderEvents(map1);
-        orderingComponent.orderEvents(new ConcurrentHashMap<>());
+        orderingComponent.orderEvents(new HashMap<>());
 
-        Assert.assertTrue(app.events.size() == 6);
+        Assert.assertTrue(app.events.size() == 4);
         Assert.assertEquals(event4.getId(), app.events.get(0));
         Assert.assertEquals(event5.getId(), app.events.get(1));
         Assert.assertEquals(event3.getId(), app.events.get(2));
-        Assert.assertTrue(event9.getTtl() > 37 );
         Assert.assertEquals(event2.getId(), app.events.get(3));
+
+        orderingComponent.orderEvents(new HashMap<>());
+        Assert.assertTrue(app.events.size() == 6);
         Assert.assertEquals(event9.getId(), app.events.get(4));
         Assert.assertEquals(event1.getId(), app.events.get(5));
-        Assert.assertFalse(app.events.contains(event6.getId()));
-        Assert.assertFalse(app.events.contains(event7.getId()));
-        Assert.assertFalse(app.events.contains(event8.getId()));
+        orderingComponent.orderEvents(new HashMap<>());
+        Assert.assertTrue(app.events.size() == 6);
+
     }
-
-    private class TestApp implements Application {
-
-        public ArrayList<UUID> events = new ArrayList<>();
-
-        @Override
-        public void deliver(ByteBuffer[] byteBuffers) {
-            for (ByteBuffer byteBuffer : byteBuffers) {
-                byte[] content = byteBuffer.array();
-                ByteArrayInputStream byteIn = new ByteArrayInputStream(content);
-                try {
-                    ObjectInputStream in = new ObjectInputStream(byteIn);
-                    Event event = (Event) in.readObject();
-                    events.add(event.getId());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
 }

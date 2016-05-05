@@ -1,35 +1,23 @@
-import epto.DisseminationComponent;
-import epto.OrderingComponent;
-import epto.StabilityOracle;
-import epto.utilities.App;
 import epto.utilities.Event;
+import mocks.MockApp;
 import net.sf.neem.MulticastChannel;
-import net.sf.neem.apps.Addresses;
-import net.sf.neem.impl.Application;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.swing.plaf.multi.MultiInternalFrameUI;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class testing the dissemination component
  */
 public class DisseminationTest {
 
-    private TestApp app;
-    private TestApp app1;
-    private TestApp app2;
+    private MockApp app;
+    private MockApp app1;
+    private MockApp app2;
     private MulticastChannel neem;
     private MulticastChannel neem1;
     private MulticastChannel neem2;
@@ -52,9 +40,9 @@ public class DisseminationTest {
         neem2.connect(address10000);
         neem2.connect(address10001);
 
-        app = new TestApp(neem, 5, 2);
-        app1 = new TestApp(neem1, 5, 2);
-        app2 = new TestApp(neem2, 5, 2);
+        app = new MockApp(neem, 50, 2);
+        app1 = new MockApp(neem1, 50, 2);
+        app2 = new MockApp(neem2, 50, 2);
 
         app.start();
         app1.start();
@@ -83,39 +71,10 @@ public class DisseminationTest {
         app.broadcast(new Event(new UUID(11234511,2222),0,0,null));
         app2.broadcast(new Event(new UUID(11,22252),0,0,null));
 
-        Thread.sleep(10000);
+        Thread.sleep(5000);
 
-        Assert.assertTrue(app.events.size() == 8);
-        Assert.assertTrue(app1.events.size() == 8);
-        Assert.assertTrue(app2.events.size() == 8);
-
+        Assert.assertTrue(app.getPeer().getOrderingComponent().getReceived().size() == 8);
+        Assert.assertTrue(app1.getPeer().getOrderingComponent().getReceived().size() == 8);
+        Assert.assertTrue(app2.getPeer().getOrderingComponent().getReceived().size() == 8);
     }
-
-
-    private class TestApp extends App {
-
-        public ArrayList<Event> events = new ArrayList<>();
-
-        public TestApp(MulticastChannel neem, int TTL, int K) {
-            super(neem, TTL, K);
-        }
-
-        @Override
-        public void deliver(ByteBuffer[] byteBuffers) {
-            for (ByteBuffer byteBuffer : byteBuffers) {
-                byte[] content = byteBuffer.array();
-                ByteArrayInputStream byteIn = new ByteArrayInputStream(content);
-                try {
-                    ObjectInputStream in = new ObjectInputStream(byteIn);
-                    Event event = (Event) in.readObject();
-                    events.add(event);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
 }
