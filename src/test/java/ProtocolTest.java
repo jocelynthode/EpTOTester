@@ -24,8 +24,8 @@ public class ProtocolTest {
     @Before
     public void setUp() throws Exception {
 
-        final int ttl = 10;
-        final int k = 2;
+        final int ttl = 20;
+        final int k = 10;
 
         InetSocketAddress address10000 = new InetSocketAddress("localhost", 10000);
         InetSocketAddress address10001 = new InetSocketAddress("localhost", 10001);
@@ -72,9 +72,9 @@ public class ProtocolTest {
         app2.broadcast(new Event(new UUID(11, 22252), 0, 0, null));
 
         int retry = 0;
-        while (retry != 5 && app.events.size() != 8
-                && app1.events.size() != 8
-                && app2.events.size() != 8) {
+        while ((retry != 5) && ((app.events.size() != 8)
+                || (app1.events.size() != 8)
+                || (app2.events.size() != 8))) {
             Thread.sleep(5000);
             retry++;
         }
