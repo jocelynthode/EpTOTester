@@ -2,8 +2,6 @@ package epto;
 
 import epto.utilities.Event;
 import net.sf.neem.MulticastChannel;
-import net.sf.neem.impl.ConstantPeriodic;
-import net.sf.neem.impl.Transport;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,44 +9,67 @@ import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
  * sending and collecting events to/from other peers.
  */
-public class DisseminationComponent extends ConstantPeriodic {
+public class DisseminationComponent {
 
     private static final Object nextBallLock = new Object(); //for synchronization of nextBall
     //private ArrayList<Peer> view = new ArrayList<>(); //TODO for now don't use it
     public final int K; //for 20 processes
-    private final MulticastChannel neem;
-    private final OrderingComponent orderingComponent;
+    private final ScheduledExecutorService scheduler;
     private final StabilityOracle oracle;
     private final Peer peer;
     private HashMap<UUID, Event> nextBall;
+
+    private final Runnable periodicDissemination;
+    private ScheduledFuture<?> periodicDisseminationFuture;
 
 
     /**
      * Creates a new instance of DisseminationComponent
      *
-     * @param rand              Random instance used for periods
-     * @param trans             Transport component to gossip
      * @param oracle            StabilityOracle for the clock
      * @param peer              parent Peer
      * @param neem              MultiCastChannel to gossip
      * @param orderingComponent OrderingComponent to order events
      */
-    public DisseminationComponent(Random rand, Transport trans, StabilityOracle oracle, Peer peer, MulticastChannel neem,
+    public DisseminationComponent(StabilityOracle oracle, Peer peer, MulticastChannel neem,
                                   OrderingComponent orderingComponent, int K) {
-        super(rand, trans, Peer.DELTA);
         this.peer = peer;
         this.oracle = oracle;
-        this.neem = neem;
-        this.orderingComponent = orderingComponent;
         this.nextBall = new HashMap<>();
         this.K = K;
+        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.periodicDissemination = () -> {
+            nextBall.forEach((id, event) -> event.incrementTtl());
+            if (!nextBall.isEmpty()) {
+                //TODO for now write assuming entire membership
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                try {
+                    ObjectOutputStream out = new ObjectOutputStream(byteOut);
+                    out.writeObject(nextBall);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    neem.write(ByteBuffer.wrap(byteOut.toByteArray()));
+                } catch (ClosedChannelException e) {
+                    e.printStackTrace();
+                }
+            }
+            synchronized (nextBallLock) {
+                orderingComponent.orderEvents(nextBall);
+                nextBall.clear();
+            }
+        };
     }
 
     /**
@@ -88,30 +109,13 @@ public class DisseminationComponent extends ConstantPeriodic {
         }
     }
 
-    /**
-     * Periodic functions that sends nextBall to K random peers
-     */
-    @Override
-    public void run() {
-        nextBall.forEach((id, event) -> event.incrementTtl());
-        if (!nextBall.isEmpty()) {
-            //TODO for now write assuming entire membership
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(byteOut);
-                out.writeObject(nextBall);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                neem.write(ByteBuffer.wrap(byteOut.toByteArray()));
-            } catch (ClosedChannelException e) {
-                e.printStackTrace();
-            }
-        }
-        orderingComponent.orderEvents(nextBall);
-        synchronized (nextBallLock) {
-            nextBall.clear();
-        }
+    public void start() {
+        //TODO is FixedDelay the right choice
+        periodicDisseminationFuture = scheduler.scheduleWithFixedDelay(periodicDissemination, 0, Peer.DELTA, TimeUnit.MILLISECONDS);
+    }
+
+    public void stop() {
+        //Don't interrupt if running
+        periodicDisseminationFuture.cancel(false);
     }
 }

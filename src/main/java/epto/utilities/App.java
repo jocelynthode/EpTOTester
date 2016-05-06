@@ -41,7 +41,7 @@ public class App implements Application {
                 System.out.println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.");
 
 
-            App app = new App(neem, 100, 18);
+            App app = new App(neem, 50, 18);
             System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
 
             for (int i = 1; i < args.length; i++)

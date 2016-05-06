@@ -8,10 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Implementation of the Ordering Component.
@@ -93,7 +90,7 @@ public class OrderingComponent {
      *
      * @param ball
      */
-    public synchronized void orderEvents(HashMap<UUID, Event> ball) {
+    public void orderEvents(HashMap<UUID, Event> ball) {
 
         updateReceived(ball);
 

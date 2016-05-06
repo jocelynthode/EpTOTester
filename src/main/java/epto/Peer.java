@@ -17,7 +17,7 @@ import java.util.UUID;
  */
 public class Peer implements Runnable {
 
-    final static int DELTA = 1000;
+    final static int DELTA = 2000;
     private final MulticastChannel neem;
     private final UUID uuid;
     private StabilityOracle oracle;
@@ -34,7 +34,7 @@ public class Peer implements Runnable {
         this.oracle = new StabilityOracle(TTL);
         this.orderingComponent = new OrderingComponent(oracle, app);
         this.uuid = neem.getProtocolMBean().getLocalId();
-        this.disseminationComponent = new DisseminationComponent(new Random(), neem.getNet(), oracle, this, neem, orderingComponent, K);
+        this.disseminationComponent = new DisseminationComponent(oracle, this, neem, orderingComponent, K);
         neem.getProtocolMBean().setGossipFanout(disseminationComponent.K);
     }
 
