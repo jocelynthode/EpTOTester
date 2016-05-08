@@ -88,7 +88,7 @@ public class OrderingComponent {
     /**
      * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
      *
-     * @param ball
+     * @param ball the ball containing the received events
      */
     public void orderEvents(HashMap<UUID, Event> ball) {
 
@@ -111,7 +111,7 @@ public class OrderingComponent {
 
         for (Event event : deliverableEvents) {
             if (event.getTimeStamp() >= minQueuedTs) {
-                // ignore deliverable events with timestamp greater than all non-deliverable events
+                // ignore deliverable events with timestamp greater or equal than all non-deliverable events
                 eventsToRemove.add(event);
             } else {
                 // event can be delivered, remove from received events
