@@ -110,7 +110,7 @@ public class OrderingComponent {
         List<Event> eventsToRemove = new ArrayList<>();
 
         for (Event event : deliverableEvents) {
-            if (event.getTimeStamp() > minQueuedTs) {
+            if (event.getTimeStamp() >= minQueuedTs) {
                 // ignore deliverable events with timestamp greater than all non-deliverable events
                 eventsToRemove.add(event);
             } else {
