@@ -17,7 +17,7 @@ public class StabilityOracle {
     /**
      * This function tells us if the event is ready to be delivered or not according to the TTL.
      *
-     * @param event
+     * @param event the event to be checked
      * @return wether the event is deliverable or not
      */
     public boolean isDeliverable(Event event) {
@@ -37,7 +37,7 @@ public class StabilityOracle {
     /**
      * Update the clock with the new timestamp to synchronize it.
      *
-     * @param ts
+     * @param ts the new clock value
      */
     public synchronized void updateClock(long ts) {
         if (ts > logicalClock)

@@ -15,16 +15,23 @@ public class Event implements Comparable<Event>, Serializable {
     /**
      * Initializes an event
      *
-     * @param id
-     * @param timeStamp
-     * @param ttl
-     * @param sourceId
+     * @param id The id of the event
+     * @param timeStamp the time stamp of the event
+     * @param ttl the time to live of the vent
+     * @param sourceId the id of the peer sending this event
      */
     public Event(UUID id, long timeStamp, int ttl, UUID sourceId) {
         this.id = id;
         this.timeStamp = timeStamp;
         this.ttl = ttl;
         this.sourceId = sourceId;
+    }
+
+    /**
+     * Initializes an event
+     */
+    public Event() {
+        this.id = UUID.randomUUID();
     }
 
     /**
@@ -84,7 +91,7 @@ public class Event implements Comparable<Event>, Serializable {
     /**
      * sets the ttl to the specified value
      *
-     * @param ttl
+     * @param ttl the new ttl of th event
      */
     public synchronized void setTtl(int ttl) {
         this.ttl = ttl;
@@ -100,7 +107,7 @@ public class Event implements Comparable<Event>, Serializable {
     /**
      * compareTo method for Event class
      *
-     * @param event a not-null Event
+     * @param event a non-null Event
      * @return int (1 if before, -1 if after)
      */
     public int compareTo(Event event) {

@@ -23,6 +23,7 @@ public class Peer implements Runnable {
     private StabilityOracle oracle;
     private OrderingComponent orderingComponent;
     private DisseminationComponent disseminationComponent;
+    private boolean is_running;
 
     /**
      * Initializes a peer
@@ -50,12 +51,15 @@ public class Peer implements Runnable {
         return orderingComponent;
     }
 
+    /**
+     * The peer main function
+     */
     @Override
     public void run() {
         disseminationComponent.start();
         try {
-            //TODO recheck this part
-            while (true) {
+            is_running = true;
+            while (is_running) {
                 byte[] buf = new byte[100000];
                 ByteBuffer bb = ByteBuffer.wrap(buf);
 
@@ -69,5 +73,9 @@ public class Peer implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        is_running = false;
     }
 }

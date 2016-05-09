@@ -109,11 +109,16 @@ public class DisseminationComponent {
         }
     }
 
+    /**
+     * Starts the periodic dissemination
+     */
     public void start() {
-        //TODO is FixedDelay the right choice
         periodicDisseminationFuture = scheduler.scheduleWithFixedDelay(periodicDissemination, 0, Peer.DELTA, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Stops the periodic dissemination
+     */
     public void stop() {
         //Don't interrupt if running
         periodicDisseminationFuture.cancel(false);
