@@ -21,4 +21,5 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile name: 'neem-0.8-jar-with-dependencies'
+    compile 'org.jgroups:jgroups:3.6.9.Final'
 }
