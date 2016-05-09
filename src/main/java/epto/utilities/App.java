@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.util.UUID;
-import java.util.regex.Matcher;
 
 /**
  * Implementation of an Application
@@ -43,14 +42,14 @@ public class App implements Application {
 
             double n = args.length;
             //c = 4 for 99.9875% =>  c+1 = 5
-            double log2N = Math.log(args.length)/ Math.log(2);
-            int ttl = (int)(2* Math.ceil(5*log2N) + 1);
-            int k = (int) ( Math.ceil((2*Math.E*Math.log(n))/(Math.log(Math.log(n)))) );
+            double log2N = Math.log(args.length) / Math.log(2);
+            int ttl = (int) (2 * Math.ceil(5 * log2N) + 1);
+            int k = (int) (Math.ceil((2 * Math.E * Math.log(n)) / (Math.log(Math.log(n)))));
 
             App app = new App(neem, ttl, k);
             System.out.format("Peer ID : %s%n", app.peer.getUuid().toString());
-            System.out.format("Peer Number : %d%n", n);
-            System.out.format("TTL : %d, K : %d%n",ttl, k);
+            System.out.format("Peer Number : %d%n", (int) n);
+            System.out.format("TTL : %d, K : %d%n", ttl, k);
 
             for (int i = 1; i < args.length; i++)
                 neem.connect(Addresses.parse(args[i], false));

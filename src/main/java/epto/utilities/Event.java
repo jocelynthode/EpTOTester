@@ -15,10 +15,10 @@ public class Event implements Comparable<Event>, Serializable {
     /**
      * Initializes an event
      *
-     * @param id The id of the event
+     * @param id        The id of the event
      * @param timeStamp the time stamp of the event
-     * @param ttl the time to live of the vent
-     * @param sourceId the id of the peer sending this event
+     * @param ttl       the time to live of the vent
+     * @param sourceId  the id of the peer sending this event
      */
     public Event(UUID id, long timeStamp, int ttl, UUID sourceId) {
         this.id = id;

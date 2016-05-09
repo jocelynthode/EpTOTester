@@ -27,9 +27,8 @@ public class DisseminationComponent {
     private final ScheduledExecutorService scheduler;
     private final StabilityOracle oracle;
     private final Peer peer;
-    private HashMap<UUID, Event> nextBall;
-
     private final Runnable periodicDissemination;
+    private HashMap<UUID, Event> nextBall;
     private ScheduledFuture<?> periodicDisseminationFuture;
 
 

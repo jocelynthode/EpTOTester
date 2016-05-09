@@ -40,17 +40,17 @@ public class ProtocolTest {
         InetSocketAddress address10004 = new InetSocketAddress("localhost", 10004);
         InetSocketAddress address10005 = new InetSocketAddress("localhost", 10005);
 
-        InetSocketAddress[] addresses0 = new InetSocketAddress[] {address10001, address10002, address10003,
+        InetSocketAddress[] addresses0 = new InetSocketAddress[]{address10001, address10002, address10003,
                 address10004, address10005};
-        InetSocketAddress[] addresses1 = new InetSocketAddress[] {address10000, address10002, address10003,
+        InetSocketAddress[] addresses1 = new InetSocketAddress[]{address10000, address10002, address10003,
                 address10004, address10005};
-        InetSocketAddress[] addresses2 = new InetSocketAddress[] {address10000, address10001, address10003,
+        InetSocketAddress[] addresses2 = new InetSocketAddress[]{address10000, address10001, address10003,
                 address10004, address10005};
-        InetSocketAddress[] addresses3 = new InetSocketAddress[] {address10000, address10001, address10002,
+        InetSocketAddress[] addresses3 = new InetSocketAddress[]{address10000, address10001, address10002,
                 address10004, address10005};
-        InetSocketAddress[] addresses4 = new InetSocketAddress[] {address10000, address10001, address10002, address10003,
+        InetSocketAddress[] addresses4 = new InetSocketAddress[]{address10000, address10001, address10002, address10003,
                 address10005};
-        InetSocketAddress[] addresses5 = new InetSocketAddress[] {address10000, address10001, address10002, address10003,
+        InetSocketAddress[] addresses5 = new InetSocketAddress[]{address10000, address10001, address10002, address10003,
                 address10004};
 
         neem = new MulticastChannel(address10000);
@@ -60,27 +60,27 @@ public class ProtocolTest {
         neem4 = new MulticastChannel(address10004);
         neem5 = new MulticastChannel(address10005);
 
-        for (InetSocketAddress address: addresses0) {
+        for (InetSocketAddress address : addresses0) {
             neem.connect(address);
         }
 
-        for (InetSocketAddress address: addresses1) {
+        for (InetSocketAddress address : addresses1) {
             neem1.connect(address);
         }
 
-        for (InetSocketAddress address: addresses2) {
+        for (InetSocketAddress address : addresses2) {
             neem2.connect(address);
         }
 
-        for (InetSocketAddress address: addresses3) {
+        for (InetSocketAddress address : addresses3) {
             neem3.connect(address);
         }
 
-        for (InetSocketAddress address: addresses4) {
+        for (InetSocketAddress address : addresses4) {
             neem4.connect(address);
         }
 
-        for (InetSocketAddress address: addresses5) {
+        for (InetSocketAddress address : addresses5) {
             neem5.connect(address);
         }
 
