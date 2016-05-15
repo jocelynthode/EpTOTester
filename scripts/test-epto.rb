@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-ports = [*10000..10059]
+ports = [*10000..10019]
 
-(0..59).each { |i|
+(0..19).each { |i|
   args = ports.map { |port| 'localhost:' + port.to_s }
   ports.rotate!
   args = args.join(' ')

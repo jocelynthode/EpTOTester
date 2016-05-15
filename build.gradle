@@ -24,6 +24,7 @@ apply plugin: 'idea'
 sourceCompatibility = 1.8
 mainClassName = 'epto.utilities.App'
 
+
 repositories {
     mavenCentral()
     flatDir { dirs 'lib' }
