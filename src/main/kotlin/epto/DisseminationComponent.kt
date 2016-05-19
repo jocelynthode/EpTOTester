@@ -100,7 +100,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      */
     fun start() {
         periodicDisseminationFuture = scheduler.scheduleWithFixedDelay(periodicDissemination, 0,
-                Peer.DELTA.toLong(), TimeUnit.MILLISECONDS)
+                Peer.DELTA, TimeUnit.MILLISECONDS)
     }
 
     /**
