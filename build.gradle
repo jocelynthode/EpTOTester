@@ -1,3 +1,20 @@
+buildscript {
+    ext.kotlin_version = '1.0.1-2'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+apply plugin: 'java'
+
 group 'ch.unibnf.epto'
 version '1.0-SNAPSHOT'
 
@@ -6,12 +23,9 @@ task wrapper(type: Wrapper) {
     distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'idea'
-
 sourceCompatibility = 1.8
 mainClassName = 'epto.utilities.App'
+
 
 repositories {
     mavenCentral()
