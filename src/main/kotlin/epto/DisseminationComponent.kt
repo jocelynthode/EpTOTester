@@ -68,7 +68,9 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         event.timeStamp = oracle.incrementAndGetClock()
         event.ttl = 0
         event.sourceId = peer.uuid
-        nextBall.put(event.id, event)
+        synchronized(nextBallLock) {
+            nextBall.put(event.id, event)
+        }
     }
 
     /**
