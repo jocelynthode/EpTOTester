@@ -26,7 +26,12 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
             val inputStream = ObjectInputStream(byteIn)
             val event = inputStream.readObject() as Event
             println("Delivered : ${event.id}")
-
+            expected_events--;
+            println("Expected events: ${expected_events.toInt()}")
+            if (expected_events == 0.0) {
+                println("All events delivered !")
+                System.exit(0)
+            }
         }
     }
 
@@ -36,6 +41,10 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
     open fun broadcast(event: Event = Event()) = peer.disseminationComponent.broadcast(event)
 
     companion object {
+
+        val eventsPerSecond = 1.0
+        val timeToRun = 0.2
+        var expected_events = 0.0
 
         @JvmStatic fun main(args: Array<String>) {
             if (args.size < 1) {
@@ -53,6 +62,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
                 val n = args.size.toDouble()
+                expected_events = eventsPerSecond*timeToRun*60*n
                 //c = 4 for 99.9875% =>  c+1 = 5
                 val log2N = Math.log(n) / Math.log(2.0)
                 val ttl = (2 * Math.ceil(5 * log2N) + 1).toInt()
@@ -67,8 +77,14 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     neem.connect(Addresses.parse(arg, false))
 
                 app.start()
-                Thread.sleep(1000)
-                app.broadcast()
+                val start = System.currentTimeMillis()
+                val end = start + (timeToRun*60*1000)
+                var i =  1
+                while (System.currentTimeMillis() < end) {
+                    Thread.sleep((1000 / eventsPerSecond).toLong())
+                    app.broadcast()
+                    println(i++)
+                }
                 while (true) {
                     Thread.sleep(1000)
                 }
