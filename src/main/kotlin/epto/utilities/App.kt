@@ -20,7 +20,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
      * {@inheritDoc}
      */
     @Synchronized override fun deliver(byteBuffers: Array<ByteBuffer>) {
-        for (byteBuffer in byteBuffers) {
+        byteBuffers.forEach { byteBuffer ->
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
             val inputStream = ObjectInputStream(byteIn)
@@ -30,15 +30,10 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
         }
     }
 
-    fun start() {
-        Thread(peer).start()
-    }
+    fun start() = Thread(peer).start()
 
     @Throws(InterruptedException::class)
-    open fun broadcast(event: Event = Event()) {
-        Thread.sleep(1000)
-        peer.disseminationComponent.broadcast(event)
-    }
+    open fun broadcast(event: Event = Event()) = peer.disseminationComponent.broadcast(event)
 
     companion object {
 
@@ -59,7 +54,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 val n = args.size.toDouble()
                 //c = 4 for 99.9875% =>  c+1 = 5
-                val log2N = Math.log(args.size.toDouble()) / Math.log(2.0)
+                val log2N = Math.log(n) / Math.log(2.0)
                 val ttl = (2 * Math.ceil(5 * log2N) + 1).toInt()
                 val k = Math.ceil(2.0 * Math.E * Math.log(n) / Math.log(Math.log(n))).toInt()
 
@@ -72,6 +67,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     neem.connect(Addresses.parse(arg, false))
 
                 app.start()
+                Thread.sleep(1000)
                 app.broadcast()
                 while (true) {
                     Thread.sleep(1000)
