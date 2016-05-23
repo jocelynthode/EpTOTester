@@ -1,6 +1,6 @@
 # EpTO
 
-This is a working implementation of EpTO[[1]](http://dl.acm.org/citation.cfm?id=2814804) in Java 8.
+This is a working implementation of EpTO[[1]](http://dl.acm.org/citation.cfm?id=2814804) in Kotlin.
 
 # Compiling & Running
 
