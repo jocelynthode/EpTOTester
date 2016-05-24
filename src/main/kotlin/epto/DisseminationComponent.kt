@@ -39,11 +39,13 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
             if (!nextBall.isEmpty()) {
                 //TODO for now write assuming entire membership
                 val byteOut = ByteArrayOutputStream()
+                val out = ObjectOutputStream(byteOut)
                 try {
-                    val out = ObjectOutputStream(byteOut)
                     out.writeObject(nextBall)
                 } catch (e: IOException) {
                     e.printStackTrace()
+                } finally {
+                    out.close()
                 }
 
                 try {
