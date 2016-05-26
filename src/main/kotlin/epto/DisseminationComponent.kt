@@ -35,24 +35,27 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
-            nextBall.forEach { id, event -> event.incrementTtl() }
-            if (!nextBall.isEmpty()) {
-                //TODO for now write assuming entire membership
-                val byteOut = ByteArrayOutputStream()
-                try {
+            synchronized (nextBallLock) {
+                nextBall.forEach { id, event -> event.incrementTtl() }
+                if (!nextBall.isEmpty()) {
+                    //TODO for now write assuming entire membership
+                    val byteOut = ByteArrayOutputStream()
                     val out = ObjectOutputStream(byteOut)
-                    out.writeObject(nextBall)
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                    try {
+                        out.writeObject(nextBall)
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    } finally {
+                        out.close()
+                    }
+
+                    try {
+                        neem.write(ByteBuffer.wrap(byteOut.toByteArray()))
+                    } catch (e: ClosedChannelException) {
+                        e.printStackTrace()
+                    }
                 }
 
-                try {
-                    neem.write(ByteBuffer.wrap(byteOut.toByteArray()))
-                } catch (e: ClosedChannelException) {
-                    e.printStackTrace()
-                }
-            }
-            synchronized (nextBallLock) {
                 orderingComponent.orderEvents(nextBall)
                 nextBall.clear()
             }

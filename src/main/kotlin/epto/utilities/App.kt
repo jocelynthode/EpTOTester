@@ -24,8 +24,14 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
             val inputStream = ObjectInputStream(byteIn)
-            val event = inputStream.readObject() as Event
-            println("Delivered : ${event.id}")
+            try {
+                val event = inputStream.readObject() as Event
+                println("Delivered : ${event.id}")
+            } catch(e: Exception) {
+                e.printStackTrace()
+            } finally {
+                inputStream.close()
+            }
             expected_events--;
             println("Expected events: ${expected_events.toInt()}")
             if (expected_events == 0.0) {
