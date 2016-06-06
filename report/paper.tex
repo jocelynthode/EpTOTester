@@ -107,7 +107,7 @@
 Total ordering has always been of interest in large-scale distributed systems. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO\autocite{matos2015epto} and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
 \end{abstract}
 \section{Introduction}
-Creating an algorithm providing scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO. EpTO is an algorithm that claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, thus is well-suited for dynamic large-scale distributed systems.
+Creating an algorithm providing scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO. EpTO is an algorithm that claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, removing the need to synchronize clocks precisely on every peer and thus is well-suited for dynamic large-scale distributed systems.
 \par 
 There are many other algorithms for disseminating and ordering events in a distributed system. There are some deterministic algorithms, which guarantee total order, agreement or other strong properties. Unfortunately, these types of algorithms are not scalable enough to be used in a large-scale distributed system \autocites[]{defago2004total}[]{lamport1978time}.
 \par
@@ -123,17 +123,17 @@ EpTO consists of two distinct parts. The first part is probabilistic disseminati
 To model the first part, EpTO is using a \textit{balls-and-bins} approach \autocite{Koldehofe02simplegossiping}. The balls-and-bins problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin uniformly at random and independently from other balls. In this scenario, one of the natural questions that comes to mind is: what is the minimum number of balls that should be thrown, so that every bin has at least one ball with high probability?
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/BnB.jpeg}
-\caption{Balls-and-Bins \autocite{bnb}}
+\caption{Balls-and-Bins \autocite{bnb} \todo[inline] {FIX IMAGE}}
 \label{fig:balls-and-bins}
 \end{figure}
 \par
-Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. Using this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Using these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
+Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. With this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Thanks to these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
 
 \subsection{Contribution}
 Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
 \todo[inline]{Here we will present our conclusion briefly}
 \par
-These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \autocite{nio}.
+These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers, meaning, peers never have a full view  of all the peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \autocite{nio}.
 
 \section{Ordering Algorithms}
 Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
@@ -165,7 +165,7 @@ In other words, total order is an ordering that defines the exact order of every
 \subsection{Definitions}
 A process or peer is defined as an actor in our system running the application that needs total order. Each process will communicate with other processes in the distributed systems, exchange events, and order them together.
 \par
-An event is defined as data sent at a given time by a peer. For example, we could imagine a system where each process publish some data to other peers. The moment where this data is published combined with the data is called an event.
+An event is defined as data sent at a given time by a peer. For example, we could imagine a system where each process publishes some data to other peers. The moment where we publish data combined with the data is called an event.
 \par
 A ball is a set of events bundled together and sent as one package. We use balls in EpTO to reduce network traffic and make it scalable in terms of processes and events.
 
