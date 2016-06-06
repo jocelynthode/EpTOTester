@@ -12,6 +12,8 @@ plugins {
     id 'idea'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'com.palantir.docker' version '0.5.2'
+
 }
 apply plugin: 'kotlin'
 
@@ -36,4 +38,10 @@ dependencies {
     compile name: 'neem-0.8-jar-with-dependencies'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+}
+
+docker {
+    name 'epto'
+    dependsOn tasks.shadowJar
+    files 'docker-compose.yml', 'scripts/test-epto.rb'
 }
