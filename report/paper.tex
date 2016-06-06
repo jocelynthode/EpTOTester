@@ -130,10 +130,10 @@ To model the first part, EpTO is using a \textit{balls-and-bins} approach \autoc
 Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. With this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Thanks to these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
 
 \subsection{Contribution}
-Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
+Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using a modified version of the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. The modification to NeEM includes a dumbed-down gossip dissemination as seen in \autocite{matos2015epto}. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
 \todo[inline]{Here we will present our conclusion briefly}
 \par
-These tasks are split in two parts. The first part will assume that all peers are known by all peers. We will implement EpTO using this assumption and test it against JGroups. In the second part of the tasks, we will assume unknown membership on all peers, meaning, peers never have a full view  of all the peers. We will update EpTO and use a PSS\footnote{Peer Sampling Service} to find peers to exchange with. We will then update the underlying layer NeEM to use UDP instead of TCP and switch to NIO.2 \autocite{nio}.
+In our experiments we assume each peer knows every other peers. We implement EpTO using this assumption and test it against JGroups. The details concerning the methodology are explained in subsection \ref{sub:metho}. In future works, we want to test EpTO when not knowing the entire membership.
 
 \section{Ordering Algorithms}
 Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
@@ -194,6 +194,7 @@ As this component is local and only corrects itself when we receive new events, 
 \section{Performance Comparisons}
 In the following subsections, we will present the results obtained for the different tests ran and explain their meanings.
 \subsection{Methodology}
+\label{sub:metho}
 Our tests are run on a cluster provided by the University of Neuchâtel. We use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}. More specifically we use Docker-compose, which is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
 \par
 Each peer is hosted in a Docker container. We want to test JGroups and EpTO and find at which point JGroups breaks latency and throughput wise. At this point EpTO should still be working. Under this treshold, JGroups should be faster than EpTO but EpTO should still hold its own.
