@@ -192,14 +192,18 @@ This Stability oracle offers an API to the Ordering component letting it know wh
 \par
 As this component is local and only corrects itself when we receive new events, it generates no network traffic. This means it does not impact the scalability of EpTO.
 \section{Performance Comparisons}
-\todo[inline]{Here we will present the different test we ran, the methodology used and the result we obtained}
+In the following subsections, we will present the results obtained for the different tests ran and explain their meanings.
 \subsection{Methodology}
-\todo[inline]{Here we explain how we ran our tests and on what type of machines}
+Our tests are run on a cluster provided by the University of Neuchâtel. We use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}. More specifically we use Docker-compose, which is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
+\par
+Each peer is hosted in a Docker container. We want to test JGroups and EpTO and find at which point JGroups breaks latency and throughput wise. At this point EpTO should still be working. Under this treshold, JGroups should be faster than EpTO but EpTO should still hold its own.
 \subsection{Peer membership known}
 \todo[inline]{We will present the results obtained and try to explain the results}
-\subsection{Peer membership unknown}
-\todo[inline]{We will present the results obtained and try to explain the results}
 
+\section{Future Works}
+Future works will include testing, EpTO while having unknown peer membership. To account for that, we will need to modify NeEM to support the use of a Peer Sampling Service. We plan on implementing the CYCLON Peer Sampling Service \autocite{Voulgaris2005}.
+
+Our first implementation of EpTO focuses on correctness rather than fastness. Later work should optimize EpTO in regards to concurrency and network latency. To address the second point, we want to modify NeEM again to use UDP instead of TCP, to reduce latency and overhead on the network.
 \section{Conclusion}
 \todo[inline]{He we will summarize the results we found and present some future tasks that could be accomplished on EpTO}
 
