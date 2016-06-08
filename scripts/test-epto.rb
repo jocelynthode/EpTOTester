@@ -1,14 +1,13 @@
 #!/usr/bin/env ruby
 
-ports = [*10000..10019]
+
+ids = [*1..5]
 
 puts 'compiling...'
 puts `cd ..; ./gradlew --daemon clean shadowJar && cd scripts/;`
 
-(0..19).each { |i|
-  args = ports.map { |port| 'localhost:' + port.to_s }
-  ports.rotate!
-  args = args.join(' ')
-  puts "java -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App #{args} > localhost#{i}.txt 2>&1 &\n"
-  `java -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App #{args} > localhost#{i}.txt 2>&1 &`
-}
+args = ids.map { |id| 'eptoneem_epto_neem_' + id.to_s + ':10000'}
+#ports.rotate!
+args = args.join(' ')
+puts "java -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App #{args} > localhost.txt 2>&1 &\n"
+`java -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App #{args} > localhost.txt 2>&1 &`

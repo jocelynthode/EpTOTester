@@ -61,7 +61,24 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 if (neem.localSocketAddress.address.isLoopbackAddress)
                     println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-                val n = args.size.toDouble()
+                var n = 1.0
+
+                //Maybe connect directly
+                val addresses = ArrayList<InetAddress>()
+                var i = 1
+                while (true) {
+                    // pass over ourselves
+                    if ("eptoneem_epto_%d".format(i).equals(args[0])) i++
+
+                    try {
+                        addresses.add(InetAddress.getByName("eptoneem_epto_%d".format(i)))
+			n++
+                        i++
+                    } catch (e: UnknownHostException) {
+                        break
+                    }
+                }
+
                 //c = 4 for 99.9875% =>  c+1 = 5
                 val log2N = Math.log(n) / Math.log(2.0)
                 val ttl = (2 * Math.ceil(5 * log2N) + 1).toInt()
@@ -72,21 +89,6 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 println("Peer Number : ${n.toInt()}")
                 println("TTL : $ttl, K : $k")
 
-
-                //Maybe connect directly
-                val addresses = ArrayList<InetAddress>()
-                var i = 1
-                while (true) {
-                    // pass over ourselves
-                    if ("epto-neem_epto_%d".format(i).equals(args[0])) i++
-
-                    try {
-                        addresses.add(InetAddress.getByName("epto-neem_epto_%d".format(i)))
-                        i++
-                    } catch (e: UnknownHostException) {
-                        break
-                    }
-                }
 
                 for (address in addresses)
                     neem.connect(InetSocketAddress(address, 10353))

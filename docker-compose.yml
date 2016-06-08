@@ -1,0 +1,6 @@
+version: '2'
+services:
+  epto:
+    build: .
+    ports:
+     - "5000"
