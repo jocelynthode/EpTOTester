@@ -75,7 +75,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 //Maybe connect directly
                 val addresses = ArrayList<InetAddress>()
-                var i = 0
+                var i = 1
                 while (true) {
                     // pass over ourselves
                     if ("epto-neem_epto_%d".format(i).equals(args[0])) i++
