@@ -3,11 +3,14 @@ package epto.utilities
 
 import epto.Peer
 import net.sf.neem.MulticastChannel
-import net.sf.neem.apps.Addresses
 import net.sf.neem.impl.Application
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.UnknownHostException
 import java.nio.ByteBuffer
+import java.util.*
 
 /**
  * Implementation of an Application
@@ -45,13 +48,13 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
         @JvmStatic fun main(args: Array<String>) {
             if (args.size < 1) {
-                System.err.println("Usage: apps.App local peer1 ... peerN")
+                System.err.println("Usage: apps.App local")
                 System.exit(1)
             }
 
             try {
 
-                val neem = MulticastChannel(Addresses.parse(args[0], true))
+                val neem = MulticastChannel(InetSocketAddress(args[0], 10353))
 
                 println("Started: ${neem.localSocketAddress}")
 
@@ -69,8 +72,24 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 println("Peer Number : ${n.toInt()}")
                 println("TTL : $ttl, K : $k")
 
-                for (arg in args)
-                    neem.connect(Addresses.parse(arg, false))
+
+                //Maybe connect directly
+                val addresses = ArrayList<InetAddress>()
+                var i = 0
+                while (true) {
+                    // pass over ourselves
+                    if ("epto-neem_epto_%d".format(i).equals(args[0])) i++
+
+                    try {
+                        addresses.add(InetAddress.getByName("epto-neem_epto_%d".format(i)))
+                        i++
+                    } catch (e: UnknownHostException) {
+                        break
+                    }
+                }
+
+                for (address in addresses)
+                    neem.connect(InetSocketAddress(address, 10353))
 
                 app.start()
                 Thread.sleep(1000)
