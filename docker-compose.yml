@@ -2,5 +2,9 @@ version: '2'
 services:
   epto:
     build: .
-    ports:
-     - "5000"
+  tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile-tracker
+
+

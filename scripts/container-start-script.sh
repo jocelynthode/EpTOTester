@@ -17,4 +17,4 @@ MY_NAME=(${TMP//./ })
 sleep 2m
 
 echo 'Starting epto peer'
-exec java -Xms50m -Xmx100m -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App $MY_NAME | addtime > localhost.txt 2>&1
+exec java -Xms50m -Xmx100m -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App $MY_NAME "http://localhost:4321" | addtime > localhost.txt 2>&1

@@ -45,7 +45,7 @@ docker-compose up -d
 docker-compose scale epto=$1
 
 #wait for apps to finish
-for i in {1..10} :
+for i in 1 2 :
 do
 	sleep 1m
 	if check_if_finish;then
@@ -54,8 +54,8 @@ do
 		echo "waiting..."
 	fi
 done
-echo "waiting 2 more minutes"
-sleep 2m
+#echo "waiting 2 more minutes"
+#sleep 2m
 
 # collect logs
 mapfile -t lines < <(docker ps -a)
@@ -66,7 +66,7 @@ do
 	LENGTH=${#line[@]}
 	LAST_POSITION=$((LENGTH - 1))
 
-	docker cp "${line[0]}":/code/scripts/localhost.txt ./scripts/"${line[$LAST_POSITION]}"_log.txt
+	docker cp "${line[0]}":/code/scripts/localhost.txt ./"${line[$LAST_POSITION]}"_log.txt
 done
 
 

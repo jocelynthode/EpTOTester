@@ -16,7 +16,7 @@ RUN apt-get install -yqq openjdk-8-jdk
 # RUN apt-get update && apt-get install -yqq gradle
 
 #installing ruby
-RUN apt-get install -yqq ruby
+# RUN apt-get install -yqq ruby
 
 ADD . /code
 WORKDIR /code

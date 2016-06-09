@@ -1,0 +1,7 @@
+FROM python:3.5.1
+
+ADD ./scripts /scripts
+WORKDIR /scripts
+
+RUN echo 'starting Tracker'
+CMD [ "python", "./tracker.py" ]

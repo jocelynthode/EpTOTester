@@ -25,6 +25,9 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
 
     init {
         neem.protocolMBean.gossipFanout = disseminationComponent.K
+        /*
+        * TODO generate Peer sampling service and let it run X times
+         */
     }
 
     /**
