@@ -35,16 +35,28 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
             } finally {
                 inputStream.close()
             }
-
+            expected_events--;
+            println("Expected events: ${expected_events.toInt()}")
+            if (expected_events == 0.0) {
+                println("All events delivered !")
+                System.exit(0)
+            }
         }
     }
 
     fun start() = Thread(peer).start()
 
     @Throws(InterruptedException::class)
-    open fun broadcast(event: Event = Event()) = peer.disseminationComponent.broadcast(event)
+    open fun broadcast(event: Event = Event()) {
+        peer.disseminationComponent.broadcast(event)
+        println(event.id)
+    }
 
     companion object {
+
+        val eventsPerSecond = 1.0
+        val timeToRun = 0.2
+        var expected_events = 0.0
 
         @JvmStatic fun main(args: Array<String>) {
             if (args.size < 1) {
@@ -79,6 +91,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     }
                 }
 
+                expected_events = eventsPerSecond*timeToRun*60*n
+
                 //c = 4 for 99.9875% =>  c+1 = 5
                 val log2N = Math.log(n) / Math.log(2.0)
                 val ttl = (2 * Math.ceil(5 * log2N) + 1).toInt()
@@ -94,8 +108,16 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     neem.connect(InetSocketAddress(address, 10353))
 
                 app.start()
-                Thread.sleep(1000)
-                app.broadcast()
+		// sleep for 4 minutes
+		Thread.sleep(4*60*1000)
+                val start = System.currentTimeMillis()
+                val end = start + (timeToRun*60*1000)
+                var j =  1
+                while (System.currentTimeMillis() < end) {
+                    Thread.sleep((1000 / eventsPerSecond).toLong())
+                    println(j++)
+		    app.broadcast()
+                }
                 while (true) {
                     Thread.sleep(1000)
                 }
