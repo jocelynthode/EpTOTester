@@ -33,7 +33,7 @@ if [ -z "$1" ]
     exit
 fi
 
-cd /root/epto-neem
+
 echo "rebuild the image"
 docker-compose build
 echo "clean up previous containers"
@@ -66,7 +66,7 @@ do
 	LENGTH=${#line[@]}
 	LAST_POSITION=$((LENGTH - 1))
 
-	docker cp "${line[0]}":/code/scripts/localhost.txt /root/epto-neem/scripts/"${line[$LAST_POSITION]}"_log.txt
+	docker cp "${line[0]}":/code/scripts/localhost.txt ./scripts/"${line[$LAST_POSITION]}"_log.txt
 done
 
 

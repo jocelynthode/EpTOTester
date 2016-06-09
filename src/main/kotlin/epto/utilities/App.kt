@@ -49,7 +49,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
     @Throws(InterruptedException::class)
     open fun broadcast(event: Event = Event()) {
         peer.disseminationComponent.broadcast(event)
-        println(event.id)
+        println(" sending: " +event.id.toString())
     }
 
     companion object {
@@ -115,7 +115,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 var j =  1
                 while (System.currentTimeMillis() < end) {
                     Thread.sleep((1000 / eventsPerSecond).toLong())
-                    println(j++)
+                    print(j++)
 		    app.broadcast()
                 }
                 while (true) {
