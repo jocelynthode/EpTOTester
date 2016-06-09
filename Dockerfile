@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 
 
 # Add a repo where OpenJDK can be found.
-RUN apt-get update && apt dist-upgrade
+RUN apt-get update && apt dist-upgrade -yqq
 RUN apt-get install -yqq software-properties-common
 RUN apt-get install -yqq dnsutils
 RUN add-apt-repository -y ppa:openjdk-r/ppa
