@@ -12,3 +12,7 @@ To then run the application just execute `java -cp epto-1.0-SNAPSHOT-all.jar ept
 # Scripts
 
 A small ruby script is in `scripts/`. You can test the implementation locally with this script.
+
+# Docker
+
+For running epto peers on docker, you just need to run `scripts/epto-benchmark.sh N`, where N is the number of epto-peers you want to create. This script will create an image for epto, and create N containers each running one epto peer.<br /> After running the the scripts, the output of all epto peers should be at `scripts/` folder.
