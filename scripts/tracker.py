@@ -3,13 +3,14 @@ __author__ = "Sebastien Vaucher"
 '''
 
 import subprocess
-import threading
+import pydevd as pydevd
 from random import shuffle
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 def florida_string():
-    ps_output = subprocess.check_output('docker-compose ps epto', shell=True).decode().splitlines()
+    # pydevd.settrace('192.168.1.201', port=9292, stdoutToServer=True, stderrToServer=True)
+    ps_output = subprocess.check_output('docker-compose -H tcp://192.168.1.201:2375 ps epto', shell=True).decode().splitlines()
 
     nodes_names = [x.split(' ')[0] for x in ps_output if x.startswith('eptoneem')]
     shuffle(nodes_names)

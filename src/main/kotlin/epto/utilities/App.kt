@@ -81,6 +81,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 var n = 1.0
                 Thread.sleep(5000)
                 val (request, response, result) = "/REST/v1/admin/get_view".httpGet().responseString()
+                println(request)
+                println(response)
                 println(result)
                 /*
                 * TODO use this view to initialize the Peer Sampling Service in the Peer
