@@ -3,6 +3,8 @@ services:
   epto:
     build: .
   tracker:
+    expose:
+      - "4321"
     build:
       context: .
       dockerfile: Dockerfile-tracker
