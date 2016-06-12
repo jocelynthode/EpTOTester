@@ -123,7 +123,7 @@ EpTO consists of two distinct parts. The first part is probabilistic disseminati
 To model the first part, EpTO is using a \textit{balls-and-bins} approach \autocite{Koldehofe02simplegossiping}. The balls-and-bins problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin uniformly at random and independently from other balls. In this scenario, one of the natural questions that comes to mind is: what is the minimum number of balls that should be thrown, so that every bin has at least one ball with high probability?
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/BnB.jpeg}
-\caption{Balls-and-Bins \autocite{bnb} \todo[inline] {FIX IMAGE}}
+\caption{Balls-and-Bins \autocite{bnb}}
 \label{fig:balls-and-bins}
 \end{figure}
 \par
@@ -195,7 +195,7 @@ As this component is local and only corrects itself when we receive new events, 
 In the following subsections, we will present the results obtained for the different tests ran and explain their meanings.
 \subsection{Methodology}
 \label{sub:metho}
-Our tests are run on a cluster provided by the University of Neuchâtel. For setting up our testbed we use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}, More specifically we use Docker-compose. Docker-compose is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
+Our tests are run on a cluster provided by the University of Neuchâtel. For setting up our testbed we use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}, more specifically we use Docker-compose. Docker-compose is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
 \par
 Each peer is hosted in a Docker container in order to be isolated from other peers. We want to test and compare JGroups and EpTO and find at which point JGroups breaks in terms of latency and throughput. At this point EpTO should still be working. Under this treshold, JGroups should be faster than EpTO but EpTO should still hold its own.
 \par
@@ -206,7 +206,9 @@ To measure the latency of both protocols, we measure the average time difference
 \todo[inline]{We will present the results obtained and try to explain the results}
 
 \section{Future Works}
-Future works will include testing, EpTO while having unknown peer membership. To account for that, we will need to modify NeEM to support the use of a Peer Sampling Service. We plan on implementing the CYCLON Peer Sampling Service \autocite{Voulgaris2005}.
+One of the student working on this project will do his master thesis on this project.
+
+Future works will include testing EpTO while having unknown peer membership. To account for that, we will need to modify NeEM to support the use of a Peer Sampling Service. We plan on implementing the CYCLON Peer Sampling Service \autocite{Voulgaris2005}. For now, we plan on using a tracker as in torrents to give each peer its initial view. This tracker is already implemented and works as a python web server that gets all alive peers and randomly select $K$ peers and sends this result to the EpTO peer.
 
 Our first implementation of EpTO focuses on correctness rather than fastness. Later work should optimize EpTO in regards to concurrency and network latency. To address the second point, we want to modify NeEM again to use UDP instead of TCP, to reduce latency and overhead on the network.
 \section{Conclusion}
@@ -220,7 +222,7 @@ Our first implementation of EpTO focuses on correctness rather than fastness. La
 \section*{Acknowledgment}
 This research was under supervision and help of one of the creators of EpTO algorithm, Dr. Hugues Mercier. We 	thank Dr. Miguel Matos, another creator of EpTO and one the creators of NeEM library, who provided us insight and expertise that greatly assisted us during the research.
 \par`
-We also like to thank Valerio Schiavoni to provide us the access to the cluster of University of Neuchâtel.
+We would also like to thank Valerio Schiavoni to provide us the access to the cluster of University of Neuchâtel as well as Sebastien Vaucher for the help with setting up Docker and Docker Swarm.
 
 
 
