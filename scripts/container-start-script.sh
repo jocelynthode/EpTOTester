@@ -7,14 +7,12 @@ addtime() {
     done
 }
 
-cd /code/scripts
-
 MY_IP_ADDR=$(/bin/hostname -i)
 TMP=$(dig -x $MY_IP_ADDR +short)
 MY_NAME=(${TMP//./ })
 
 # wait for all peers
-sleep 2m
+sleep 30s
 
 echo 'Starting epto peer'
 exec java -Xms50m -Xmx100m -cp ./epto-1.0-SNAPSHOT-all.jar epto.utilities.App $MY_NAME "http://eptoneem_tracker_1:4321" | addtime > localhost.txt 2>&1

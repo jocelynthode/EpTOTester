@@ -11,7 +11,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 def florida_string():
     # pydevd.settrace('192.168.1.201', port=9292, stdoutToServer=True, stderrToServer=True)
     # TODO take IP from context
-    ps_output = subprocess.check_output('docker-compose -H tcp://192.168.1.201:2375 ps epto', shell=True).decode().splitlines()
+    ps_output = subprocess.check_output('docker-compose ps epto', shell=True).decode().splitlines()
 
     nodes_names = [x.split(' ')[0] for x in ps_output if x.startswith('eptoneem')]
     shuffle(nodes_names)

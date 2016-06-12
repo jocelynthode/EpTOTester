@@ -1,33 +1,20 @@
 #!/bin/bash
 # for running the test and gathering the results
-# 
+#
 
-containsElement() {
-  local e
-  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
-  return 1
-}
+PEER_NUMBER=$1
 
 check_if_finish() {
-	mapfile -t lines < <(docker ps -a)
-	lines=("${lines[@]:1}")
-	number_of_nodes=${#lines[@]}
-	number_of_running_nodes=0
-	for i in "${lines[@]}"
-	do
-		read -a line <<<$i
-		if containsElement "Up" "${line[@]}"; then
-		   ((number_of_running_nodes++))
-		fi
-	done
-	finished_nodes=$(expr $number_of_nodes - $number_of_running_nodes)
-	if (( $finished_nodes > 3 )); then 
-		return 0
-	fi
-	return 1
+    if [ $(docker ps -aqf "status=exited" | wc -l) == "$PEER_NUMBER" ]
+        then
+            return 0
+        else
+            return 1
+    fi
+
 }
 
-if [ -z "$1" ]
+if [ -z "$PEER_NUMBER" ]
   then
     echo "you have to indicate number of peers"
     exit
@@ -37,17 +24,20 @@ fi
 echo "rebuild the image"
 docker-compose build
 echo "clean up previous containers"
-docker rm -f $(docker ps -a -q)
+if [ -n "$(docker ps -a -q)" ]
+    then
+        docker rm -f $(docker ps -a -q)
+fi
 echo "START..."
 COMPOSE_HTTP_TIMEOUT=200
 export COMPOSE_HTTP_TIMEOUT
 docker-compose up -d
-docker-compose scale epto=$1
+docker-compose scale epto=${PEER_NUMBER}
 
 #wait for apps to finish
-for i in 1 2 :
+for i in {1..20} :
 do
-	sleep 1m
+	sleep 10s
 	if check_if_finish;then
 		break
 	else
@@ -58,16 +48,7 @@ done
 #sleep 2m
 
 # collect logs
-mapfile -t lines < <(docker ps -a)
-lines=("${lines[@]:1}")
-for i in "${lines[@]}"
-do
-	read -a line <<<$i
-	LENGTH=${#line[@]}
-	LAST_POSITION=$((LENGTH - 1))
-
-	docker cp "${line[0]}":/code/scripts/localhost.txt ./"${line[$LAST_POSITION]}"_log.txt
-done
+for i in $(docker ps -aqf "ancestor=eptoneem_epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
 
 
 # shutdown containers
