@@ -81,13 +81,18 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 var n = 1.0
                 Thread.sleep(5000)
-                val result = "/REST/v1/admin/get_view".httpGet().responseString().third
-                println(result)
+                val result = "/REST/v1/admin/get_view".httpGet().responseString().third.get()
+                val tmp_view = result.split('|')
+                val map = HashMap<String, InetSocketAddress>()
+                for (hostname in tmp_view) {
+                    map[hostname] = InetSocketAddress(hostname, 10353)
+                }
                 /*
                 * TODO use this view to initialize the Peer Sampling Service in the Peer
                 *
                  */
                 System.exit(0)
+
 
 
 

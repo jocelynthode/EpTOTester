@@ -3,7 +3,7 @@ __author__ = "Sebastien Vaucher"
 '''
 
 import subprocess
-import pydevd
+#import pydevd
 from random import shuffle
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
