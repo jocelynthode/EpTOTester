@@ -1,6 +1,8 @@
 FROM python:3.5.1
 
 # RUN pip install pydevd
+RUN pip install docker-compose
+
 
 ADD . /code
 WORKDIR /code
