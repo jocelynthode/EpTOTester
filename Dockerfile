@@ -1,30 +1,19 @@
-FROM ubuntu:14.04
+FROM debian:jessie
 
+RUN echo 'deb http://mirror.switch.ch/ftp/mirror/debian/ jessie-backports main' >> /etc/apt/sources.list && \
+    apt-get -yqq update && \
+    apt-get -yqq dist-upgrade && \
+    apt-get -yqq install --no-install-recommends openjdk-8-jre-headless python3-pip wget && \
+    apt-get -yqq clean
 
-# Add a repo where OpenJDK can be found.
-RUN apt-get update && apt dist-upgrade -yqq
-RUN apt-get install -yqq software-properties-common
-RUN apt-get install -yqq dnsutils
-RUN add-apt-repository -y ppa:openjdk-r/ppa
-RUN apt-get update
+RUN pip3 install docker-compose pydevd
 
-# installing java8
-RUN apt-get install -yqq openjdk-8-jdk
+RUN mkdir -p /opt/epto/results
 
-# installing gradle
-# RUN add-apt-repository -y ppa:cwchien/gradle
-# RUN apt-get update && apt-get install -yqq gradle
+COPY build/libs/*-all.jar /opt/epto/
+COPY scripts/*.sh scripts/*.py scripts/*.rb docker-compose.yml /opt/epto/
+RUN chmod +x /opt/epto/container-start-script.sh
 
-#installing ruby
-# RUN apt-get install -yqq ruby
+WORKDIR /opt/epto
 
-ADD . /code
-WORKDIR /code
-
-# setup gradle
-RUN ./gradlew --daemon clean shadowJar
-
-RUN chmod +x /code/scripts/container-start-script.sh
-
-RUN echo 'start App'
-CMD ["/code/scripts/container-start-script.sh"]
+CMD ["/opt/epto/container-start-script.sh"]

@@ -1,18 +1,11 @@
 FROM python:3.5.1
 
-# RUN pip install pydevd
-
-#install docker
-RUN curl -sSL https://get.docker.com/ | sh
-
-#install docker-compose
+RUN pip install pydevd
 RUN pip install docker-compose
-
 
 ADD . /code
 WORKDIR /code
 
 EXPOSE 4321
 
-RUN echo 'starting Tracker'
 CMD [ "python", "./scripts/tracker.py" ]

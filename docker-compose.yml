@@ -2,6 +2,8 @@ version: '2'
 services:
   epto:
     build: .
+    volumes:
+      - ./results:/opt/epto/results
   tracker:
     expose:
       - "4321"
