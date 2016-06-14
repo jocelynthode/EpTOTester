@@ -9,7 +9,7 @@ addtime() {
 
 cd /code/scripts
 
-MY_IP_ADDR=$(/bin/hostname -i)
+MY_IP_ADDR=$(ifconfig eth0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
 TMP=$(dig -x $MY_IP_ADDR +short)
 MY_NAME=(${TMP//./ })
 
