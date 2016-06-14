@@ -14,7 +14,7 @@ TMP=$(dig -x $MY_IP_ADDR +short)
 MY_NAME=(${TMP//./ })
 
 # wait for all peers
-sleep 2m
+sleep 4m
 
 echo 'Starting epto peer'
 exec java -Xms50m -Xmx100m -cp ../build/libs/epto-1.0-SNAPSHOT-all.jar epto.utilities.App $MY_NAME | addtime > localhost.txt 2>&1

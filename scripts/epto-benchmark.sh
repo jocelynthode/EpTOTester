@@ -68,13 +68,14 @@ mapfile -t lines < <(docker ps -a)
 lines=("${lines[@]:1}")
 for i in "${lines[@]}"
 do
-	read -a line <<<$i
-	if [[ "${line[1]}" == "eptoneem_epto" ]]; then
-		LENGTH=${#line[@]}
-		LAST_POSITION=$((LENGTH - 1))	
-
-		docker cp "${line[0]}":/code/scripts/localhost.txt ./scripts/"${line[$LAST_POSITION]}"_log.txt
-	fi
+        read -a line <<<$i
+        if [[ "${line[1]}" == "eptoneem_epto" ]]; then
+                LENGTH=${#line[@]}
+                LAST_POSITION=$((LENGTH - 1))
+                NAME=$(basename ${line[$LAST_POSITION]})
+                echo $NAME
+                docker cp "${line[0]}":/code/scripts/localhost.txt ./scripts/"${NAME}"_log.txt
+        fi
 done
 
 

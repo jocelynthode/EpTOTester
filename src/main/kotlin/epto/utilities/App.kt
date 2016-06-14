@@ -109,7 +109,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 app.start()
 		// sleep for 4 minutes
-		Thread.sleep(4*60*1000)
+		Thread.sleep(5*60*1000)
                 val start = System.currentTimeMillis()
                 val end = start + (timeToRun*60*1000)
                 var j =  1
