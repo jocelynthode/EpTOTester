@@ -104,36 +104,36 @@
 
 
 \begin{abstract}
-Total ordering has always been of interest in large-scale distributed systems. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO\autocite{matos2015epto} and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
+Total ordering has always been of interest in large-scale distributed systems. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO \autocite{matos2015epto} and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
 \end{abstract}
 \section{Introduction}
-Creating an algorithm providing scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO. EpTO is an algorithm that claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, removing the need to synchronize clocks precisely on every peer and thus is well-suited for dynamic large-scale distributed systems.
+Creating an algorithm providing scalability, integrity and validity, along with a total ordering for the events through all peers in a distributed system has been one the hot topics in distributed systems research for many years. One of the recently designed algorithms on this topic is EpTO \autocite{matos2015epto}. EpTO is an algorithm that claims to provide integrity, validity and total order in a large-scale distributed system. In addition, EpTO is designed to work without a global clock, removing the need to synchronize clocks precisely on every peer and thus is well-suited for dynamic large-scale distributed systems.
 \par 
 There are many other algorithms for disseminating and ordering events in a distributed system. There are some deterministic algorithms, which guarantee total order, agreement or other strong properties. Unfortunately, these types of algorithms are not scalable enough to be used in a large-scale distributed system \autocites[]{defago2004total}[]{lamport1978time}.
 \par
 The problem with existing deterministic total ordering protocols is that they need some sort of agreement between all peers in the system. This causes a massive amount of network traffic and overhead on the system.
 Moreover, an agreement feature for an asynchronous system requires to
-explicitly maintain a group and have access to a failure detector \autocites[]{chandra1996weakest}[]{chandra1996unreliable}. Due to faults and churn in large-scale distributed systems, the failure detector turns into a bottleneck for the system and thus limits the scalability of the algorithm.
+explicitly maintain a group and have access to a failure detector \autocites[]{chandra1996weakest}[]{chandra1996unreliable}. Due to faults and churn in large-scale distributed systems, the failure detector turns into a bottleneck for the system and thus limits the algorithm's scalability.
 \par
 As an alternative to deterministic algorithms, there are probabilistic algorithms, focusing on scalability and resiliency against failures using a probabilistic dissemination approach \autocites []{birman1999bimodal}[]{carvalho2007emergent}[]{demers1987epidemic}[]{eugster2003lightweight}[]{felber2002probabilistic}[]{hayden1996probabilistic}[]{kim2004gossip}[]{Koldehofe02simplegossiping}. These algorithms guarantee the dissemination of events in the system with high probability. This way, there is no need for failure detectors and redundant traffic, making these algorithms highly scalable. As these algorithms focus on reliability of dissemination, they often have to ignore other properties such as total ordering.
 \par
 This is where EpTO comes into light. EpTO, by mixing these two types of algorithms, provides total order along with scalability, validity and integrity. 
-EpTO consists of two distinct parts. The first part is probabilistic dissemination. EpTO guarantees that all peers will receive an event with arbitrarily high probability. The second part of EpTO is deterministic ordering. Once peers have received all events, they will deterministically order them using the events timestamp, and in case of a tie use the event's broadcaster id.
+EpTO consists of two distinct parts. The first part is probabilistic dissemination. EpTO guarantees that all peers will receive an event with arbitrarily high probability. The second part of EpTO is deterministic ordering. Once peers have received all events, they deterministically order them using the events timestamp, and in case of a tie use the event's broadcaster id.
 \par
 To model the first part, EpTO is using a \textit{balls-and-bins} approach \autocite{Koldehofe02simplegossiping}. The balls-and-bins problem is a basic probabilistic problem: consider \textit{n} balls and \textit{m} bins where we consequently throw balls into a bin uniformly at random and independently from other balls. In this scenario, one of the natural questions that comes to mind is: what is the minimum number of balls that should be thrown, so that every bin has at least one ball with high probability?
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/BnB.jpeg}
-\caption{Balls-and-Bins \autocite{bnb}}
+\caption{Balls-and-Bins \autocite{bnb}.}
 \label{fig:balls-and-bins}
 \end{figure}
 \par
-Using the balls-and-bins approach we model processes as bins and events as balls. Based on this model we will calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. With this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Thanks to these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
+Using the balls-and-bins approach we model processes as bins and events as balls and calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. With this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Thanks to these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
 
 \subsection{Contribution}
-Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using a modified version of the NeEM library \autocite{neem} and show that EpTO is actually suitable for real-world large-scale distributed systems. The modification to NeEM includes a dumbed-down gossip dissemination as seen in \autocite{matos2015epto}. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
+Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using a modified version of the NeEM library \autocite{neem} and show that EpTO is suitable for real-world large-scale distributed systems. The modification to NeEM includes a dumbed-down gossip dissemination as seen in \autocite{matos2015epto}. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
 \todo[inline]{Here we will present our conclusion briefly}
 \par
-In our experiments we assume each peer knows every other peers. We implement EpTO using this assumption and test it against JGroups. The details concerning the methodology are explained in subsection \ref{sub:metho}. In future works, we want to test EpTO when not knowing the entire membership.
+In our experiments we assume each peer knows every other peers. We implement EpTO using this assumption and test it against JGroups. The details concerning the methodology are explained in subsection \ref{sub:metho}. In future work, we want to test EpTO when the membership is not entirely known.
 
 \section{Ordering Algorithms}
 Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you can’t easily order these messages.
@@ -154,29 +154,29 @@ A totally ordered set of events is a partially ordered set which satisfies one a
 	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
 \end{itemize}
 \par
-In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important, for example when we need to know exactly which operations have been invoked in which order, we have to use total order, otherwise we could end up in an inconsistent state.
+In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important, for example when we need to know exactly which operations have been invoked in which order. We then have to use total order, otherwise we can end up in an inconsistent state.
 
 \section{EpTO}
 \begin{figure}
 	\includegraphics[width=\linewidth]{figures/architecture.pdf}
-	\caption{EpTO architecture \autocite{matos2015epto}}
+	\caption{EpTO architecture \autocite{matos2015epto}.}
 	\label{fig:epto-architecture}
 \end{figure}
 \subsection{Definitions}
-A process or peer is defined as an actor in our system running the application that needs total order. Each process will communicate with other processes in the distributed systems, exchange events, and order them together.
+A process or peer is defined as an actor in our system running the application that needs total order. Each process will communicate with other processes in the distributed system, exchange events, and order them together.
 \par
 An event is defined as data sent at a given time by a peer. For example, we could imagine a system where each process publishes some data to other peers. The moment where we publish data combined with the data is called an event.
 \par
 A ball is a set of events bundled together and sent as one package. We use balls in EpTO to reduce network traffic and make it scalable in terms of processes and events.
 
-We define scalable as it was defined in  \autocite{matos2015epto}:  ``The number
+We define EpTO scaling well as it was defined in  \autocite{matos2015epto}:  ``The number
 of messages transmitted per process per round is logarithmic
-in the number of processes, ...''. The number of rounds to deliver must be low as well.
-
+in the number of processes, ...''. The number of rounds needed to deliver an event stay low as well.
 \par
-Since EpTO is using a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this case there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by EpTO's deterministic ordering algorithm and total order property is preserved.
+Since EpTO uses a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this instance there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by EpTO's deterministic ordering algorithm, thus the total order property is preserved.
 \subsection{Dissemination Component}
-The Dissemination component is the component that bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}, it receives balls, it opens them, it passes them to the Ordering component and then it forwards them to \textit{K} other processes, where K denotes the gossip fan-out.
+The Dissemination component bridges EpTO with the rest of the network. As we can see in Figure \ref*{fig:epto-architecture}, it receives balls, opens them, passes them to the Ordering component, and stores their events. Then, in the next round, it sends all the events received in the previous round to K other processes, where K denotes the gossip fan-out.
+
 \par
 When an application wants to publish an event, it will broadcast this event to the Dissemination component.
 
@@ -184,7 +184,7 @@ When an application wants to publish an event, it will broadcast this event to t
 The Ordering component is responsible for ordering events before delivering them to the application.
 To achieve this, the Ordering component has a \textit{received} hash table of (\textit{id}, \textit{event}) pairs containing all the events which are received by the peer, but not yet delivered to the application and a \textit{delivered} hash table containing all the events which were delivered.
 \par
-In brief, the Ordering component first increments the timestamp of all the events which have been received in previous rounds to indicate the start of a new round. Then, it processes new events in the received ball by discarding events that have been received already (delivered events or events with timestamp smaller than the last delivered event). This is done to prevent delivering duplicate events. The remaining events in the received ball will be added to the \textit{received} hash table, and wait to be delivered based on the Stability oracle.
+In brief, the Ordering component first increments the timestamp of all the events which have been received in previous rounds to indicate the start of a new round. Then, it processes new events in the received ball by discarding events that have been received already (delivered events or events with timestamp smaller than the last delivered event). This is done to prevent delivering duplicate events. The remaining events in the received ball are added to the \textit{received} hash table, and wait to be delivered based on the Stability oracle.
 \subsection{Stability Oracle}
 The Stability oracle is the component that outputs timestamps. It will increment its local clock every round as well as synchronize itself using timestamps of newly received events, to make sure the local clock does not drift too much.
 \par
@@ -197,20 +197,20 @@ In the following subsections, we will present the results obtained for the diffe
 \label{sub:metho}
 Our tests are run on a cluster provided by the University of Neuchâtel. For setting up our testbed we use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}, more specifically we use Docker-compose. Docker-compose is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
 \par
-Each peer is hosted in a Docker container in order to be isolated from other peers. We want to test and compare JGroups and EpTO and find at which point JGroups breaks in terms of latency and throughput. At this point EpTO should still be working. Under this treshold, JGroups should be faster than EpTO but EpTO should still hold its own.
+Each peer is hosted in a Docker container in order to be isolated from other peers. We want to test and compare JGroups and EpTO and find at which point JGroups breaks in terms of latency and throughput. At this point EpTO should still be working. Under this threshold, JGroups should be faster than EpTO but EpTO should still hold its own.
 \par
-To measure the throughput, we transmit a certain number of events by certain number of peers in a defined period of time, and then we measure number of packets transmitted over the network.
+To measure the throughput, we transmit a certain number of events by certain number of peers in a defined period of time, and then we measure the number of packets transmitted over the network.
 \par
-To measure the latency of both protocols, we measure the average time difference between broadcasting an event by a peer, and delivering the same event by the same peers. In this way we can have an estimation of the approximate delay, and compare two protocols.
+To measure the latency of both protocols, we measure the average time difference on a peer between the broadcast of an event and the time it delivers this same event. This way we can have an estimation of the approximate delay, and compare JGroups and EpTO.
 \subsection{Peer membership known}
 \todo[inline]{We will present the results obtained and try to explain the results}
 
-\section{Future Works}
-One of the student working on this project will do his master thesis on this project.
+\section{Future Work}
+One of the students working on this project will do his master thesis on this project.
 
-Future works will include testing EpTO while having unknown peer membership. To account for that, we will need to modify NeEM to support the use of a Peer Sampling Service. We plan on implementing the CYCLON Peer Sampling Service \autocite{Voulgaris2005}. For now, we plan on using a tracker as in torrents to give each peer its initial view. This tracker is already implemented and works as a python web server that gets all alive peers and randomly select $K$ peers and sends this result to the EpTO peer.
+Future work will include testing EpTO while having unknown peer membership. To account for that, we will need to modify NeEM to support the use of a Peer Sampling Service. We plan on implementing the CYCLON Peer Sampling Service \autocite{Voulgaris2005}. For now, we plan on using a tracker as in torrents to give each peer its initial view. This tracker is already implemented and works as a python web server that gets all alive peers and randomly select $K$ peers and sends this result to the EpTO peer.
 
-Our first implementation of EpTO focuses on correctness rather than fastness. Later work should optimize EpTO in regards to concurrency and network latency. To address the second point, we want to modify NeEM again to use UDP instead of TCP, to reduce latency and overhead on the network.
+Our first implementation of EpTO focuses on correctness rather than fastness. Later work should optimize EpTO in regards to concurrency and network latency. To address the second point, we want to modify NeEM again to use UDP instead of TCP, to reduce latency and overhead in the network.
 \section{Conclusion}
 \todo[inline]{He we will summarize the results we found and present some future tasks that could be accomplished on EpTO}
 
@@ -220,9 +220,9 @@ Our first implementation of EpTO focuses on correctness rather than fastness. La
 
 % use section* for acknowledgement
 \section*{Acknowledgment}
-This research was under supervision and help of one of the creators of EpTO algorithm, Dr. Hugues Mercier. We 	thank Dr. Miguel Matos, another creator of EpTO and one the creators of NeEM library, who provided us insight and expertise that greatly assisted us during the research.
-\par`
-We would also like to thank Valerio Schiavoni to provide us the access to the cluster of University of Neuchâtel as well as Sebastien Vaucher for the help with setting up Docker and Docker Swarm.
+This research was under supervision and help of two of the creators of EpTO, Dr. Hugues Mercier and Dr. Miguel Matos. We would like to thank them both for the help, insight and expertise they provided during this project.
+\par
+We would also like to thank Valerio Schiavoni for providing access to the cluster of University of Neuchâtel as well as Sebastien Vaucher for the help with setting up Docker, Docker-Compose and Docker Swarm.
 
 
 
