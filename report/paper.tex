@@ -171,7 +171,7 @@ A ball is a set of events bundled together and sent as one package. We use balls
 
 We define EpTO scaling well as it was defined in  \autocite{matos2015epto}:  ``The number
 of messages transmitted per process per round is logarithmic
-in the number of processes, ...''. The number of rounds needed to deliver an event stay low as well.
+in the number of processes, ...''. The number of rounds needed to deliver an event stays low as well.
 \par
 Since EpTO uses a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this instance there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by EpTO's deterministic ordering algorithm, thus the total order property is preserved.
 \subsection{Dissemination Component}
