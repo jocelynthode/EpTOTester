@@ -232,7 +232,7 @@ Our first implementation of EpTO focuses on correctness rather than fastness. La
 \section{Conclusion}
 In conclusion, EpTO was implemented using Kotlin with a focus on correctness instead of fastness. There are still many optimizations left to be done on the code which will be implemented during the master thesis following this project.
 \par
-Tests were ran evaluating  the average delay for an event to be delivered, the total time of execution and the number of packets transmitted over the network. These tests showed that EpTO was not behaving as we expected. Unfortunately as we encountered many problems during the tests we could not test the algorithm the way we wanted and these results are only a start and will be more conclusive in the future.
+Tests were ran evaluating  the average delay for an event to be delivered, the total time of execution and the number of packets transmitted over the network. They show that EpTO was not behaving as we expected. Unfortunately, as we encountered many problems during the tests we could not test the algorithm the way we wanted and these results are only a start and will be more conclusive in the future. We feel the problems appearing in the tests can be fixed by having a better testing environment as well as a more optimized code.
 \par
 At the moment, the tests must be run somewhat manually. We want to use Docker and Docker-swarm in the future to enhance the reproducibility of the tests on any cluster.
 
