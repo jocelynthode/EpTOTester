@@ -130,8 +130,7 @@ To model the first part, EpTO is using a \textit{balls-and-bins} approach \autoc
 Using the balls-and-bins approach we model processes as bins and events as balls and calculate how many balls need to be \textit{thrown} such that every bin contains at least one ball with arbitrarily high probability. With this approach the number of messages transmitted per process per round is logarithmic in the number of processes, therefore the number of messages sent in the system is low and uniform over all processes. Thanks to these approaches, EpTO becomes highly scalable and resilient, while still providing total order.
 
 \subsection{Contribution}
-Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using a modified version of the NeEM library \autocite{neem} and show that EpTO is suitable for real-world large-scale distributed systems. The modification to NeEM includes a dumbed-down gossip dissemination as seen in \autocite{matos2015epto}. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in both stable (no-churn) and unstable systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
-\todo[inline]{Here we will present our conclusion briefly}
+Until now, the creators of EpTO have only tested this algorithm in a simulated environment. In this work, we implement EpTO in pure Kotlin using a modified version of the NeEM library \autocite{neem} and show that EpTO is suitable for real-world large-scale distributed systems. The modification to NeEM includes a dumbed-down gossip dissemination as seen in \autocite{matos2015epto}. We then evaluate EpTO by comparing it to the deterministic total order algorithm provided by JGroups  \autocite{jgroups} in stable (no-churn) systems. These comparisons help us verify if EpTO is actually performing as expected in a real-world scenario.
 \par
 In our experiments we assume each peer knows every other peers. We implement EpTO using this assumption and test it against JGroups. The details concerning the methodology are explained in subsection \ref{sub:metho}. In future work, we want to test EpTO when the membership is not entirely known.
 
@@ -214,16 +213,16 @@ As we measured and compared the latency of EpTO and JGroups we realize that JGro
 \caption{total run time of EpTO peers in order to deliver all events.}
 \label{fig:total_time}
 \end{figure}
-As we increased the number of peers, our results showed that JGroups is not as scalable as EpTO, but considering our limited resources we couldn't fully observe the difference between JGroup and EpTO on this matter. Although we should bear in mind that in this experiment EpTO has a relatively large delay due to ordering of the events without a central node (as in JGroups). But despite of this delay, we expected that EpTO performs much better and our analysis is that due the insufficient resource on the testbed. Epto could not show its advantages.
+When we increase the number of peers, our results show that JGroups is not as scalable as EpTO, but considering our limited resources we could not fully observe the difference between JGroup and EpTO on this matter. Although we should bear in mind that in this experiment EpTO has a relatively large delay due to ordering of the events without a central node (as in JGroups). But despite this delay, we expected EpTO to perform much better. We infer the problem might be related more to the way the experiments were run and not directly to EpTO. This needs further testing and will be done during the master thesis on this subject.
 \par
-We perceive this issue again when we measured the total time of execution of EpTO for delivering a certain number of events.
+This issue is also present when measuring the total time of execution of EpTO for delivering a certain number of events.
 \par
 \begin{figure}
 \includegraphics[width=\linewidth]{figures/throughput.png}
 \caption{number of events transmitted packets over the network in 10 minutes.}
 \label{fig:throughput}
 \end{figure}
-For the throughput of both protocols we used a network sniffing tool, TCPdump. TCPdump is a tool for observing the network traffic. Using this tool we count number of packets (TCP packet for EpTO and UDP packet for JGroups) transmitting over the network for 10 minutes. And again, number of packets sent by EpTO peers are much higher than JGroups. This issue can be explain due the differences of the using protocols, TCP and UDP. TCP uses much more packets and data over the network for a connection to secure and guarantee the delivery of data. that's why in a perfect and lossless network, JGroups has better performance from perspective of network throughput.
+For the throughput of both protocols we used a network sniffing tool, TCPdump. TCPdump is a tool for observing the network traffic. Using this tool we count the number of packets (TCP packets for EpTO and UDP packets for JGroups) transmitted over the network for 10 minutes. Again, the number of packets sent by EpTO peers are much higher than JGroups. This issue can be explain due to the differences between TCP and UDP. TCP uses much more packets and data over the network for a connection to secure and guarantee the delivery of data. that's why in a perfect and lossless network, JGroups has better performance from perspective of network throughput. We expect the number of packets sent by EpTO to drastically diminish once we have made the switch to UDP.
 \section{Future Work}
 One of the students working on this project will do his master thesis on this project.
 
@@ -231,10 +230,11 @@ Future work will include testing EpTO while having unknown peer membership. To a
 
 Our first implementation of EpTO focuses on correctness rather than fastness. Later work should optimize EpTO in regards to concurrency and network latency. To address the second point, we want to modify NeEM again to use UDP instead of TCP, to reduce latency and overhead in the network.
 \section{Conclusion}
-\todo[inline]{He we will summarize the results we found and present some future tasks that could be accomplished on EpTO}
-
-
-% conference papers do not normally have an appendix
+In conclusion, EpTO was implemented using Kotlin with a focus on correctness instead of fastness. There are still many optimizations left to be done on the code which will be implemented during the master thesis following this project.
+\par
+Tests were ran evaluating  the average delay for an event to be delivered, the total time of execution and the number of packets transmitted over the network. These tests showed that EpTO was not behaving as we expected. Unfortunately as we encountered many problems during the tests we could not test the algorithm the way we wanted and these results are only a start and will be more conclusive in the future.
+\par
+At the moment, the tests must be run somewhat manually. We want to use Docker and Docker-swarm in the future to enhance the reproducibility of the tests on any cluster.
 
 
 % use section* for acknowledgement
