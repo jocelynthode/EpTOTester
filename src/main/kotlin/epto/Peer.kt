@@ -35,13 +35,14 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
         try {
             is_running = true
             while (is_running) {
-                val buf = ByteArray(100000)
+                val buf = ByteArray(1000000)
                 val bb = ByteBuffer.wrap(buf)
 
                 neem.read(bb)
                 val byteIn = ByteArrayInputStream(bb.array())
                 val inputStream = ObjectInputStream(byteIn)
                 disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
+                bb.clear()
             }
         } catch (ace: AsynchronousCloseException) {
             // Exiting.
