@@ -1,8 +1,13 @@
-#!/bin/bash	
+#!/bin/bash
+
+# this script will run the epto peers and deploying them on specific machins with known IP adresses. you have to provide IP address of all working node: ips
+# to run this just run the ./nodocker.sh N 
+# in epto-neem/scripts/ folder
+# N is the number of peers per node.
 
 if [ -z "$1" ]
   then
-    echo "No argument supplied"
+    echo "indicate number of peers per node"
     exit
 fi
 
