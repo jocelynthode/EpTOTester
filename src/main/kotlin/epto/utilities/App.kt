@@ -26,7 +26,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
             val inputStream = ObjectInputStream(byteIn)
             try {
                 val event = inputStream.readObject() as Event
-                println("Delivered : ${event.id}")
+                println("Delivered: ${event.id}")
             } catch(e: Exception) {
                 e.printStackTrace()
             } finally {
@@ -44,7 +44,10 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
     fun start() = Thread(peer).start()
 
     @Throws(InterruptedException::class)
-    open fun broadcast(event: Event = Event()) = peer.disseminationComponent.broadcast(event)
+    open fun broadcast(event: Event = Event()) {
+	println("sent: ${event.id}")
+        peer.disseminationComponent.broadcast(event)
+    }
 
     companion object {
 
@@ -83,6 +86,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     neem.connect(Addresses.parse(arg, false))
 
                 app.start()
+		Thread.sleep(2*60*1000)
                 val start = System.currentTimeMillis()
                 val end = start + (timeToRun*60*1000)
                 var i =  1

@@ -35,7 +35,7 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
         try {
             is_running = true
             while (is_running) {
-                val buf = ByteArray(1000000)
+                val buf = ByteArray(500000)
                 val bb = ByteBuffer.wrap(buf)
 
                 neem.read(bb)
