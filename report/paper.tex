@@ -195,16 +195,35 @@ As this component is local and only corrects itself when we receive new events, 
 In the following subsections, we will present the results obtained for the different tests ran and explain their meanings.
 \subsection{Methodology}
 \label{sub:metho}
-Our tests are run on a cluster provided by the University of Neuchâtel. For setting up our testbed we use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We make use of Docker \autocite{docker}, more specifically we use Docker-compose. Docker-compose is a tool to run multi-container applications, coupled to docker-swarm, which lets us make a pool of Docker hosts appear as a single Docker host.
+Our tests are run on a cluster provided by the University of Neuchâtel. For setting up our testbed we use OpenNebula \autocite{opennebula} to manage our cluster of virtual machines. We were planning on using Docker \autocite{docker}, more specifically Docker-compose and docker-swarm in order to orchestrate and manage our cluster of peers on the OpenNebula but due to some issues with docker-swarm, we decided to deploy our application directly on the OpenNebula virtual machines, and control it using parallel ssh sessions.
 \par
-Each peer is hosted in a Docker container in order to be isolated from other peers. We want to test and compare JGroups and EpTO and find at which point JGroups breaks in terms of latency and throughput. At this point EpTO should still be working. Under this threshold, JGroups should be faster than EpTO but EpTO should still hold its own.
+We deployed our application on a small network of 4 virtual machines and we distribute EpTO and JGroups peers equally over the network.
 \par
 To measure the throughput, we transmit a certain number of events by certain number of peers in a defined period of time, and then we measure the number of packets transmitted over the network.
 \par
-To measure the latency of both protocols, we measure the average time difference on a peer between the broadcast of an event and the time it delivers this same event. This way we can have an estimation of the approximate delay, and compare JGroups and EpTO.
+To measure the latency of both protocols, we measure the average time difference on a peer between the broadcast of an event and the time it delivers this same event. This way we can have an estimation of the approximate delay, and compare JGroups and EpTO.  We execute EpTO and JGroups with 60, 100, 120 and 160 peers each peer broadcasting 12 events for 12 seconds (one event per second).
 \subsection{Peer membership known}
-\todo[inline]{We will present the results obtained and try to explain the results}
-
+As we measured and compared the latency of EpTO and JGroups we realize that JGroups is performing better than EpTO with smaller number of peers.
+\begin{figure}
+\includegraphics[width=\linewidth]{figures/Delay.png}
+\caption{Approximate delay of delivering each event.}
+\label{fig:delay}
+\end{figure}
+\begin{figure}
+\includegraphics[width=\linewidth]{figures/total_time.png}
+\caption{total run time of EpTO peers in order to deliver all events.}
+\label{fig:total_time}
+\end{figure}
+As we increased the number of peers, our results showed that JGroups is not as scalable as EpTO, but considering our limited resources we couldn't fully observe the difference between JGroup and EpTO on this matter. Although we should bear in mind that in this experiment EpTO has a relatively large delay due to ordering of the events without a central node (as in JGroups). But despite of this delay, we expected that EpTO performs much better and our analysis is that due the insufficient resource on the testbed. Epto could not show its advantages.
+\par
+We perceive this issue again when we measured the total time of execution of EpTO for delivering a certain number of events.
+\par
+\begin{figure}
+\includegraphics[width=\linewidth]{figures/throughput.png}
+\caption{number of events transmitted packets over the network in 10 minutes.}
+\label{fig:throughput}
+\end{figure}
+For the throughput of both protocols we used a network sniffing tool, TCPdump. TCPdump is a tool for observing the network traffic. Using this tool we count number of packets (TCP packet for EpTO and UDP packet for JGroups) transmitting over the network for 10 minutes. And again, number of packets sent by EpTO peers are much higher than JGroups. This issue can be explain due the differences of the using protocols, TCP and UDP. TCP uses much more packets and data over the network for a connection to secure and guarantee the delivery of data. that's why in a perfect and lossless network, JGroups has better performance from perspective of network throughput.
 \section{Future Work}
 One of the students working on this project will do his master thesis on this project.
 
