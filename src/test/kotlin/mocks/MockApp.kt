@@ -17,10 +17,9 @@ class MockApp(neem: MulticastChannel, TTL: Int, K: Int) : App(neem, TTL, K) {
     var events: MutableList<UUID> = Collections.synchronizedList(ArrayList<UUID>())
 
     @Throws(InterruptedException::class)
-    override fun broadcast(event: Event?) {
+    override fun broadcast(event: Event) {
         var event = event
         Thread.sleep(200)
-        if (event == null) event = Event(UUID.randomUUID(), 0, 0, null)
         this.peer.disseminationComponent.broadcast(event)
     }
 
