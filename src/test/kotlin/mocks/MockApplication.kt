@@ -2,6 +2,7 @@ package mocks
 
 import epto.utilities.Event
 import net.sf.neem.impl.Application
+import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.ObjectInputStream
@@ -20,8 +21,9 @@ class MockApplication : Application {
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
             try {
-                val `in` = ObjectInputStream(byteIn)
+                val `in` = FSTObjectInput(byteIn)
                 val event = `in`.readObject() as Event
+                `in`.close()
                 events.add(event.id)
             } catch (e: IOException) {
                 e.printStackTrace()

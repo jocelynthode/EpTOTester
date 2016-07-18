@@ -3,6 +3,7 @@ package epto
 
 import epto.utilities.Event
 import net.sf.neem.impl.Application
+import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.ObjectOutputStream
@@ -56,11 +57,14 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
             lastDeliveredTs = event.timeStamp
 
             val byteOut = ByteArrayOutputStream()
+            val out = FSTObjectOutput(byteOut)
             try {
-                val out = ObjectOutputStream(byteOut)
                 out.writeObject(event)
+                out.flush()
             } catch (e: IOException) {
                 e.printStackTrace()
+            } finally {
+                out.close()
             }
 
             //delivering the event

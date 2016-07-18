@@ -3,6 +3,7 @@ package mocks
 import epto.utilities.App
 import epto.utilities.Event
 import net.sf.neem.MulticastChannel
+import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.ObjectInputStream
@@ -28,8 +29,9 @@ class MockApp(neem: MulticastChannel, TTL: Int, K: Int) : App(neem, TTL, K) {
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
             try {
-                val `in` = ObjectInputStream(byteIn)
+                val `in` = FSTObjectInput(byteIn)
                 val event = `in`.readObject() as Event
+                `in`.close()
                 events.add(event.id)
                 println(event.toString())
             } catch (e: IOException) {

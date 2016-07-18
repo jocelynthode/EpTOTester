@@ -6,6 +6,7 @@ import com.github.kittinunf.fuel.httpGet
 import epto.Peer
 import net.sf.neem.MulticastChannel
 import net.sf.neem.impl.Application
+import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
 import java.net.InetSocketAddress
@@ -22,10 +23,11 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
      * {@inheritDoc}
      */
     @Synchronized override fun deliver(byteBuffers: Array<ByteBuffer>) {
+        //TODO review forEach
         byteBuffers.forEach { byteBuffer ->
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
-            val inputStream = ObjectInputStream(byteIn)
+            val inputStream = FSTObjectInput(byteIn)
             try {
                 val event = inputStream.readObject() as Event
                 println("Delivered : ${event.id}")

@@ -3,6 +3,7 @@ package epto
 import epto.utilities.Event
 import net.sf.neem.MulticastChannel
 import net.sf.neem.impl.Application
+import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
 import java.nio.ByteBuffer
@@ -38,13 +39,14 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
         try {
             is_running = true
             while (is_running) {
+                //TODO make this nicer
                 val buf = ByteArray(100000)
                 val bb = ByteBuffer.wrap(buf)
-
                 neem.read(bb)
                 val byteIn = ByteArrayInputStream(bb.array())
-                val inputStream = ObjectInputStream(byteIn)
+                val inputStream = FSTObjectInput(byteIn)
                 disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
+                inputStream.close()
             }
         } catch (ace: AsynchronousCloseException) {
             // Exiting.

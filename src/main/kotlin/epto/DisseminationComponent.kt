@@ -2,6 +2,8 @@ package epto
 
 import epto.utilities.Event
 import net.sf.neem.MulticastChannel
+import org.nustaq.serialization.FSTObjectOutput
+import org.nustaq.serialization.util.FSTOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.ObjectOutputStream
@@ -38,11 +40,11 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
             synchronized (nextBallLock) {
                 nextBall.forEach { id, event -> event.incrementTtl() }
                 if (!nextBall.isEmpty()) {
-                    //TODO for now write assuming entire membership
                     val byteOut = ByteArrayOutputStream()
-                    val out = ObjectOutputStream(byteOut)
+                    val out = FSTObjectOutput(byteOut)
                     try {
                         out.writeObject(nextBall)
+                        out.flush()
                     } catch (e: IOException) {
                         e.printStackTrace()
                     } finally {
