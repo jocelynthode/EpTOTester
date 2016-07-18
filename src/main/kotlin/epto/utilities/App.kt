@@ -3,19 +3,13 @@ package epto.utilities
 
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.result.Result
-import com.github.kittinunf.result.getAs
 import epto.Peer
 import net.sf.neem.MulticastChannel
 import net.sf.neem.impl.Application
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
-import java.net.InetAddress
 import java.net.InetSocketAddress
-import java.net.UnknownHostException
 import java.nio.ByteBuffer
-import java.util.*
 
 /**
  * Implementation of an Application
@@ -54,7 +48,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
     @Throws(InterruptedException::class)
     open fun broadcast(event: Event = Event()) {
         peer.disseminationComponent.broadcast(event)
-        println(" sending: " +event.id.toString())
+        println(" sending: " + event.id.toString())
     }
 
     companion object {
@@ -79,24 +73,29 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 if (neem.localSocketAddress.address.isLoopbackAddress)
                     println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-                var n = 1.0
+                val n = 25.0
                 Thread.sleep(5000)
-                val result = "/REST/v1/admin/get_view".httpGet().responseString().third.get()
-                val tmp_view = result.split('|')
-                val map = HashMap<String, InetSocketAddress>()
+                var result : String? = null
+                var tmp_view : List<String>? = null
+
+                //Don't start until we have at least an other peer to talk to.
+                do {
+                    result = "/REST/v1/admin/get_view".httpGet().responseString().third.get()
+                    tmp_view = result.split('|')
+                } while (tmp_view!!.size == 0)
+
+                //println(result)
+
                 for (hostname in tmp_view) {
-                    map[hostname] = InetSocketAddress(hostname, 10353)
+                    neem.connect(InetSocketAddress(hostname, 10353))
                 }
-                /*
-                * TODO use this view to initialize the Peer Sampling Service in the Peer
-                *
-                 */
-                System.exit(0)
+
+                //Give some time for the PSS to have a randomized view
+                Thread.sleep(20000)
+                //System.exit(0)
 
 
-
-
-                expected_events = eventsPerSecond*timeToRun*60*n
+                expected_events = eventsPerSecond * timeToRun * 60 * n
 
                 //c = 4 for 99.9875% =>  c+1 = 5
                 val log2N = Math.log(n) / Math.log(2.0)
@@ -108,16 +107,17 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 println("Peer Number : ${n.toInt()}")
                 println("TTL : $ttl, K : $k")
 
+
                 app.start()
-		// sleep for 4 minutes
-		Thread.sleep(4*60*1000)
+                // sleep for 4 minutes
+                Thread.sleep(4 * 60 * 1000)
                 val start = System.currentTimeMillis()
-                val end = start + (timeToRun*60*1000)
-                var j =  1
+                val end = start + (timeToRun * 60 * 1000)
+                var j = 1
                 while (System.currentTimeMillis() < end) {
                     Thread.sleep((1000 / eventsPerSecond).toLong())
                     print(j++)
-		    app.broadcast()
+                    app.broadcast()
                 }
                 while (true) {
                     Thread.sleep(1000)
