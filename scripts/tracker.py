@@ -16,9 +16,9 @@ def florida_string():
     nodes_names = [x.split(' ')[0] for x in ps_output if x.startswith('eptoneem')]
     shuffle(nodes_names)
     # TODO change 10 to k later
-    return '|'.join(nodes_names[:10]).encode()
+    return '|'.join(nodes_names[:16]).encode()
 
-
+#TODO add possiblity to request a view of size k
 class FloridaHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/REST/v1/admin/get_view':

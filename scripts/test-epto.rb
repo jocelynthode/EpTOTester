@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 
-ids = [*1..5]
+ids = [*1..25]
 
 puts 'compiling...'
 puts `cd ..; ./gradlew --daemon clean shadowJar && cd scripts/;`
