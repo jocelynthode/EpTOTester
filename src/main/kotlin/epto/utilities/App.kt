@@ -77,8 +77,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 val n = 25.0
                 Thread.sleep(5000)
-                var result : String? = null
-                var tmp_view : List<String>? = null
+                var result : String?
+                var tmp_view : List<String>?
 
                 //Don't start until we have at least an other peer to talk to.
                 do {
@@ -93,7 +93,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 }
 
                 //Give some time for the PSS to have a randomized view
-                Thread.sleep(20000)
+                Thread.sleep(30000)
                 //System.exit(0)
 
 
@@ -111,8 +111,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
 
                 app.start()
-                // sleep for 4 minutes
-                Thread.sleep(4 * 60 * 1000)
+                // sleep for 10sec
+                Thread.sleep(2000)
                 val start = System.currentTimeMillis()
                 val end = start + (timeToRun * 60 * 1000)
                 var j = 1
