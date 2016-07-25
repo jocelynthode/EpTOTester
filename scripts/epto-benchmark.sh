@@ -35,9 +35,9 @@ docker-compose up -d
 docker-compose scale epto=${PEER_NUMBER}
 
 #wait for apps to finish
-for i in {1..30} :
+for i in {1..40} :
 do
-	sleep 10s
+	sleep 20s
 	if check_if_finish;then
 		break
 	else

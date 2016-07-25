@@ -1,5 +1,7 @@
 '''
-__author__ = "Sebastien Vaucher"
+__author__ = "Jocelyn Thode"
+
+inspired from a script from Sebastien Vaucher
 '''
 
 import subprocess

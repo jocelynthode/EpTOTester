@@ -94,6 +94,9 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
 
                 //Give some time for the PSS to have a randomized view
                 Thread.sleep(30000)
+                while (true) {
+                    Thread.sleep(1000)
+                }
                 //System.exit(0)
 
 
