@@ -9,6 +9,7 @@ import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
@@ -66,34 +67,36 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
             }
 
             try {
+                var result : String?
+                var tmp_view : MutableList<String>?
+
+                //Don't start until we have at least an other peer to talk to.
+                FuelManager.instance.basePath = args[1]
+                do {
+                    result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
+                    tmp_view = result.split('|').toMutableList()
+                } while (tmp_view!!.size < 7)
+
+                print(args[0])
+                println(result)
+                if (tmp_view.contains(args[0])) {
+                    tmp_view.remove(args[0])
+                }
 
                 val neem = MulticastChannel(InetSocketAddress(args[0], 10353))
-                FuelManager.instance.basePath = args[1]
 
                 println("Started: ${neem.localSocketAddress}")
 
                 if (neem.localSocketAddress.address.isLoopbackAddress)
                     println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-                val n = 25.0
-                Thread.sleep(5000)
-                var result : String?
-                var tmp_view : List<String>?
-
-                //Don't start until we have at least an other peer to talk to.
-                do {
-                    result = "/REST/v1/admin/get_view".httpGet().responseString().third.get()
-                    tmp_view = result.split('|')
-                } while (tmp_view!!.size == 0)
-
-                //println(result)
+                val n = 60.0
 
                 for (hostname in tmp_view) {
                     neem.connect(InetSocketAddress(hostname, 10353))
                 }
 
                 //Give some time for the PSS to have a randomized view
-                Thread.sleep(30000)
                 while (true) {
                     Thread.sleep(1000)
                 }
