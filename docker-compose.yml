@@ -1,7 +1,7 @@
 version: '2'
 services:
   epto:
-    mem_limit: 180m
+    mem_limit: 200m
     build: .
     volumes:
       - ./results:/opt/epto/results
