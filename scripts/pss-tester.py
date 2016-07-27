@@ -22,8 +22,9 @@ def extract_nodes(from_seconds=0):
             if match:
                 yield int(match.group(1))
     start_at = min(extract_starts(lines))
+    print(start_at)
 
-    min_time = start_at + from_seconds * 1000  # Timestamp are in micro-seconds
+    min_time = start_at + from_seconds * 1000  # Timestamp are in milliseconds
     views = {}
     for line in lines:
         match = re.match(r'(\d+) PSS View: ([0-9. ]+)', line)
@@ -45,7 +46,10 @@ def create_graph(from_seconds=30):
 G = create_graph(int(sys.argv[1]))
 D = nx.DiGraph(G)
 nx.draw_circular(G, with_labels=True)
-#print(nx.average_shortest_path_length(D))
-#print(nx.average_clustering(G))
-print(D.in_degree())
+print(nx.average_shortest_path_length(D))
+print(nx.average_clustering(G))
+indeg = D.in_degree()
+print(indeg)
+print(len(indeg))
+
 plt.show()
