@@ -4,30 +4,47 @@ __author__ = "Jocelyn Thode"
 inspired from a script from Sebastien Vaucher
 '''
 
-import subprocess
 #import pydevd
-from random import shuffle
+import time
+import os
+import random
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+available_peers = {}
+K = 16
 
-def florida_string():
+
+def florida_string(ip):
+    available_peers[ip] = int(time.time())
+    for ip, timestamp in available_peers.items():
+        new_timestamp = int(time.time())
+        if new_timestamp - timestamp > 180:
+            to_keep = os.system("ping -c 1 -W 1 " + ip) == 0
+
+            if not to_keep:
+                available_peers.pop(ip)
+            else:
+                available_peers[ip] = new_timestamp
+
+
     # pydevd.settrace('192.168.1.201', port=9292, stdoutToServer=True, stderrToServer=True)
-    # TODO take IP from context
-    ps_output = subprocess.check_output('docker-compose ps epto', shell=True).decode().splitlines()
 
-    nodes_names = [x.split(' ')[0] for x in ps_output if x.startswith('eptoneem')]
-    shuffle(nodes_names)
-    # TODO change 10 to k later
-    return '|'.join(nodes_names[:16]).encode()
+    if len(available_peers) > K:
+        to_send = random.sample(available_peers.keys(), K)
+    else:
+        to_send = list(available_peers.keys())
 
-#TODO add possiblity to request a view of size k
+    return '|'.join(to_send).encode()
+
+
+# TODO add possiblity to request a view of size k
 class FloridaHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/REST/v1/admin/get_view':
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(florida_string())
+            self.wfile.write(florida_string(self.client_address[0]))
         else:
             self.send_response(404)
             self.send_header("Content-type", "text/plain")

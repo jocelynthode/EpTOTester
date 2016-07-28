@@ -75,7 +75,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 do {
                     result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
                     tmp_view = result.split('|').toMutableList()
-                } while (tmp_view!!.size < 7)
+                    Thread.sleep(5000)
+                } while (tmp_view!!.size < 10)
 
                 print(args[0])
                 println(result)
