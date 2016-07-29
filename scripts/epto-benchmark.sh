@@ -18,7 +18,7 @@ echo "START..."
 docker swarm init
 docker network create -d overlay epto-network
 TOKEN=$(docker swarm join-token -q worker)
-pssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
+parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
 
@@ -34,7 +34,7 @@ done
 docker service rm epto-service
 # collect logs
 #for i in $(docker ps -aqf "ancestor=epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
-pssh -h hosts "docker swarm leave"
+parallel-ssh -h hosts "docker swarm leave"
 docker swarm leave --force
 
 
