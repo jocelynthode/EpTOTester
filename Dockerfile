@@ -8,7 +8,7 @@ RUN echo 'deb http://mirror.switch.ch/ftp/mirror/debian/ jessie-backports main' 
 
 RUN pip3 install docker-compose pydevd
 
-RUN mkdir -p /opt/epto/results
+RUN mkdir -p /data
 
 COPY build/libs/*-all.jar /opt/epto/
 COPY scripts/*.sh scripts/*.py scripts/*.rb docker-compose.yml /opt/epto/

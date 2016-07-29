@@ -2,17 +2,9 @@
 # for running the test and gathering the results
 #
 
+MANAGER_IP=192.168.1.40
 PEER_NUMBER=$1
 
-check_if_finish() {
-    if [ $(docker ps -aqf "status=exited" | wc -l) == "$PEER_NUMBER" ]
-        then
-            return 0
-        else
-            return 1
-    fi
-
-}
 
 if [ -z "$PEER_NUMBER" ]
   then
@@ -20,39 +12,31 @@ if [ -z "$PEER_NUMBER" ]
     exit
 fi
 
+# TODO have a repo and pull from it for the image
 
-echo "rebuild the image"
-docker-compose build
-echo "clean up previous containers"
-if [ -n "$(docker ps -a -q)" ]
-    then
-        docker rm -f $(docker ps -a -q)
-fi
 echo "START..."
-COMPOSE_HTTP_TIMEOUT=200
-export COMPOSE_HTTP_TIMEOUT
-docker-compose up -d
-docker-compose scale epto=${PEER_NUMBER}
+docker swarm init
+docker network create -d overlay epto-network
+TOKEN=$(docker swarm join-token -q worker)
+pssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
+
+docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
 
 #wait for apps to finish
 for i in {1..40} :
 do
 	sleep 20s
-	if check_if_finish;then
-		break
-	else
-		echo "waiting..."
-	fi
+    echo "waiting..."
 done
 #echo "waiting 2 more minutes"
 #sleep 2m
 
+docker service rm epto-service
 # collect logs
-for i in $(docker ps -aqf "ancestor=eptoneem_epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
+#for i in $(docker ps -aqf "ancestor=epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
+pssh -h hosts "docker swarm leave"
+docker swarm leave --force
 
-
-# shutdown containers
-docker-compose down
 
 #analyze results
 echo "finished"
