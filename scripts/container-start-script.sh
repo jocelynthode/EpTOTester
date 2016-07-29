@@ -14,4 +14,6 @@ sleep 30s
 
 echo 'Starting epto peer'
 echo "${MY_IP_ADDR}"
-java -Xms50m -Xmx100m -cp ./epto-1.0-SNAPSHOT-all.jar epto.utilities.App "${MY_IP_ADDR}" "http://192.168.1.201:4321" | addtime > "${MY_IP_ADDR}.txt" 2>&1
+MY_IP_ADDR=($MY_IP_ADDR)
+echo "${MY_IP_ADDR[1]}"
+java -Xms50m -Xmx100m -cp ./epto-1.0-SNAPSHOT-all.jar epto.utilities.App "${MY_IP_ADDR[1]}" "http://192.168.1.201:4321" | addtime > "${MY_IP_ADDR[1]}.txt" 2>&1
