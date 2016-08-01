@@ -16,13 +16,11 @@ fi
 
 echo "START..."
 docker swarm init
-docker network create -d overlay epto-network
 TOKEN=$(docker swarm join-token -q worker)
 parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
-docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 180m tracker
-sleep 15s
-docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
+docker service create --name epto-tracker --network ingress --replicas 1 --limit-memory 180m tracker
+docker service create --name epto-service --network ingress --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
 
 #wait for apps to finish
 for i in {1..40} :
@@ -34,6 +32,7 @@ done
 #sleep 2m
 
 docker service rm epto-service
+docker service rm epto-tracker
 # collect logs
 #for i in $(docker ps -aqf "ancestor=epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
 parallel-ssh -h hosts "docker swarm leave"
