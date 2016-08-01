@@ -70,6 +70,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 var result : String?
                 var tmp_view : MutableList<String>?
 
+                println(args[0])
+                println(args[1])
                 //Don't start until we have at least an other peer to talk to.
                 FuelManager.instance.basePath = args[1]
                 do {
@@ -78,7 +80,7 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                     Thread.sleep(5000)
                 } while (tmp_view!!.size < 10)
 
-                print(args[0])
+
                 println(result)
                 if (tmp_view.contains(args[0])) {
                     tmp_view.remove(args[0])
