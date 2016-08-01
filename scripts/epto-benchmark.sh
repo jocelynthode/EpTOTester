@@ -20,6 +20,7 @@ docker network create -d overlay epto-network
 TOKEN=$(docker swarm join-token -q worker)
 parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
+docker service create --name epto_tracker --network epto-network --replicas 1 --limit-memory 180m tracker
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
 
 #wait for apps to finish
