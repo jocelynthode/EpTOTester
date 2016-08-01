@@ -70,6 +70,8 @@ open class App(private val neem: MulticastChannel, TTL: Int, K: Int) : Applicati
                 var result : String?
                 var tmp_view : MutableList<String>?
 
+                System.err.println(args[0])
+                System.err.println(args[1])
                 println(args[0])
                 println(args[1])
                 //Don't start until we have at least an other peer to talk to.
