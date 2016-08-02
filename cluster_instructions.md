@@ -42,7 +42,8 @@ Copy this image on OpenNebula.
   for i (X Y Z); do
     ssh-copy-id debian@{IP}.${i}
   done
-```
+  ```
+
 ## Running the benchmarks
 TODO create a repository to push/pull images
 finish script to launch here
