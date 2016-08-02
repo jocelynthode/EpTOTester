@@ -1,6 +1,5 @@
 #!/bin/bash
-# for running the test and gathering the results
-#
+# This scripts runs the benchmarks on a remote cluster
 
 MANAGER_IP=192.168.1.40
 PEER_NUMBER=$1
@@ -15,15 +14,20 @@ fi
 # TODO have a repo and pull from it for the image
 
 echo "START..."
+
+# Clean everything at Ctrl+C
+trap 'docker network rm epto-network && parallel-ssh -h hosts "docker swarm leave" \
+&& docker swarm leave --force && exit' TERM INT
+
 docker swarm init
 TOKEN=$(docker swarm join-token -q worker)
 parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
 # If networking doesn't work use ingress
-docker network create -d overlay --subnet=10.0.9.0/24 epto-network
+docker network create -d overlay --subnet=10.0.93.0/24 epto-network
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 180m tracker
-docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 180m --mount type=bind,source=/data,target=/data epto
+docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --limit-memory 200m --mount type=bind,source=/home/debian/data,target=/data epto
 
 #wait for apps to finish
 for i in {1..40} :
@@ -38,10 +42,11 @@ docker service rm epto-service
 docker service rm epto-tracker
 docker network rm epto-network
 # collect logs
-#for i in $(docker ps -aqf "ancestor=epto");do  docker cp ${i}:/opt/epto/localhost.txt ./${i}_log.txt; done
 parallel-ssh -h hosts "docker swarm leave"
 docker swarm leave --force
 
 
-#analyze results
+for i (40 42); do
+    rsync -a -v "debian@192.168.1.${i}:~/data/" .
+done
 echo "finished"
