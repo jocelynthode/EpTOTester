@@ -22,11 +22,11 @@ ExecStart=/usr/bin/docker -H fd:// -H tcp://0.0.0.0:2375 -H unix:///var/run/dock
 ## Configure the System on OpenNebula
 Copy this image on OpenNebula.
 
-## All machines
+### All machines
 1. Change the hostname in /etc/{hosts,hostname} to be different on each machine
 
 
-## Master
+### Master
 1. Generate a private ssh key 
 ```
 ssh-keygen
