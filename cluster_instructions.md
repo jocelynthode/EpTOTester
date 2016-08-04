@@ -51,4 +51,4 @@ Copy this image on OpenNebula.
 
 ## Running the benchmarks
 TODO create a repository to push/pull images
-finish script to launch here
+finish script to launch here We want to launch from  our build machine so we need a docker gradle
