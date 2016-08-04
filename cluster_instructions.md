@@ -29,8 +29,10 @@ Copy this image on OpenNebula.
 
 ### All machines
 1. Change the hostname in /etc/{hosts,hostname} to be different on each machine
+
   ```
   hostnamectl set-hostname mymachine
+  systemctl restart docker
   ```
 
 ### Master
