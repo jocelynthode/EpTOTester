@@ -1,7 +1,7 @@
 #!/bin/bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=192.168.1.40
+MANAGER_IP=172.16.0.44
 PEER_NUMBER=$1
 
 
@@ -46,7 +46,7 @@ parallel-ssh -h hosts "docker swarm leave"
 docker swarm leave --force
 
 
-for i (40 42); do
-    rsync -a -v "debian@192.168.1.${i}:~/data/" .
+for i (46 47); do
+    rsync -a -v "debian@172.16.0.${i}:~/data/" .
 done
 echo "finished"

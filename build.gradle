@@ -47,5 +47,5 @@ docker {
     name 'epto'
     dockerfile 'Dockerfile'
     dependsOn tasks.shadowJar
-    files 'docker-compose.yml', 'scripts/test-epto.rb'
+    files 'scripts/test-epto.rb'
 }
