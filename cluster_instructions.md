@@ -29,7 +29,7 @@ These instructions explain how to setup a remote cluster with Docker 1.12 to run
 Copy this image on OpenNebula.
 
 ### All machines
-1. Change the hostname in /etc/{hosts,hostname} to be different on each machine
+1. Change the hostname in /etc/{hosts,hostname} to be different on each machine (and add the master hostname to every machine)
   ```
   hostnamectl set-hostname mymachine
   systemctl restart docker
