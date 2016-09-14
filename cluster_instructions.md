@@ -75,5 +75,7 @@ Copy this image on OpenNebula.
     ```
 
 ## Running the benchmarks
-TODO create a repository to push/pull images
-finish script to launch here We want to launch from  our build machine so we need a docker gradle
+TODO automate
+1. Push the image to the local repository through a ssh tunnel
+2. Pull the image on each VM
+3. Run ./epto-benchmark.sh X on master node
