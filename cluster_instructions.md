@@ -75,7 +75,8 @@ Copy this image on OpenNebula.
     ```
 
 ## Running the benchmarks
-TODO automate
+TODO automate this part
+
 1. Push the image to the local repository through a ssh tunnel
 2. Pull the image on each VM
 3. Run ./epto-benchmark.sh X on master node
