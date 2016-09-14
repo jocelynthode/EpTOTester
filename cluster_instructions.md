@@ -61,8 +61,11 @@ Copy this image on OpenNebula.
  -x509 -days 365 -out certs/domain.crt
   ```
   
-4. Start the Docker repository
+4.   Copy the created domain.crt as /etc/docker/certs.d/swarm-m:5000/ca.crt on ALL machines 
 
+  
+5. Start the Docker repository
+ 
     ```
     docker run -d -p 5000:5000 --restart=always --name registry \
       -v `pwd`/certs:/certs \
