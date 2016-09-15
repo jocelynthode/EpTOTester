@@ -21,7 +21,7 @@ group 'ch.unibnf.epto'
 version '1.0-SNAPSHOT'
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
+    gradleVersion = '3.0'
     distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
@@ -43,9 +43,15 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
+task builder(type: GradleBuild) {
+    buildFile = 'tracker.gradle'
+    tasks = ['docker']
+}
+
 docker {
     name 'epto'
     dockerfile 'Dockerfile'
     dependsOn tasks.shadowJar
-    files 'scripts/test-epto.rb'
+    dependsOn tasks.build
+    files 'build/libs', 'scripts'
 }

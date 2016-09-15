@@ -1,0 +1,10 @@
+plugins {
+    id 'com.palantir.docker' version '0.5.2'
+
+}
+
+docker {
+    name 'tracker'
+    dockerfile 'Dockerfile-tracker'
+    files 'scripts/tracker.py'
+}
