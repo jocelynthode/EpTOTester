@@ -34,6 +34,10 @@ repositories {
     flatDir { dirs 'lib' }
 }
 
+task mkdirLibs {
+    mkdir('build/libs')
+}
+
 dependencies {
     compile name: 'neem-0.8-jar-with-dependencies'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -43,15 +47,9 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-task builder(type: GradleBuild) {
-    buildFile = 'tracker.gradle'
-    tasks = ['docker']
-}
-
 docker {
     name 'epto'
-    dockerfile 'Dockerfile'
+    dependsOn tasks.mkdirLibs
     dependsOn tasks.shadowJar
-    dependsOn tasks.build
-    files 'build/libs', 'scripts'
+    files 'build/libs', 'scripts/container-start-script.sh', 'scripts/test-epto.rb'
 }

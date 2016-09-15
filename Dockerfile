@@ -8,8 +8,8 @@ RUN echo 'deb http://mirror.switch.ch/ftp/mirror/debian/ jessie-backports main' 
 
 RUN mkdir -p /data
 
-COPY *-SNAPSHOT.jar /opt/epto/
-COPY *.sh *.rb /opt/epto/
+COPY *-all.jar /opt/epto/
+COPY container-start-script.sh test-epto.rb /opt/epto/
 RUN chmod +x /opt/epto/container-start-script.sh
 
 WORKDIR /opt/epto
