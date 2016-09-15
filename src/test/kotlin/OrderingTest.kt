@@ -82,13 +82,5 @@ class OrderingTest {
         Assert.assertEquals(event9.id, app.events[2])
         Assert.assertEquals(event3.id, app.events[3])
         Assert.assertEquals(event2.id, app.events[4])
-        //TODO fix later
-        /*        orderingComponent.orderEvents(new HashMap<>());
-        Assert.assertTrue(app.events.size() == 6);
-        Assert.assertEquals(event9.getId(), app.events.get(4));
-        Assert.assertEquals(event1.getId(), app.events.get(5));
-        orderingComponent.orderEvents(new HashMap<>());
-        Assert.assertTrue(app.events.size() == 6);*/
-
     }
 }
