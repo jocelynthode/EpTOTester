@@ -74,9 +74,15 @@ Copy this image on OpenNebula.
       registry:2
     ```
 
-## Running the benchmarks
-TODO automate this part
+## Deploy the application
 
-1. Push the image to the local repository through a ssh tunnel
-2. Pull the image on each VM
-3. Run ./epto-benchmark.sh X on master node
+### Automated way (with manual data collection from the master)
+This way assumes you have a key-pair to connect to your master.
+ ```
+ ./setup_cluster.sh
+ ```
+ 
+ ## Run the benchmarks (on the master node)
+ 
+* start ~/epto/run_benchmarks_cluster.sh
+* Wait for the script to complete
