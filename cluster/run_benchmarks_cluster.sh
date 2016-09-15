@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=172.16.2.44
+MANAGER_IP=172.16.2.17
 PEER_NUMBER=$1
 
 
@@ -18,6 +18,8 @@ echo "START..."
 trap 'docker network rm epto-network && parallel-ssh -h hosts "docker swarm leave" \
 && docker swarm leave --force && exit' TERM INT
 
+docker pull swarm-m:5000/epto:latest
+docker pull swarm-m:5000/tracker:latest
 parallel-ssh -h hosts "docker pull swarm-m:5000/epto:latest && docker pull swarm-m:5000/tracker:latest"
 
 docker swarm init
@@ -47,8 +49,8 @@ docker network rm epto-network
 parallel-ssh -h hosts "docker swarm leave"
 docker swarm leave --force
 
-
-for i (46 47); do
-    rsync -a -v "debian@172.16.2.${i}:~/data/" .
-done
+# TODO take from hosts
+#for i (46 47); do
+#    rsync -a -v "debian@172.16.2.${i}:~/data/" .
+#done
 echo "finished"
