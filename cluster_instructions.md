@@ -47,7 +47,7 @@ Copy this image on OpenNebula.
 2. Copy it to every worker
 
   ```
-  for i (X Y Z); do
+  for i X Y Z; do
     ssh-copy-id debian@{IP}.${i}
   done 
   ```
