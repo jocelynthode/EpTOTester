@@ -186,4 +186,5 @@ gradle-app.setting
 *.tdo
 
 cluster/hosts
-
+results/*.txt
+scripts/*.tar.gz
