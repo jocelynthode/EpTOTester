@@ -43,24 +43,19 @@ class Main {
                 if (neem.localSocketAddress.address.isLoopbackAddress)
                     println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-
+                expected_events = eventsPerSecond * timeToRun * 60 * n
                 //TODO add expected events
-                val app = App(neem, ttl, k, args[1])
+                val app = App(neem, ttl, k, args[1], expected_events.toInt())
 
                 //Give some time for the PSS to have a randomized view
-                while (true) {
-                    Thread.sleep(1000)
-                }
+                //while (true) {
+                    Thread.sleep(20000)
+                //}
                 //System.exit(0)
-
-
-                expected_events = eventsPerSecond * timeToRun * 60 * n
-
 
                 println("Peer ID : ${app.peer.uuid}")
                 println("Peer Number : ${n.toInt()}")
                 println("TTL : $ttl, K : $k")
-
 
                 app.start()
                 // sleep for 10sec
@@ -74,7 +69,7 @@ class Main {
                     app.broadcast()
                 }
                 while (true) {
-                    Thread.sleep(1000)
+                    Thread.sleep(5000)
                 }
                 //neem.close();
 
