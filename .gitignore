@@ -185,6 +185,6 @@ gradle-app.setting
 *.xdy
 *.tdo
 
-cluster/hosts
-results/*.txt
-scripts/*.tar.gz
+/results/*.txt
+/scripts/*.tar.gz
+/cluster/hosts
