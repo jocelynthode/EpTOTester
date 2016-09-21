@@ -12,7 +12,7 @@ import random
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 available_peers = {}
-K = 16
+K = 30
 
 
 def florida_string(ip):

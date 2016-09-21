@@ -29,7 +29,7 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
             tmp_view = result.split('|').toMutableList()
             Thread.sleep(5000)
-        } while (tmp_view!!.size < 10)
+        } while (tmp_view!!.size < 20)
 
         println(result)
         System.err.println(neem.localSocketAddress.address.toString())

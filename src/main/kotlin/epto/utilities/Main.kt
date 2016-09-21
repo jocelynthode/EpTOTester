@@ -48,9 +48,7 @@ class Main {
                 val app = App(neem, ttl, k, args[1], expected_events.toInt())
 
                 //Give some time for the PSS to have a randomized view
-                //while (true) {
-                    Thread.sleep(20000)
-                //}
+                Thread.sleep(75000)
                 //System.exit(0)
 
                 println("Peer ID : ${app.peer.uuid}")
@@ -58,8 +56,8 @@ class Main {
                 println("TTL : $ttl, K : $k")
 
                 app.start()
-                // sleep for 10sec
-                Thread.sleep(2000)
+                // sleep for 5sec
+                Thread.sleep(5000)
                 val start = System.currentTimeMillis()
                 val end = start + (timeToRun * 60 * 1000)
                 var j = 1
