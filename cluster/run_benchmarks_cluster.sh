@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=172.16.2.43
+MANAGER_IP=172.16.2.48
 PEER_NUMBER=$1
 
 
@@ -31,10 +31,13 @@ docker network create -d overlay --subnet=10.0.93.0/24 epto-network
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 180m swarm-m:5000/tracker
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --env "PEER_NUMBER=${PEER_NUMBER}" \
- --limit-memory 200m --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
+ --limit-memory 200m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
+
+echo "Fleshing out the network..."
+sleep 120s
 
 #wait for apps to finish
-for i in {1..80} :
+for i in {1..45} :
 do
 	sleep 20s
     echo "waiting..."
@@ -47,7 +50,6 @@ parallel-ssh -h hosts "docker swarm leave"
 docker swarm leave --force
 
 
-while read ip; do
-    rsync -av ${ip}:~/data/ ../data/
-done <hosts
-echo "finished"
+#while read ip; do
+#    rsync -av ${ip}:~/data/ ../data/
+#done <hosts
