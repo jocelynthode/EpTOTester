@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=172.16.2.48
+MANAGER_IP=172.16.2.53
 PEER_NUMBER=$1
 
 
@@ -29,15 +29,15 @@ parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 # If networking doesn't work use ingress
 docker network create -d overlay --subnet=10.0.93.0/24 epto-network
 
-docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 180m swarm-m:5000/tracker
+docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 350m swarm-m:5000/tracker
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --env "PEER_NUMBER=${PEER_NUMBER}" \
- --limit-memory 200m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
+ --limit-memory 450m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
 echo "Fleshing out the network..."
-sleep 120s
+sleep 180s
 
 #wait for apps to finish
-for i in {1..45} :
+for i in {1..60} :
 do
 	sleep 20s
     echo "waiting..."
