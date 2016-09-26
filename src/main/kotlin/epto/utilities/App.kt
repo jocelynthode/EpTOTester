@@ -38,9 +38,9 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
         }
 
         for (hostname in tmp_view) {
-            val rand = Math.random() * 100
-            Thread.sleep(100*rand.toLong())
             neem.connect(InetSocketAddress(hostname, 10353))
+            val rand = Math.random() * 100
+            Thread.sleep(10*rand.toLong())
         }
 
     }
@@ -66,7 +66,7 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
             println("Expected events: ${expected_events}")
             if (expected_events == 0) {
                 println("All events delivered !")
-                System.exit(0)
+                //System.exit(0)
             }
         }
     }

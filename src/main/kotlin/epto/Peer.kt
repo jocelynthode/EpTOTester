@@ -59,6 +59,6 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
 
     companion object {
 
-        const internal val DELTA = 10000L
+        const internal val DELTA = 20000L
     }
 }
