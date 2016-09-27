@@ -5,7 +5,7 @@
 
 MANAGER_IP=172.16.2.53
 
-./gradlew --daemon docker
+./gradlew docker
 
 ssh -N -L 5000:localhost:5000 debian@${MANAGER_IP} &
 ssh_pid=$!
