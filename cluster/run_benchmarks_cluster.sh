@@ -27,7 +27,7 @@ TOKEN=$(docker swarm join-token -q worker)
 parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
 # If networking doesn't work use ingress
-docker network create -d overlay --subnet=10.0.93.0/24 epto-network
+docker network create -d overlay --subnet=172.28.0.0/16 epto-network
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 370m swarm-m:5000/tracker
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --env "PEER_NUMBER=${PEER_NUMBER}" \

@@ -17,7 +17,7 @@ import java.util.*
 /**
  * Implementation of an Application
  */
-open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var expected_events: Int = -1) : Application {
+open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1) : Application {
 
     val peer = Peer(neem, this, TTL, K)
 
@@ -26,10 +26,10 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
         var tmp_view : MutableList<String>?
         FuelManager.instance.basePath = baseURL
         do {
+            Thread.sleep(5000)
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
             tmp_view = result.split('|').toMutableList()
-            Thread.sleep(5000)
-        } while (tmp_view!!.size < 20)
+        } while (tmp_view!!.size < 15)
 
         println(result)
         System.err.println(neem.localSocketAddress.address.toString())
@@ -40,16 +40,14 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
         for (hostname in tmp_view) {
             neem.connect(InetSocketAddress(hostname, 10353))
             val rand = Math.random() * 100
-            Thread.sleep(10*rand.toLong())
+            Thread.sleep(7*rand.toLong())
         }
-
     }
 
     /**
      * {@inheritDoc}
      */
     @Synchronized override fun deliver(byteBuffers: Array<ByteBuffer>) {
-        //TODO review forEach
         byteBuffers.forEach { byteBuffer ->
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
@@ -62,11 +60,10 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
             } finally {
                 inputStream.close()
             }
-            expected_events--;
-            println("Expected events: ${expected_events}")
-            if (expected_events == 0) {
+            expectedEvents--;
+            println("Expected events: ${expectedEvents}")
+            if (expectedEvents <= 0) {
                 println("All events delivered !")
-                //System.exit(0)
             }
         }
     }

@@ -29,7 +29,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
      */
     private fun updateReceived(ball: HashMap<UUID, Event>) {
         // update TTL of received events
-        received.values.forEach { it.incrementTtl() }
+        received.values.forEach(Event::incrementTtl)
 
         // update set of received events with events in the ball
         ball.values.filter { event -> !delivered.containsKey(event.id) && event.timeStamp >= lastDeliveredTs }

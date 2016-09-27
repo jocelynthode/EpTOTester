@@ -12,9 +12,8 @@ class Main {
 
     companion object {
 
-        val eventsPerSecond = 1.0
-        val timeToRun = 0.2
-        var expected_events = 0.0
+        const val EVENTS_TO_SEND = 12
+        var expectedEvents = 0
 
         @JvmStatic fun main(args: Array<String>) {
             if (args.size < 3) {
@@ -41,12 +40,12 @@ class Main {
             if (neem.localSocketAddress.address.isLoopbackAddress)
                 println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-            expected_events = eventsPerSecond * timeToRun * 60 * n
-            //TODO add expected events
-            val app = App(neem, ttl, k, args[1], expected_events.toInt())
+            expectedEvents = EVENTS_TO_SEND * n.toInt()
 
-            //Give some time for the PSS to have a randomized view
-            Thread.sleep(135000)
+            val app = App(neem, ttl, k, args[1], expectedEvents)
+
+            //Give some time for the PSS to have a randomized view 4cycles approx
+            Thread.sleep(105000)
             //System.exit(0)
 
             println("Peer ID : ${app.peer.uuid}")
@@ -55,17 +54,16 @@ class Main {
 
             app.start()
             // sleep for 5sec
-            Thread.sleep(15000)
-            val start = System.currentTimeMillis()
-            val end = start + (timeToRun * 60 * 1000)
-            var j = 1
-            while (System.currentTimeMillis() < end) {
-                Thread.sleep((1000 / eventsPerSecond).toLong())
-                print(j++)
+            Thread.sleep(5000)
+
+            var eventsSent = 0
+            while (eventsSent != EVENTS_TO_SEND) {
                 app.broadcast()
+                Thread.sleep(1000)
+                eventsSent++
             }
             while (true) {
-                Thread.sleep(15000)
+                Thread.sleep(1000)
             }
             //neem.close();
 
