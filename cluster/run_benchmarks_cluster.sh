@@ -16,7 +16,7 @@ echo "START..."
 
 # Clean everything at Ctrl+C
 trap 'docker service rm epto-service && docker service rm epto-tracker && \
-parallel-ssh -h hosts "docker swarm leave" && docker network rm epto-network && \
+parallel-ssh -t 180 -h hosts "docker swarm leave" && docker network rm epto-network && \
 docker swarm leave --force && exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
@@ -24,7 +24,7 @@ docker pull swarm-m:5000/tracker:latest
 
 docker swarm init
 TOKEN=$(docker swarm join-token -q worker)
-parallel-ssh -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
+parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
 
 # If networking doesn't work use ingress
 docker network create -d overlay --subnet=172.28.0.0/16 epto-network
@@ -34,7 +34,7 @@ docker service create --name epto-service --network epto-network --replicas ${PE
 --limit-memory 370m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
 echo "Fleshing out the network..."
-sleep 180s
+sleep 30s
 
 #wait for apps to finish
 for i in {1..60} :
@@ -43,11 +43,11 @@ do
     echo "waiting..."
 done
 
-docker service rm epto-service
-docker service rm epto-tracker
-docker network rm epto-network
-parallel-ssh -h hosts "docker swarm leave"
-docker swarm leave --force
+#docker service rm epto-service
+#docker service rm epto-tracker
+#docker network rm epto-network
+#parallel-ssh -t 0 -h hosts "docker swarm leave"
+#docker swarm leave --force
 
 
 #while read ip; do
