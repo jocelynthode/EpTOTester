@@ -32,7 +32,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
         received.values.forEach(Event::incrementTtl)
 
         // update set of received events with events in the ball
-        ball.values.filter { event -> !delivered.containsKey(event.id) && event.timeStamp >= lastDeliveredTs }
+        ball.values.filter { event -> !delivered.containsKey(event.id) && event.timestamp >= lastDeliveredTs }
                 .forEach { event ->
                     val receivedEvent = received[event.id]
                     if (receivedEvent != null) {
@@ -54,7 +54,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
         for (event in deliverableEvents) {
             delivered.put(event.id, event)
 
-            lastDeliveredTs = event.timeStamp
+            lastDeliveredTs = event.timestamp
 
             val byteOut = ByteArrayOutputStream()
             val out = FSTObjectOutput(byteOut)
@@ -91,15 +91,15 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
         for (event in received.values) {
             if (oracle.isDeliverable(event)) {
                 deliverableEvents.add(event)
-            } else if (minQueuedTs > event.timeStamp) {
-                minQueuedTs = event.timeStamp
+            } else if (minQueuedTs > event.timestamp) {
+                minQueuedTs = event.timestamp
             }
         }
 
         val eventsToRemove = ArrayList<Event>()
 
         for (event in deliverableEvents) {
-            if (event.timeStamp >= minQueuedTs) {
+            if (event.timestamp >= minQueuedTs) {
                 // ignore deliverable events with timestamp greater or equal than all non-deliverable events
                 eventsToRemove.add(event)
             } else {

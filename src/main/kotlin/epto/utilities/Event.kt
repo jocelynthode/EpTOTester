@@ -8,7 +8,7 @@ import java.util.*
  */
 data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializable {
 
-    var timeStamp: Long = 0
+    var timestamp: Long = 0
     var ttl: Int = 0
     var sourceId: UUID? = null
 
@@ -24,7 +24,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      * @param sourceId  the id of the peer sending this event
      */
     constructor(id: UUID, timeStamp: Long, ttl: Int, sourceId: UUID) : this(id) {
-        this.timeStamp = timeStamp
+        this.timestamp = timeStamp
         this.ttl = ttl
         this.sourceId = sourceId
     }
@@ -44,7 +44,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      * @return int (1 if before, -1 if after)
      */
     override fun compareTo(other: Event): Int {
-        val compare = timeStamp.compareTo(other.timeStamp)
+        val compare = timestamp.compareTo(other.timestamp)
 
         return if (compare == 0) {
             //in case of tie
@@ -58,7 +58,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      * @return A string representing the Event object
      */
     override fun toString(): String {
-        return "Event{id=$id, timeStamp=$timeStamp, ttl=$ttl, sourceId=$sourceId}"
+        return "Event{id=$id, timestamp=$timestamp, ttl=$ttl, sourceId=$sourceId}"
     }
 
 }

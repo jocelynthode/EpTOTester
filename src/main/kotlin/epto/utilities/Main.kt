@@ -45,7 +45,7 @@ class Main {
             val app = App(neem, ttl, k, args[1], expectedEvents)
 
             //Give some time for the PSS to have a randomized view 4cycles approx
-            Thread.sleep(105000)
+            //Thread.sleep(105000)
             //System.exit(0)
 
             println("Peer ID : ${app.peer.uuid}")
@@ -63,7 +63,7 @@ class Main {
                 eventsSent++
             }
             while (true) {
-                Thread.sleep(1000)
+                Thread.sleep(500)
             }
             //neem.close();
 

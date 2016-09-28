@@ -71,7 +71,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param event The new event
      */
     fun broadcast(event: Event) {
-        event.timeStamp = oracle.incrementAndGetClock()
+        event.timestamp = oracle.incrementAndGetClock()
         event.ttl = 0
         event.sourceId = peer.uuid
         synchronized(nextBallLock) {
@@ -99,7 +99,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                     }
                 })
             }
-            oracle.updateClock(event.timeStamp) //only needed with logical time
+            oracle.updateClock(event.timestamp) //only needed with logical time
         }
     }
 
