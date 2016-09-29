@@ -11,7 +11,7 @@ import java.util.*
 /**
  * Created by jocelyn on 29.09.16.
  */
-class PassiveThread(val pssLock: Object, val pss: PeerSamplingService, val core: Core) : Runnable {
+class PassiveThread(val pssLock: Any, val pss: PeerSamplingService, val core: Core) : Runnable {
 
     val socket = DatagramSocket(10453)
     var isRunning = false
