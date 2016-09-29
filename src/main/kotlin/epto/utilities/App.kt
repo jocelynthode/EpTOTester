@@ -4,22 +4,18 @@ package epto.utilities
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
-import net.sf.neem.MulticastChannel
 import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
-import java.io.ObjectInputStream
 import java.net.InetAddress
-import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.util.*
 
 /**
  * Implementation of an Application
  */
-open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1) : Application {
+open class App(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) : Application {
 
-    val peer = Peer(neem, this, TTL, K)
+    val peer = Peer(this, TTL, K, myIp, myPort)
 
     init {
         var result : String?
@@ -32,15 +28,13 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
         } while (tmp_view!!.size < 15)
 
         println(result)
-        System.err.println(neem.localSocketAddress.address.toString())
-        if (tmp_view.contains(neem.localSocketAddress.address.toString())) {
-            tmp_view.remove(neem.localSocketAddress.address.toString())
+        System.err.println(myIp.address.toString())
+        if (tmp_view.contains(myIp.address.toString())) {
+            tmp_view.remove(myIp.address.toString())
         }
 
         for (hostname in tmp_view) {
-            neem.connect(InetSocketAddress(hostname, 10353))
-            val rand = Math.random() * 100
-            Thread.sleep(7*rand.toLong())
+
         }
     }
 
@@ -60,7 +54,7 @@ open class App(neem: MulticastChannel, TTL: Int, K: Int, baseURL: String, var ex
             } finally {
                 inputStream.close()
             }
-            expectedEvents--;
+            expectedEvents--
             println("Expected events: ${expectedEvents}")
             if (expectedEvents <= 0) {
                 println("All events delivered !")

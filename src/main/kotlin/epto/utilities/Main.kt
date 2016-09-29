@@ -1,9 +1,6 @@
 package epto.utilities
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.httpGet
-import net.sf.neem.MulticastChannel
-import java.net.InetSocketAddress
+import java.net.InetAddress
 
 /**
  * Created by jocelyn on 19.09.16.
@@ -27,9 +24,8 @@ class Main {
             println(args[1])
             println(args[2])
 
-            val neem = MulticastChannel(InetSocketAddress(args[0], 10353))
+            println("Started: ${args[0]}")
 
-            println("Started: ${neem.localSocketAddress}")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val n = args[2].toDouble()
@@ -37,12 +33,12 @@ class Main {
             val ttl = (2 * Math.ceil(5 * log2N) + 1).toInt()
             val k = Math.ceil(2.0 * Math.E * Math.log(n) / Math.log(Math.log(n))).toInt()
 
-            if (neem.localSocketAddress.address.isLoopbackAddress)
+            if (InetAddress.getByName(args[0]).isLoopbackAddress)
                 println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
             expectedEvents = EVENTS_TO_SEND * n.toInt()
 
-            val app = App(neem, ttl, k, args[1], expectedEvents)
+            val app = App(ttl, k, args[1], expectedEvents, InetAddress.getByName(args[0]))
 
             //Give some time for the PSS to have a randomized view 4cycles approx
             //Thread.sleep(105000)
@@ -52,16 +48,16 @@ class Main {
             println("Peer Number : ${n.toInt()}")
             println("TTL : $ttl, K : $k")
 
-            app.start()
+            //app.start()
             // sleep for 5sec
-            Thread.sleep(5000)
+            //Thread.sleep(5000)
 
             var eventsSent = 0
-            while (eventsSent != EVENTS_TO_SEND) {
+            /*while (eventsSent != EVENTS_TO_SEND) {
                 app.broadcast()
                 Thread.sleep(1000)
                 eventsSent++
-            }
+            }*/
             while (true) {
                 Thread.sleep(500)
             }

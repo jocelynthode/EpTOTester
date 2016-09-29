@@ -1,15 +1,7 @@
 package epto
 
+import epto.udp.Gossip
 import epto.utilities.Event
-import net.sf.neem.MulticastChannel
-import org.nustaq.serialization.FSTObjectOutput
-import org.nustaq.serialization.util.FSTOutputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.ObjectOutputStream
-import java.nio.ByteBuffer
-import java.nio.channels.ClosedChannelException
-import java.security.SecureRandom
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -27,7 +19,7 @@ import java.util.concurrent.TimeUnit
  * @param neem              MultiCastChannel to gossip
  * @param orderingComponent OrderingComponent to order events
  */
-class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, neem: MulticastChannel,
+class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int) {
     private val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
@@ -41,22 +33,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
             synchronized (nextBallLock) {
                 nextBall.forEach { id, event -> event.incrementTtl() }
                 if (!nextBall.isEmpty()) {
-                    val byteOut = ByteArrayOutputStream()
-                    val out = FSTObjectOutput(byteOut)
-                    try {
-                        out.writeObject(nextBall)
-                        out.flush()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    } finally {
-                        out.close()
-                    }
-
-                    try {
-                        neem.write(ByteBuffer.wrap(byteOut.toByteArray()))
-                    } catch (e: ClosedChannelException) {
-                        e.printStackTrace()
-                    }
+                    gossip.relay(nextBall)
                 }
 
                 orderingComponent.orderEvents(nextBall)

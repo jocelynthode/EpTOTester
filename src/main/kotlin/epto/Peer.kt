@@ -1,12 +1,12 @@
 package epto
 
+import epto.udp.Core
 import epto.utilities.Event
-import net.sf.neem.MulticastChannel
 import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
-import java.io.ObjectInputStream
-import java.nio.ByteBuffer
+import java.net.DatagramPacket
+import java.net.InetAddress
 import java.nio.channels.AsynchronousCloseException
 import java.util.*
 
@@ -17,16 +17,13 @@ import java.util.*
  *
  * @param neem MultiCast object
  */
-class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: Int) : Runnable {
-    val uuid = neem.protocolMBean.localId
+class Peer(app: Application, TTL: Int, val K: Int, myIp: InetAddress, myPort: Int = 10353) : Runnable {
+    val uuid = UUID.randomUUID()!!
+    val core = Core(myIp, myPort, K)
     private val oracle = StabilityOracle(TTL)
     val orderingComponent = OrderingComponent(oracle, app)
-    val disseminationComponent = DisseminationComponent(oracle, this, neem, orderingComponent, K)
+    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
     private var is_running: Boolean = false
-
-    init {
-        neem.protocolMBean.gossipFanout = disseminationComponent.K
-    }
 
     /**
      * The peer main function
@@ -36,11 +33,10 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
         try {
             is_running = true
             while (is_running) {
-                //TODO make this nicer
-                val buf = ByteArray(100000)
-                val bb = ByteBuffer.wrap(buf)
-                neem.read(bb)
-                val byteIn = ByteArrayInputStream(bb.array())
+                val buf = ByteArray(core.socket.receiveBufferSize)
+                val datagramPacket = DatagramPacket(buf, buf.size)
+                core.socket.receive(datagramPacket)
+                val byteIn = ByteArrayInputStream(datagramPacket.data)
                 val inputStream = FSTObjectInput(byteIn)
                 disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
                 inputStream.close()
@@ -55,10 +51,11 @@ class Peer(private val neem: MulticastChannel, app: Application, TTL: Int, K: In
 
     fun stop() {
         is_running = false
+        core.socket.close()
     }
 
     companion object {
 
-        const internal val DELTA = 20000L
+        const internal val DELTA = 5000L
     }
 }
