@@ -51,7 +51,8 @@ class Peer(application: Application, TTL: Int, val K: Int, myIp: InetAddress, my
 
     fun stop() {
         is_running = false
-        core.socket.close()
+        disseminationComponent.stop()
+        core.stop()
     }
 
     companion object {

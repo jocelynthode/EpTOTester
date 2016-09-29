@@ -38,5 +38,6 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService, val core: Co
 
     fun stop() {
         isRunning = false
+        socket.close()
     }
 }

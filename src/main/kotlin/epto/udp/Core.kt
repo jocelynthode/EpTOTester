@@ -30,4 +30,9 @@ class Core(val myIp: InetAddress, val myPort: Int = 10353, K: Int) {
         socket.send(datagramPacket)
     }
 
+    fun stop() {
+        socket.close()
+        pss.stop()
+    }
+
 }

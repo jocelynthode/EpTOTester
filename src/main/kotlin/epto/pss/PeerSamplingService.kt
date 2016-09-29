@@ -48,6 +48,11 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
                 , TimeUnit.MILLISECONDS)
     }
 
+    fun stop() = {
+        passiveThread.stop()
+        activeThreadFuture?.cancel(true)
+    }
+
     fun selectToSend(): ByteArray {
         val toSend = ArrayList<PeerInfo>()
         toSend.add(PeerInfo(core.myIp))

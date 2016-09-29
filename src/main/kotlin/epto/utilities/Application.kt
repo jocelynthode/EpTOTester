@@ -60,6 +60,8 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
 
     fun start() = Thread(peer).start()
 
+    fun stop() = peer.stop()
+
     @Throws(InterruptedException::class)
     open fun broadcast(event: Event = Event()) {
         peer.disseminationComponent.broadcast(event)

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int) {
-    private val scheduler: ScheduledExecutorService
+    val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
@@ -91,10 +91,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     /**
      * Stops the periodic dissemination
      */
-    fun stop() {
-        //Don't interrupt if running
-        periodicDisseminationFuture?.cancel(false)
-    }
+    fun stop() = periodicDisseminationFuture?.cancel(true)
 
     companion object {
 
