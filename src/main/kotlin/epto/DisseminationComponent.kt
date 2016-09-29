@@ -30,7 +30,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
-            synchronized (nextBallLock) {
+            synchronized(nextBallLock) {
                 nextBall.forEach { id, event -> event.incrementTtl() }
                 if (!nextBall.isEmpty()) {
                     gossip.relay(nextBall)
@@ -65,7 +65,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     internal fun receive(ball: HashMap<UUID, Event>) {
         for ((eventId, event) in ball) {
             if (event.ttl < oracle.TTL) {
-                synchronized (nextBallLock, fun(): Unit {
+                synchronized(nextBallLock, fun(): Unit {
                     val nextBallEvent = nextBall[eventId]
                     if (nextBallEvent != null) {
                         if (nextBallEvent.ttl < event.ttl) {

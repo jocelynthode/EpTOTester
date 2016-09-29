@@ -1,8 +1,8 @@
 package epto
 
 import epto.udp.Core
+import epto.utilities.Application
 import epto.utilities.Event
-import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.DatagramPacket
@@ -17,11 +17,11 @@ import java.util.*
  *
  * @param neem MultiCast object
  */
-class Peer(app: Application, TTL: Int, val K: Int, myIp: InetAddress, myPort: Int = 10353) : Runnable {
+class Peer(application: Application, TTL: Int, val K: Int, myIp: InetAddress, myPort: Int = 10353) : Runnable {
     val uuid = UUID.randomUUID()!!
     val core = Core(myIp, myPort, K)
     private val oracle = StabilityOracle(TTL)
-    val orderingComponent = OrderingComponent(oracle, app)
+    val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
     private var is_running: Boolean = false
 

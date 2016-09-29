@@ -38,7 +38,7 @@ class Main {
 
             expectedEvents = EVENTS_TO_SEND * n.toInt()
 
-            val app = App(ttl, k, args[1], expectedEvents, InetAddress.getByName(args[0]))
+            val app = Application(ttl, k, args[1], expectedEvents, InetAddress.getByName(args[0]))
 
             //Give some time for the PSS to have a randomized view 4cycles approx
             //Thread.sleep(105000)
@@ -48,13 +48,13 @@ class Main {
             println("Peer Number : ${n.toInt()}")
             println("TTL : $ttl, K : $k")
 
-            //app.start()
+            //application.start()
             // sleep for 5sec
             //Thread.sleep(5000)
 
             var eventsSent = 0
             /*while (eventsSent != EVENTS_TO_SEND) {
-                app.broadcast()
+                application.broadcast()
                 Thread.sleep(1000)
                 eventsSent++
             }*/

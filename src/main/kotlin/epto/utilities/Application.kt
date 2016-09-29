@@ -4,7 +4,6 @@ package epto.utilities
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
-import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
@@ -13,13 +12,13 @@ import java.nio.ByteBuffer
 /**
  * Implementation of an Application
  */
-open class App(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) : Application {
+open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) {
 
     val peer = Peer(this, TTL, K, myIp, myPort)
 
     init {
-        var result : String?
-        var tmp_view : MutableList<String>?
+        var result: String?
+        var tmp_view: MutableList<String>?
         FuelManager.instance.basePath = baseURL
         do {
             Thread.sleep(5000)
@@ -38,10 +37,7 @@ open class App(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, 
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Synchronized override fun deliver(byteBuffers: Array<ByteBuffer>) {
+    @Synchronized fun deliver(byteBuffers: Array<ByteBuffer>) {
         byteBuffers.forEach { byteBuffer ->
             val content = byteBuffer.array()
             val byteIn = ByteArrayInputStream(content)
@@ -69,7 +65,6 @@ open class App(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, 
         peer.disseminationComponent.broadcast(event)
         println(" sending: " + event.id.toString())
     }
-
 
 
 }

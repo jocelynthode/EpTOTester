@@ -25,7 +25,7 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
     val passiveThread = PassiveThread(pssLock, this, core)
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)
-    private val activeThread  = Runnable {
+    private val activeThread = Runnable {
         if (view.size < 2) {
             println("Not enough peers to shuffle")
             return@Runnable
@@ -48,7 +48,7 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
                 , TimeUnit.MILLISECONDS)
     }
 
-    fun selectToSend() : ByteArray {
+    fun selectToSend(): ByteArray {
         val toSend = ArrayList<PeerInfo>()
         toSend.add(PeerInfo(core.myIp))
 
@@ -116,14 +116,14 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
     }
 
     private fun removeDuplicate(info: PeerInfo): Boolean =
-        if (view.contains(info) && view[view.indexOf(info)].age <= info.age)
-            true
-        else if (view.contains(info)) {
-            view[view.indexOf(info)].age = info.age
-            true
-        } else {
-            false
-        }
+            if (view.contains(info) && view[view.indexOf(info)].age <= info.age)
+                true
+            else if (view.contains(info)) {
+                view[view.indexOf(info)].age = info.age
+                true
+            } else {
+                false
+            }
 
     fun selectPartner() = view[rand.nextInt(view.size)]
 

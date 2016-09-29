@@ -10,7 +10,7 @@ import java.util.*
 /**
  * Created by jocelyn on 29.09.16.
  */
-class Gossip(val core: Core, val K: Int = 15){
+class Gossip(val core: Core, val K: Int = 15) {
 
     fun relay(nextBall: HashMap<UUID, Event>) {
         val byteOut = ByteArrayOutputStream()
@@ -31,10 +31,10 @@ class Gossip(val core: Core, val K: Int = 15){
         }
     }
 
-    private fun selectKFromView() : ArrayList<PeerSamplingService.PeerInfo> {
+    private fun selectKFromView(): ArrayList<PeerSamplingService.PeerInfo> {
         val tmpList = ArrayList<PeerSamplingService.PeerInfo>(core.pss.view)
         Collections.shuffle(tmpList)
-        tmpList.removeIf { tmpList.indexOf(it) > (K - 1)}
+        tmpList.removeIf { tmpList.indexOf(it) > (K - 1) }
         return tmpList
     }
 }

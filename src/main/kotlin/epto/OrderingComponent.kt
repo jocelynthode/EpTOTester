@@ -1,12 +1,11 @@
 package epto
 
 
+import epto.utilities.Application
 import epto.utilities.Event
-import net.sf.neem.impl.Application
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.ObjectOutputStream
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -16,7 +15,7 @@ import java.util.*
  * the received set to the delivered set, preserving the total
  * order of the events.
  */
-class OrderingComponent(private val oracle: StabilityOracle, internal var app: Application) {
+class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
     val received = HashMap<UUID, Event>()
     private val delivered = HashMap<UUID, Event>()
     private var lastDeliveredTs: Long = 0
@@ -69,7 +68,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
 
             //delivering the event
             val bb = ByteBuffer.wrap(byteOut.toByteArray())
-            app.deliver(arrayOf(bb))
+            application.deliver(arrayOf(bb))
         }
     }
 

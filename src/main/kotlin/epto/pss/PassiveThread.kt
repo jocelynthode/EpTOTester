@@ -19,13 +19,13 @@ class PassiveThread(val pssLock: Object, val pss: PeerSamplingService, val core:
     override fun run() {
         isRunning = true
         while (isRunning) {
-                val buf = ByteArray(socket.receiveBufferSize)
-                val datagramPacket = DatagramPacket(buf, buf.size)
-                socket.receive(datagramPacket)
-                val byteIn = ByteArrayInputStream(datagramPacket.data)
-                val inputStream = FSTObjectInput(byteIn)
-                val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
-                inputStream.close()
+            val buf = ByteArray(socket.receiveBufferSize)
+            val datagramPacket = DatagramPacket(buf, buf.size)
+            socket.receive(datagramPacket)
+            val byteIn = ByteArrayInputStream(datagramPacket.data)
+            val inputStream = FSTObjectInput(byteIn)
+            val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
+            inputStream.close()
             synchronized(pssLock) {
                 //TODO maybe remove oneself
                 val toSend = pss.selectToSend()
