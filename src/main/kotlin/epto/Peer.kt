@@ -5,8 +5,8 @@ import epto.utilities.Application
 import epto.utilities.Event
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
-import java.net.DatagramPacket
 import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousCloseException
 import java.util.*
 
@@ -15,11 +15,10 @@ import java.util.*
  *
  * Initializes a peer
  *
- * @param neem MultiCast object
  */
-class Peer(application: Application, TTL: Int, val K: Int, myIp: InetAddress, myPort: Int = 10353) : Runnable {
+class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
     val uuid = UUID.randomUUID()!!
-    val core = Core(myIp, myPort, K)
+    val core = Core(myIp, K, gossipPort, pssPort)
     private val oracle = StabilityOracle(TTL)
     val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
@@ -33,13 +32,18 @@ class Peer(application: Application, TTL: Int, val K: Int, myIp: InetAddress, my
         try {
             is_running = true
             while (is_running) {
-                val buf = ByteArray(core.socket.receiveBufferSize)
-                val datagramPacket = DatagramPacket(buf, buf.size)
-                core.socket.receive(datagramPacket)
-                val byteIn = ByteArrayInputStream(datagramPacket.data)
-                val inputStream = FSTObjectInput(byteIn)
-                disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
-                inputStream.close()
+                val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
+                println("peer size : ${core.gossipChannel.socket().receiveBufferSize}")
+                val bb = ByteBuffer.wrap(buf)
+                println("Peer before message")
+                if (core.gossipChannel.receive(bb) != null) {
+                    println("Peer  RECEIVED message")
+                    val byteIn = ByteArrayInputStream(bb.array())
+                    val inputStream = FSTObjectInput(byteIn)
+                    disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
+                    inputStream.close()
+                }
+                println("Peer not received message")
             }
         } catch (ace: AsynchronousCloseException) {
             // Exiting.

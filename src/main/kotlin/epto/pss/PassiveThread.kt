@@ -1,43 +1,51 @@
 package epto.pss
 
 import epto.pss.PeerSamplingService.PeerInfo
-import epto.udp.Core
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
-import java.net.DatagramPacket
-import java.net.DatagramSocket
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 import java.util.*
 
 /**
- * Created by jocelyn on 29.09.16.
+ * Implementation of a PSS passive thread receiving views from other peers
+ *
+ * @param pssLock the lock used for the active and passive threads
+ *
+ * @param pss The Peer Sampling Service on which this passive thread depends
  */
-class PassiveThread(val pssLock: Any, val pss: PeerSamplingService, val core: Core) : Runnable {
+class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
-    val socket = DatagramSocket(10453)
     var isRunning = false
 
     override fun run() {
         isRunning = true
         while (isRunning) {
-            val buf = ByteArray(socket.receiveBufferSize)
-            val datagramPacket = DatagramPacket(buf, buf.size)
-            socket.receive(datagramPacket)
-            val byteIn = ByteArrayInputStream(datagramPacket.data)
-            val inputStream = FSTObjectInput(byteIn)
-            val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
-            inputStream.close()
-            synchronized(pssLock) {
-                //TODO maybe remove oneself
-                val toSend = pss.selectToSend()
-                pss.selectToKeep(receivedView)
-
-                core.sendPss(toSend, datagramPacket.address)
+            val buf = ByteArray(pss.core.pssChannel.socket().receiveBufferSize)
+            println("Passive size : ${pss.core.pssChannel.socket().receiveBufferSize}")
+            val bb = ByteBuffer.wrap(buf)
+            println("Passive before message")
+            val address = pss.core.pssChannel.receive(bb)
+            if (address != null) {
+                println("Passive  RECEIVED message")
+                val byteIn = ByteArrayInputStream(bb.array())
+                val inputStream = FSTObjectInput(byteIn)
+                val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
+                inputStream.close()
+                synchronized(pssLock) {
+                    //TODO maybe remove oneself
+                    val toSend = pss.selectToSend()
+                    pss.selectToKeep(receivedView)
+                    println("Passive test : ${(address as InetSocketAddress).address.hostAddress}")
+                    pss.core.sendPss(toSend, address.address)
+                }
             }
+            println("Passive not received message")
+
         }
     }
 
     fun stop() {
         isRunning = false
-        socket.close()
     }
 }

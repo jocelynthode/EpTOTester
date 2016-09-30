@@ -12,20 +12,35 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 /**
- * Created by jocelyn on 29.09.16.
+ * Implementation of a Peer Sampling Service
+ *
+ * @param gossipInterval the interval at which to perform the active thread of the PSS
+ *
+ * @param core the Class responsible for the datagram channels
+ *
+ * @param c the ideal view size
+ *
+ * @param exch the number of peers to exch
+ *
+ * @param s the swapping parameter
+ *
+ * @param h the healing parameter
  */
-class PeerSamplingService(val gossipInterval: Int, val core: Core) {
+class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 5, val exch: Int = 3,
+                          val s: Int = 2, val h: Int = 1) {
 
     val view = ArrayList<PeerInfo>()
-    val c = 30
-    val exch = 14
-    val s = 10
-    val h = 3
-    val pssLock = Object()
-    val passiveThread = PassiveThread(pssLock, this, core)
+    val pssLock = Any()
+    val passiveThread = PassiveThread(pssLock, this)
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)
     private val activeThread = Runnable {
+        System.err.println("Test")
+        val sj = StringJoiner(" ", "PSS View: ", "")
+        view.forEach { sj.add(it.toString()) }
+        println(sj.toString())
+        println("Connections length : " + view.size)
+
         if (view.size < 2) {
             println("Not enough peers to shuffle")
             return@Runnable
@@ -41,18 +56,28 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
     }
     private var activeThreadFuture: ScheduledFuture<*>? = null
 
-
+    /**
+     * Start the Peer Sampling Service
+     */
     fun start() = {
         Thread(passiveThread).start()
-        activeThreadFuture = scheduler.scheduleWithFixedDelay(activeThread, 0, gossipInterval.toLong()
-                , TimeUnit.MILLISECONDS)
+        activeThreadFuture = scheduler.scheduleWithFixedDelay(activeThread, 0, gossipInterval.toLong(),
+                TimeUnit.MILLISECONDS)
     }
 
+    /**
+     * Stop the PSS
+     */
     fun stop() = {
         passiveThread.stop()
         activeThreadFuture?.cancel(true)
     }
 
+    /**
+     * Selects a sublist of the view to send to the partner
+     *
+     * @return subview
+     */
     fun selectToSend(): ByteArray {
         val toSend = ArrayList<PeerInfo>()
         toSend.add(PeerInfo(core.myIp))
@@ -90,6 +115,11 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
         return byteOut.toByteArray()
     }
 
+    /**
+     * Select which peer to keep from the view received
+     *
+     * @param receivedView  the received view
+     */
     fun selectToKeep(receivedView: ArrayList<PeerInfo>) {
         //remove duplicates from view
         val toRemove = ArrayList<PeerInfo>()
@@ -130,8 +160,14 @@ class PeerSamplingService(val gossipInterval: Int, val core: Core) {
                 false
             }
 
+    /**
+     * Select a partner randomly from the view
+     */
     fun selectPartner() = view[rand.nextInt(view.size)]
 
+    /**
+     * Data class used to represent a peer
+     */
     data class PeerInfo(val address: InetAddress, var age: Int = 0) : Serializable
 }
 

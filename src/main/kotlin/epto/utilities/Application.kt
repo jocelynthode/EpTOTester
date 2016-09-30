@@ -4,6 +4,7 @@ package epto.utilities
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
+import epto.pss.PeerSamplingService
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
@@ -27,14 +28,13 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         } while (tmp_view!!.size < 15)
 
         println(result)
-        System.err.println(myIp.address.toString())
-        if (tmp_view.contains(myIp.address.toString())) {
-            tmp_view.remove(myIp.address.toString())
+        println(myIp.hostAddress)
+        if (tmp_view.contains(myIp.hostAddress)) {
+            tmp_view.remove(myIp.hostAddress)
         }
 
-        for (hostname in tmp_view) {
-
-        }
+        //Add seeds to the PSS view
+        peer.core.pss.view.addAll(tmp_view.map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
     }
 
     @Synchronized fun deliver(byteBuffers: Array<ByteBuffer>) {
