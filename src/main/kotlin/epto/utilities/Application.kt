@@ -24,7 +24,6 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         var result: String?
         var tmp_view: MutableList<String>?
         FuelManager.instance.basePath = baseURL
-        logger.info("PSS TEST")
         do {
             Thread.sleep(5000)
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
