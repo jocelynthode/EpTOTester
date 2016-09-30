@@ -18,7 +18,7 @@ def extract_nodes(from_seconds=0):
 
     def extract_starts(lines):
         for line in lines:
-            match = re.match(r'(\d+) Started.*', line)
+            match = re.match(r'(\d+) - Started.*', line)
             if match:
                 yield int(match.group(1))
 
@@ -28,7 +28,7 @@ def extract_nodes(from_seconds=0):
     min_time = start_at + from_seconds * 1000  # Timestamp are in milliseconds
     views = {}
     for line in lines:
-        match = re.match(r'(\d+) PSS View: ([0-9. ]+)', line)
+        match = re.match(r'(\d+) - PSS View: ([0-9. ]+)', line)
         if not match:
             continue
         timestamp, nodes_str = match.groups()
@@ -52,7 +52,8 @@ nx.draw_circular(G, with_labels=True)
 print(nx.average_shortest_path_length(D))
 print(nx.average_clustering(G))
 indeg = D.in_degree()
-print(indeg)
-print(len(indeg))
+#print(indeg)
+print("Node nb: "+ str(len(indeg)))
+print("Average indegree: "+ str(sum(indeg.values()) / len(indeg)))
 
 plt.show()
