@@ -1,11 +1,9 @@
 #!/usr/bin/env python3.5
-import re
-from pathlib import Path
-
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
+import re
 import sys
-
+from pathlib import Path
 
 graph = []
 
@@ -15,6 +13,7 @@ def extract_nodes(from_seconds=0):
         for fpath in Path().glob('*.txt'):
             with fpath.open() as f:
                 yield from f
+
     lines = list(concat_lines())
 
     def extract_starts(lines):
@@ -22,6 +21,7 @@ def extract_nodes(from_seconds=0):
             match = re.match(r'(\d+) Started.*', line)
             if match:
                 yield int(match.group(1))
+
     start_at = min(extract_starts(lines))
     print(start_at)
 
@@ -44,6 +44,8 @@ def extract_nodes(from_seconds=0):
 
 def create_graph(from_seconds=30):
     return nx.parse_adjlist(extract_nodes(from_seconds))
+
+
 G = create_graph(int(sys.argv[1]))
 D = nx.DiGraph(G)
 nx.draw_circular(G, with_labels=True)
