@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit
  *
  * @param h the healing parameter
  */
-class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 5, val exch: Int = 3,
-                          val s: Int = 2, val h: Int = 1) {
+class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
+                          val s: Int = 10, val h: Int = 2) {
 
     val logger by logger()
 
@@ -58,7 +58,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     /**
      * Start the Peer Sampling Service
      */
-    fun start() = {
+    fun start() {
         Thread(passiveThread).start()
         activeThreadFuture = scheduler.scheduleWithFixedDelay(activeThread, 0, gossipInterval.toLong(),
                 TimeUnit.MILLISECONDS)
@@ -67,7 +67,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     /**
      * Stop the PSS
      */
-    fun stop() = {
+    fun stop() {
         passiveThread.stop()
         activeThreadFuture?.cancel(true)
     }
@@ -150,7 +150,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         }
     }
 
-    private fun removeDuplicate(info: PeerInfo): Boolean =
+    private fun removeDuplicate(info: PeerInfo) =
             if (view.contains(info) && view[view.indexOf(info)].age <= info.age)
                 true
             else if (view.contains(info)) {
@@ -168,11 +168,10 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
 
     private fun debug() {
         if (logger.isDebugEnabled) {
-            logger.debug("Active thread started")
             val sj = StringJoiner(" ", "PSS View: ", "")
             view.forEach { sj.add(it.toString()) }
             logger.debug(sj.toString())
-            logger.debug("view size : ${view.size}")
+            logger.debug("View size : ${view.size}")
         }
     }
 

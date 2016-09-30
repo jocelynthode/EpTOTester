@@ -23,23 +23,27 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
     override fun run() {
         isRunning = true
         while (isRunning) {
-            val buf = ByteArray(pss.core.pssChannel.socket().receiveBufferSize)
-            logger.debug("Passive size : ${pss.core.pssChannel.socket().receiveBufferSize}")
-            val bb = ByteBuffer.wrap(buf)
-            val address = pss.core.pssChannel.receive(bb)
-            if (address != null) {
-                logger.debug("Passive  RECEIVED message")
-                val byteIn = ByteArrayInputStream(bb.array())
-                val inputStream = FSTObjectInput(byteIn)
-                val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
-                inputStream.close()
-                synchronized(pssLock) {
-                    //TODO maybe remove oneself
-                    val toSend = pss.selectToSend()
-                    pss.selectToKeep(receivedView)
-                    logger.debug("Passive address received : ${(address as InetSocketAddress).address.hostAddress}")
-                    pss.core.sendPss(toSend, address.address)
+            try {
+                val buf = ByteArray(pss.core.pssChannel.socket().receiveBufferSize)
+                val bb = ByteBuffer.wrap(buf)
+                val address = pss.core.pssChannel.receive(bb)
+                if (address != null) {
+                    val byteIn = ByteArrayInputStream(bb.array())
+                    val inputStream = FSTObjectInput(byteIn)
+                    val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
+                    inputStream.close()
+                    logger.debug("RECEIVED message")
+                    synchronized(pssLock) {
+                        //TODO maybe remove oneself
+                        val toSend = pss.selectToSend()
+                        pss.selectToKeep(receivedView)
+                        logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
+                        pss.core.sendPss(toSend, (address as InetSocketAddress).address)
+                    }
                 }
+            } catch (e: Exception) {
+                logger.error("Error receiving a packet", e)
+                e.printStackTrace()
             }
         }
     }

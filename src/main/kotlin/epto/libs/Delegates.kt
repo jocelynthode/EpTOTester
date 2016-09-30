@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 /**
- * Created by jocelyn on 30.09.16.
+ * Delegate Property object used to instantiate loggers
  */
 object Delegates {
 

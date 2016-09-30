@@ -28,8 +28,8 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
     val gossip = Gossip(this, K)
 
     init {
-        gossipChannel.configureBlocking(false)
-        pssChannel.configureBlocking(false)
+        gossipChannel.configureBlocking(true)
+        pssChannel.configureBlocking(true)
         pss.start()
     }
 
@@ -52,9 +52,9 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun sendPss(message: ByteArray, target: InetAddress) {
-        logger.debug("Sending PSS view")
         pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
     }
+
 
     /**
      * Close the channels and stop the PSS

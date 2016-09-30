@@ -31,7 +31,6 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         } while (tmp_view!!.size < 15)
 
         logger.info(result)
-        logger.info(myIp.hostAddress)
         if (tmp_view.contains(myIp.hostAddress)) {
             tmp_view.remove(myIp.hostAddress)
         }

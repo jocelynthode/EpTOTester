@@ -8,7 +8,6 @@ import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.nio.channels.AsynchronousCloseException
 import java.util.*
 
 /**
@@ -32,28 +31,25 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
      * The peer main function
      */
     override fun run() {
+        logger.debug("Starting Peer")
         disseminationComponent.start()
-        try {
-            is_running = true
-            while (is_running) {
+        is_running = true
+        while (is_running) {
+            try {
                 val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
-                logger.debug("peer size : ${core.gossipChannel.socket().receiveBufferSize}")
                 val bb = ByteBuffer.wrap(buf)
                 if (core.gossipChannel.receive(bb) != null) {
-                    logger.debug("Peer  RECEIVED message")
                     val byteIn = ByteArrayInputStream(bb.array())
                     val inputStream = FSTObjectInput(byteIn)
                     disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
                     inputStream.close()
+                    logger.debug("RECEIVED message")
                 }
+            } catch (e: Exception) {
+                logger.error("Error receiving a packet", e)
+                e.printStackTrace()
             }
-        } catch (ace: AsynchronousCloseException) {
-            // Exiting.
-        } catch (e: Exception) {
-            logger.error("Error in the peer main loop", e)
-            e.printStackTrace()
         }
-
     }
 
     fun stop() {
