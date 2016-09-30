@@ -1,5 +1,6 @@
 package epto.pss
 
+import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
@@ -16,18 +17,18 @@ import java.util.*
  */
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
+    val logger by logger()
     var isRunning = false
 
     override fun run() {
         isRunning = true
         while (isRunning) {
             val buf = ByteArray(pss.core.pssChannel.socket().receiveBufferSize)
-            println("Passive size : ${pss.core.pssChannel.socket().receiveBufferSize}")
+            logger.debug("Passive size : ${pss.core.pssChannel.socket().receiveBufferSize}")
             val bb = ByteBuffer.wrap(buf)
-            println("Passive before message")
             val address = pss.core.pssChannel.receive(bb)
             if (address != null) {
-                println("Passive  RECEIVED message")
+                logger.debug("Passive  RECEIVED message")
                 val byteIn = ByteArrayInputStream(bb.array())
                 val inputStream = FSTObjectInput(byteIn)
                 val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
@@ -36,12 +37,10 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                     //TODO maybe remove oneself
                     val toSend = pss.selectToSend()
                     pss.selectToKeep(receivedView)
-                    println("Passive test : ${(address as InetSocketAddress).address.hostAddress}")
+                    logger.debug("Passive address received : ${(address as InetSocketAddress).address.hostAddress}")
                     pss.core.sendPss(toSend, address.address)
                 }
             }
-            println("Passive not received message")
-
         }
     }
 

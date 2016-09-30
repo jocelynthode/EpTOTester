@@ -1,5 +1,6 @@
 package epto.udp
 
+import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService
 import epto.utilities.Event
 import org.nustaq.serialization.FSTObjectOutput
@@ -12,6 +13,8 @@ import java.util.*
  */
 class Gossip(val core: Core, val K: Int = 15) {
 
+    val logger by logger()
+
     fun relay(nextBall: HashMap<UUID, Event>) {
         val byteOut = ByteArrayOutputStream()
         val out = FSTObjectOutput(byteOut)
@@ -19,12 +22,14 @@ class Gossip(val core: Core, val K: Int = 15) {
             out.writeObject(nextBall)
             out.flush()
         } catch (e: IOException) {
+            logger.error("Exception while sending next ball")
+            logger.error(e.message)
             e.printStackTrace()
         } finally {
             out.close()
         }
 
-        println("Ball size in Bytes: ${byteOut.size()}")
+        logger.debug("Ball size in Bytes: ${byteOut.size()}")
 
         selectKFromView().forEach {
             core.send(byteOut.toByteArray(), it.address)

@@ -5,6 +5,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
 import epto.pss.PeerSamplingService
+import org.apache.logging.log4j.LogManager
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
@@ -14,6 +15,8 @@ import java.nio.ByteBuffer
  * Implementation of an Application
  */
 open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) {
+
+    private val logger = LogManager.getLogger("Application")
 
     val peer = Peer(this, TTL, K, myIp, myPort)
 
@@ -46,6 +49,8 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
                 val event = inputStream.readObject() as Event
                 println("Delivered : ${event.id}")
             } catch(e: Exception) {
+                logger.error("Exception while delivering an event to the application")
+                logger.error(e.message)
                 e.printStackTrace()
             } finally {
                 inputStream.close()

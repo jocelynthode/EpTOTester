@@ -1,5 +1,6 @@
 package epto
 
+import epto.libs.Delegates.logger
 import epto.udp.Core
 import epto.utilities.Application
 import epto.utilities.Event
@@ -17,6 +18,9 @@ import java.util.*
  *
  */
 class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
+
+    val logger by logger()
+
     val uuid = UUID.randomUUID()!!
     val core = Core(myIp, K, gossipPort, pssPort)
     private val oracle = StabilityOracle(TTL)
@@ -48,6 +52,8 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
         } catch (ace: AsynchronousCloseException) {
             // Exiting.
         } catch (e: Exception) {
+            logger.error("Error in the peer main loop")
+            logger.error(e.message)
             e.printStackTrace()
         }
 

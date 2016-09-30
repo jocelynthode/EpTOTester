@@ -1,6 +1,7 @@
 package epto
 
 
+import epto.libs.Delegates.logger
 import epto.utilities.Application
 import epto.utilities.Event
 import org.nustaq.serialization.FSTObjectOutput
@@ -16,6 +17,9 @@ import java.util.*
  * order of the events.
  */
 class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
+
+    val logger by logger()
+
     val received = HashMap<UUID, Event>()
     private val delivered = HashMap<UUID, Event>()
     private var lastDeliveredTs: Long = 0
@@ -61,6 +65,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                 out.writeObject(event)
                 out.flush()
             } catch (e: IOException) {
+                logger.error("Exception while preparing events to be delivered to the application")
+                logger.error(e.message)
                 e.printStackTrace()
             } finally {
                 out.close()

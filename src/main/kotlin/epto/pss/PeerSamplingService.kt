@@ -1,5 +1,6 @@
 package epto.pss
 
+import epto.libs.Delegates.logger
 import epto.udp.Core
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
@@ -29,20 +30,18 @@ import java.util.concurrent.TimeUnit
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 5, val exch: Int = 3,
                           val s: Int = 2, val h: Int = 1) {
 
+    val logger by logger()
+
     val view = ArrayList<PeerInfo>()
     val pssLock = Any()
     val passiveThread = PassiveThread(pssLock, this)
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)
     private val activeThread = Runnable {
-        System.err.println("Test")
-        val sj = StringJoiner(" ", "PSS View: ", "")
-        view.forEach { sj.add(it.toString()) }
-        println(sj.toString())
-        println("Connections length : " + view.size)
+        debug()
 
         if (view.size < 2) {
-            println("Not enough peers to shuffle")
+            logger.info("Not enough peers to shuffle")
             return@Runnable
         }
         synchronized(pssLock) {
@@ -101,13 +100,15 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } else {
             toSend.addAll(view)
         }
-        //System.out.println("toSend size: "+toSend.size());
+
         val byteOut = ByteArrayOutputStream()
         val out = FSTObjectOutput(byteOut)
         try {
             out.writeObject(toSend)
             out.flush()
         } catch (e: IOException) {
+            logger.error("Exception while selecting peers to send")
+            logger.error(e.message)
             e.printStackTrace()
         } finally {
             out.close()
@@ -164,6 +165,17 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      * Select a partner randomly from the view
      */
     fun selectPartner() = view[rand.nextInt(view.size)]
+
+
+    private fun debug() {
+        if (logger.isDebugEnabled) {
+            logger.debug("Active thread started")
+            val sj = StringJoiner(" ", "PSS View: ", "")
+            view.forEach { sj.add(it.toString()) }
+            logger.debug(sj.toString())
+            logger.debug("view size : ${view.size}")
+        }
+    }
 
     /**
      * Data class used to represent a peer

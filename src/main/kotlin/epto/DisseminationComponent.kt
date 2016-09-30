@@ -1,5 +1,6 @@
 package epto
 
+import epto.libs.Delegates.logger
 import epto.udp.Gossip
 import epto.utilities.Event
 import java.util.*
@@ -21,6 +22,9 @@ import java.util.concurrent.TimeUnit
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int) {
+
+    val logger by logger()
+
     val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()

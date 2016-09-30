@@ -1,5 +1,6 @@
 package epto.udp
 
+import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -19,6 +20,8 @@ import java.nio.channels.DatagramChannel
  */
 class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453) {
 
+    val logger by logger()
+
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(15000, this)
@@ -27,7 +30,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
     init {
         gossipChannel.configureBlocking(false)
         pssChannel.configureBlocking(false)
-        //pss.start()
+        pss.start()
     }
 
     /**
@@ -49,7 +52,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun sendPss(message: ByteArray, target: InetAddress) {
-        System.err.println("Sending something")
+        logger.debug("Sending PSS view")
         pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
     }
 
