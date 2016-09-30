@@ -52,5 +52,5 @@ docker {
     name 'epto'
     dependsOn tasks.mkdirLibs
     dependsOn tasks.shadowJar
-    files 'build/libs', 'scripts/container-start-script.sh', 'scripts/test-epto.rb'
+    files 'build/libs', 'scripts/container-start-script.sh'
 }
