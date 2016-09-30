@@ -24,7 +24,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
 
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
-    val pss = PeerSamplingService(15000, this)
+    val pss = PeerSamplingService(25000, this)
     val gossip = Gossip(this, K)
 
     init {

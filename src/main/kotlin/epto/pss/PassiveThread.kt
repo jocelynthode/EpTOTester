@@ -30,15 +30,17 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 if (address != null) {
                     val byteIn = ByteArrayInputStream(bb.array())
                     val inputStream = FSTObjectInput(byteIn)
-                    val receivedView = inputStream.readObject() as ArrayList<PeerInfo>
+                    val (isPull, receivedView) = inputStream.readObject() as Pair<Boolean, ArrayList<PeerInfo>>
                     inputStream.close()
-                    logger.debug("RECEIVED message")
                     synchronized(pssLock) {
                         //TODO maybe remove oneself
-                        val toSend = pss.selectToSend()
+                        logger.debug("isPull : $isPull")
+                        if (!isPull) {
+                            val toSend = pss.selectToSend(true)
+                            logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
+                            pss.core.sendPss(toSend, (address as InetSocketAddress).address)
+                        }
                         pss.selectToKeep(receivedView)
-                        logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
-                        pss.core.sendPss(toSend, (address as InetSocketAddress).address)
                     }
                 }
             } catch (e: Exception) {

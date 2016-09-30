@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
  * @param h the healing parameter
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
-                          val s: Int = 10, val h: Int = 2) {
+                          val s: Int = 6, val h: Int = 1) {
 
     val logger by logger()
 
@@ -39,7 +39,6 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     private val scheduler = Executors.newScheduledThreadPool(1)
     private val activeThread = Runnable {
         debug()
-
         if (view.size < 2) {
             logger.info("Not enough peers to shuffle")
             return@Runnable
@@ -47,11 +46,10 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         synchronized(pssLock) {
             val partner = selectPartner()
             view.remove(partner)
-            val toSend = selectToSend()
+            val toSend = selectToSend(false)
             core.sendPss(toSend, partner.address)
             view.forEach { it.age++ }
         }
-
     }
     private var activeThreadFuture: ScheduledFuture<*>? = null
 
@@ -75,9 +73,11 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     /**
      * Selects a sublist of the view to send to the partner
      *
+     * @param isPull If the view was solicited by a peer
+     *
      * @return subview
      */
-    fun selectToSend(): ByteArray {
+    fun selectToSend(isPull: Boolean = false): ByteArray {
         val toSend = ArrayList<PeerInfo>()
         toSend.add(PeerInfo(core.myIp))
 
@@ -104,7 +104,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         val byteOut = ByteArrayOutputStream()
         val out = FSTObjectOutput(byteOut)
         try {
-            out.writeObject(toSend)
+            out.writeObject(Pair(isPull, toSend))
             out.flush()
         } catch (e: IOException) {
             logger.error("Exception while selecting peers to send", e)
@@ -169,7 +169,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     private fun debug() {
         if (logger.isDebugEnabled) {
             val sj = StringJoiner(" ", "PSS View: ", "")
-            view.forEach { sj.add(it.toString()) }
+            view.forEach { sj.add(it.address.hostAddress) }
             logger.debug(sj.toString())
             logger.debug("View size : ${view.size}")
         }
