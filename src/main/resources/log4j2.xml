@@ -9,15 +9,13 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="epto.utilities.Application" level="info">
+        <Logger name="epto.utilities.Application" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.utilities.Main" level="info">
+        <Logger name="epto.utilities.Main$Companion" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.pss.PeerSamplingService" level="debug">
-            <AppenderRef ref="Console"/>
-        </Logger>
+        <Logger name="epto.pss.PeerSamplingService" level="debug"/>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
