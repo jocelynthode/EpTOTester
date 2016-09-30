@@ -38,12 +38,13 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)
     private val activeThread = Runnable {
-        debug()
-        if (view.size < 2) {
-            logger.info("Not enough peers to shuffle")
-            return@Runnable
-        }
         synchronized(pssLock) {
+            debug()
+            if (view.size < 2) {
+                logger.info("Not enough peers to shuffle")
+                return@Runnable
+            }
+
             val partner = selectPartner()
             view.remove(partner)
             val toSend = selectToSend(false)
@@ -58,6 +59,11 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      */
     fun start() {
         Thread(passiveThread).start()
+        //Run the PSS 3 times
+        for(i in 1..3) {
+            logger.debug("Running init PSS-$i")
+            activeThread.run()
+        }
         activeThreadFuture = scheduler.scheduleWithFixedDelay(activeThread, 0, gossipInterval.toLong(),
                 TimeUnit.MILLISECONDS)
     }

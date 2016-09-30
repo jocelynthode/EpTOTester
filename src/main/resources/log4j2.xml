@@ -18,7 +18,7 @@
         <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.pss.PassiveThread" level="debug"/>
+        <Logger name="epto.pss.PassiveThread" level="info"/>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>

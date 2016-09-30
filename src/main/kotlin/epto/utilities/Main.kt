@@ -38,26 +38,19 @@ class Main {
 
             val application = Application(ttl, k, args[1], expectedEvents, InetAddress.getByName(args[0]))
 
-            //Give some time for the PSS to have a randomized view 4cycles approx
-            //Thread.sleep(105000)
-            //System.exit(0)
-
             logger.info("Peer ID : ${application.peer.uuid}")
             logger.info("Peer Number : ${n.toInt()}")
             logger.info("TTL : $ttl, K : $k")
 
+            Thread.sleep(5000)
             application.start()
-            // sleep for 5sec
-            //Thread.sleep(5000)
 
-            /*
             var eventsSent = 0
             while (eventsSent != EVENTS_TO_SEND) {
                 application.broadcast()
                 Thread.sleep(1000)
                 eventsSent++
             }
-            */
             while (true) {
                 Thread.sleep(500)
             }

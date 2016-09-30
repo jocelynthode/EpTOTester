@@ -28,15 +28,16 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             Thread.sleep(5000)
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
             tmp_view = result.split('|').toMutableList()
-        } while (tmp_view!!.size < 15)
+        } while (tmp_view!!.size < 25)
 
         logger.info(result)
         if (tmp_view.contains(myIp.hostAddress)) {
             tmp_view.remove(myIp.hostAddress)
         }
-
         //Add seeds to the PSS view
         peer.core.pss.view.addAll(tmp_view.map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
+        //Start after we have a view
+        peer.core.startPss()
     }
 
     @Synchronized fun deliver(byteBuffers: Array<ByteBuffer>) {
@@ -54,7 +55,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
                 inputStream.close()
             }
             expectedEvents--
-            logger.info("Expected events: ${expectedEvents}")
+            logger.debug("Expected events: ${expectedEvents}")
             if (expectedEvents <= 0) {
                 logger.info("All events delivered !")
             }
