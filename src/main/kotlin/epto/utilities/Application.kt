@@ -24,6 +24,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         var result: String?
         var tmp_view: MutableList<String>?
         FuelManager.instance.basePath = baseURL
+        logger.info("PSS TEST")
         do {
             Thread.sleep(5000)
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
@@ -47,7 +48,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             val inputStream = FSTObjectInput(byteIn)
             try {
                 val event = inputStream.readObject() as Event
-                println("Delivered : ${event.id}")
+                logger.info("Delivered : ${event.id}")
             } catch(e: Exception) {
                 logger.error("Exception while delivering an event to the application")
                 logger.error(e.message)

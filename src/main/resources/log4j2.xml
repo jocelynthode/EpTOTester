@@ -4,8 +4,17 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
+        <Console name="ConsoleSimple" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} - %msg%n"/>
+        </Console>
     </Appenders>
     <Loggers>
+        <Logger name="epto.utilities.Application" level="info">
+            <AppenderRef ref="ConsoleSimple"/>
+        </Logger>
+        <Logger name="epto.utilities.Main" level="info">
+            <AppenderRef ref="ConsoleSimple"/>
+        </Logger>
         <Logger name="epto.pss.PeerSamplingService" level="debug">
             <AppenderRef ref="Console"/>
         </Logger>
