@@ -4,8 +4,8 @@ package epto.utilities
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
+import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService
-import org.apache.logging.log4j.LogManager
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
  */
 open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) {
 
-    private val logger = LogManager.getLogger("Application")
+    val logger by logger()
 
     val peer = Peer(this, TTL, K, myIp, myPort)
 
@@ -30,8 +30,8 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             tmp_view = result.split('|').toMutableList()
         } while (tmp_view!!.size < 15)
 
-        println(result)
-        println(myIp.hostAddress)
+        logger.info(result)
+        logger.info(myIp.hostAddress)
         if (tmp_view.contains(myIp.hostAddress)) {
             tmp_view.remove(myIp.hostAddress)
         }
@@ -56,9 +56,9 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
                 inputStream.close()
             }
             expectedEvents--
-            println("Expected events: ${expectedEvents}")
+            logger.info("Expected events: ${expectedEvents}")
             if (expectedEvents <= 0) {
-                println("All events delivered !")
+                logger.info("All events delivered !")
             }
         }
     }
@@ -70,7 +70,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
     @Throws(InterruptedException::class)
     open fun broadcast(event: Event = Event()) {
         peer.disseminationComponent.broadcast(event)
-        println(" sending: " + event.id.toString())
+        logger.info(" sending: " + event.id.toString())
     }
 
 

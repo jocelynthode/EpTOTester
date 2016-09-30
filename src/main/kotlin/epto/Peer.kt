@@ -37,17 +37,15 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
             is_running = true
             while (is_running) {
                 val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
-                println("peer size : ${core.gossipChannel.socket().receiveBufferSize}")
+                logger.debug("peer size : ${core.gossipChannel.socket().receiveBufferSize}")
                 val bb = ByteBuffer.wrap(buf)
-                println("Peer before message")
                 if (core.gossipChannel.receive(bb) != null) {
-                    println("Peer  RECEIVED message")
+                    logger.debug("Peer  RECEIVED message")
                     val byteIn = ByteArrayInputStream(bb.array())
                     val inputStream = FSTObjectInput(byteIn)
                     disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
                     inputStream.close()
                 }
-                println("Peer not received message")
             }
         } catch (ace: AsynchronousCloseException) {
             // Exiting.

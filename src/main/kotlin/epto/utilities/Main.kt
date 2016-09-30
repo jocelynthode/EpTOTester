@@ -1,5 +1,6 @@
 package epto.utilities
 
+import epto.libs.Delegates.logger
 import java.net.InetAddress
 
 /**
@@ -9,23 +10,21 @@ class Main {
 
     companion object {
 
+        val logger by logger()
+
         const val EVENTS_TO_SEND = 12
         var expectedEvents = 0
 
         @JvmStatic fun main(args: Array<String>) {
             if (args.size < 3) {
-                System.err.println("Usage: apps.Main local tracker peer_number")
+                logger.error("Usage: apps.Main local tracker peer_number")
                 System.exit(1)
             }
-            System.err.println(args[0])
-            System.err.println(args[1])
-            System.err.println(args[2])
-            println(args[0])
-            println(args[1])
-            println(args[2])
+            logger.info(args[0])
+            logger.info(args[1])
+            logger.info(args[2])
 
-            println("Started: ${args[0]}")
-
+            logger.info("Started: ${args[0]}")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val n = args[2].toDouble()
@@ -34,7 +33,7 @@ class Main {
             val k = Math.ceil(2.0 * Math.E * Math.log(n) / Math.log(Math.log(n))).toInt()
 
             if (InetAddress.getByName(args[0]).isLoopbackAddress)
-                println("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
+                logger.warn("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
             expectedEvents = EVENTS_TO_SEND * n.toInt()
 
@@ -44,9 +43,9 @@ class Main {
             //Thread.sleep(105000)
             //System.exit(0)
 
-            println("Peer ID : ${application.peer.uuid}")
-            println("Peer Number : ${n.toInt()}")
-            println("TTL : $ttl, K : $k")
+            logger.info("Peer ID : ${application.peer.uuid}")
+            logger.info("Peer Number : ${n.toInt()}")
+            logger.info("TTL : $ttl, K : $k")
 
             application.start()
             // sleep for 5sec
