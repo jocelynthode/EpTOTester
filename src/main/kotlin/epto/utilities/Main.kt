@@ -20,11 +20,10 @@ class Main {
                 logger.error("Usage: apps.Main local tracker peer_number")
                 System.exit(1)
             }
-            logger.info(args[0])
-            logger.info(args[1])
-            logger.info(args[2])
 
             logger.info("Started: ${args[0]}")
+            logger.info(args[1])
+            logger.info(args[2])
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val n = args[2].toDouble()
@@ -51,12 +50,14 @@ class Main {
             // sleep for 5sec
             //Thread.sleep(5000)
 
+            /*
             var eventsSent = 0
-            /*while (eventsSent != EVENTS_TO_SEND) {
+            while (eventsSent != EVENTS_TO_SEND) {
                 application.broadcast()
                 Thread.sleep(1000)
                 eventsSent++
-            }*/
+            }
+            */
             while (true) {
                 Thread.sleep(500)
             }

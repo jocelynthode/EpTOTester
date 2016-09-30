@@ -22,8 +22,7 @@ class Gossip(val core: Core, val K: Int = 15) {
             out.writeObject(nextBall)
             out.flush()
         } catch (e: IOException) {
-            logger.error("Exception while sending next ball")
-            logger.error(e.message)
+            logger.error("Exception while sending next ball", e)
             e.printStackTrace()
         } finally {
             out.close()

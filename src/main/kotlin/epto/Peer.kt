@@ -50,8 +50,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
         } catch (ace: AsynchronousCloseException) {
             // Exiting.
         } catch (e: Exception) {
-            logger.error("Error in the peer main loop")
-            logger.error(e.message)
+            logger.error("Error in the peer main loop", e)
             e.printStackTrace()
         }
 

@@ -65,8 +65,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                 out.writeObject(event)
                 out.flush()
             } catch (e: IOException) {
-                logger.error("Exception while preparing events to be delivered to the application")
-                logger.error(e.message)
+                logger.error("Exception while preparing events to be delivered to the application", e)
                 e.printStackTrace()
             } finally {
                 out.close()

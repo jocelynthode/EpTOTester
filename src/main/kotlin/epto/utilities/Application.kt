@@ -49,8 +49,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
                 val event = inputStream.readObject() as Event
                 logger.info("Delivered : ${event.id}")
             } catch(e: Exception) {
-                logger.error("Exception while delivering an event to the application")
-                logger.error(e.message)
+                logger.error("Exception while delivering an event to the application", e)
                 e.printStackTrace()
             } finally {
                 inputStream.close()

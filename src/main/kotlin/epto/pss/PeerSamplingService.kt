@@ -107,8 +107,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             out.writeObject(toSend)
             out.flush()
         } catch (e: IOException) {
-            logger.error("Exception while selecting peers to send")
-            logger.error(e.message)
+            logger.error("Exception while selecting peers to send", e)
             e.printStackTrace()
         } finally {
             out.close()
