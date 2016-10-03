@@ -42,7 +42,6 @@ class Main {
             logger.info("Peer Number : ${n.toInt()}")
             logger.info("TTL : $ttl, K : $k")
 
-            Thread.sleep(5000)
             application.start()
 
             var eventsSent = 0
