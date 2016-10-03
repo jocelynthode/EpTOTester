@@ -67,6 +67,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
+        logger.debug("Receiving a new ball of size: ${ball.size}")
         for ((eventId, event) in ball) {
             if (event.ttl < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {

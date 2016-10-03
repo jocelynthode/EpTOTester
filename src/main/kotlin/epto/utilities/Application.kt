@@ -6,10 +6,9 @@ import com.github.kittinunf.fuel.httpGet
 import epto.Peer
 import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService
-import org.nustaq.serialization.FSTObjectInput
-import java.io.ByteArrayInputStream
+import org.nustaq.serialization.FSTConfiguration
 import java.net.InetAddress
-import java.nio.ByteBuffer
+import java.util.*
 
 /**
  * Implementation of an Application
@@ -17,10 +16,10 @@ import java.nio.ByteBuffer
 open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) {
 
     val logger by logger()
-
     val peer = Peer(this, TTL, K, myIp, myPort)
 
     init {
+        conf.registerClass(HashMap::class.java, Pair::class.java, Event::class.java)
         var result: String?
         var tmp_view: MutableList<String>?
         FuelManager.instance.basePath = baseURL
@@ -40,25 +39,12 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         peer.core.startPss()
     }
 
-    @Synchronized fun deliver(byteBuffers: Array<ByteBuffer>) {
-        byteBuffers.forEach { byteBuffer ->
-            val content = byteBuffer.array()
-            val byteIn = ByteArrayInputStream(content)
-            val inputStream = FSTObjectInput(byteIn)
-            try {
-                val event = inputStream.readObject() as Event
-                logger.info("Delivered : ${event.id}")
-            } catch(e: Exception) {
-                logger.error("Exception while delivering an event to the application", e)
-                e.printStackTrace()
-            } finally {
-                inputStream.close()
-            }
-            expectedEvents--
-            logger.debug("Expected events: ${expectedEvents}")
-            if (expectedEvents <= 0) {
-                logger.info("All events delivered !")
-            }
+    @Synchronized fun deliver(event: Event) {
+        expectedEvents--
+        logger.info("Delivered : ${event.id}")
+        logger.info("Expected events: ${expectedEvents}")
+        if (expectedEvents <= 0) {
+            logger.info("All events delivered !")
         }
     }
 
@@ -72,5 +58,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
         logger.info(" sending: " + event.id.toString())
     }
 
-
+    companion object {
+        val conf = FSTConfiguration.createDefaultConfiguration()!!
+    }
 }

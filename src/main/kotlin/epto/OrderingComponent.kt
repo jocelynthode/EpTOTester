@@ -4,10 +4,6 @@ package epto
 import epto.libs.Delegates.logger
 import epto.utilities.Application
 import epto.utilities.Event
-import org.nustaq.serialization.FSTObjectOutput
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.nio.ByteBuffer
 import java.util.*
 
 /**
@@ -46,6 +42,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                         received.put(event.id, event)
                     }
                 }
+        logger.debug("Received size: ${received.size}")
+        logger.debug("Min TTL: ${Collections.min(received.values.map { it.ttl })}, Max TTL: ${Collections.max(received.values.map { it.ttl })}")
     }
 
     /**
@@ -56,24 +54,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     private fun deliver(deliverableEvents: List<Event>) {
         for (event in deliverableEvents) {
             delivered.put(event.id, event)
-
             lastDeliveredTs = event.timestamp
-
-            val byteOut = ByteArrayOutputStream()
-            val out = FSTObjectOutput(byteOut)
-            try {
-                out.writeObject(event)
-                out.flush()
-            } catch (e: IOException) {
-                logger.error("Exception while preparing events to be delivered to the application", e)
-                e.printStackTrace()
-            } finally {
-                out.close()
-            }
-
-            //delivering the event
-            val bb = ByteBuffer.wrap(byteOut.toByteArray())
-            application.deliver(arrayOf(bb))
+            application.deliver(event)
         }
     }
 
@@ -101,7 +83,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         }
 
         val eventsToRemove = ArrayList<Event>()
-
+        logger.debug("Deliverable events: ${deliverableEvents.size}")
+        logger.debug("minQueuedTs: $minQueuedTs")
         for (event in deliverableEvents) {
             if (event.timestamp >= minQueuedTs) {
                 // ignore deliverable events with timestamp greater or equal than all non-deliverable events
@@ -112,6 +95,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
             }
         }
         deliverableEvents.removeAll(eventsToRemove)
+        logger.debug("Final Deliverable events: ${deliverableEvents.size}")
 
         //sort deliverable Events by Ts and ID, ascending
         deliverableEvents.sort(null)

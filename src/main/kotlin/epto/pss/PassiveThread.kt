@@ -2,8 +2,7 @@ package epto.pss
 
 import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService.PeerInfo
-import org.nustaq.serialization.FSTObjectInput
-import java.io.ByteArrayInputStream
+import epto.utilities.Application
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.*
@@ -18,7 +17,7 @@ import java.util.*
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     val logger by logger()
-    var isRunning = false
+    private var isRunning = false
 
     override fun run() {
         isRunning = true
@@ -28,10 +27,8 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 val bb = ByteBuffer.wrap(buf)
                 val address = pss.core.pssChannel.receive(bb)
                 if (address != null) {
-                    val byteIn = ByteArrayInputStream(bb.array())
-                    val inputStream = FSTObjectInput(byteIn)
-                    val (isPull, receivedView) = inputStream.readObject() as Pair<Boolean, ArrayList<PeerInfo>>
-                    inputStream.close()
+                    val (isPull, receivedView) = Application.conf.asObject(buf)
+                            as Pair<Boolean, ArrayList<PeerInfo>>
                     synchronized(pssLock) {
                         //TODO maybe remove oneself
                         logger.debug("isPull : $isPull")

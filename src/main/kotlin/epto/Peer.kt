@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.zip.GZIPInputStream
 
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.
@@ -25,7 +26,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     private val oracle = StabilityOracle(TTL)
     val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
-    private var is_running: Boolean = false
+    private var isRunning = false
 
     /**
      * The peer main function
@@ -33,17 +34,26 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     override fun run() {
         logger.debug("Starting Peer")
         disseminationComponent.start()
-        is_running = true
-        while (is_running) {
+        isRunning = true
+
+        while (isRunning) {
             try {
                 val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
                 val bb = ByteBuffer.wrap(buf)
                 if (core.gossipChannel.receive(bb) != null) {
                     val byteIn = ByteArrayInputStream(bb.array())
-                    val inputStream = FSTObjectInput(byteIn)
-                    disseminationComponent.receive(inputStream.readObject() as HashMap<UUID, Event>)
+                    val gzipIn = GZIPInputStream(byteIn)
+                    val inputStream = FSTObjectInput(gzipIn)
+                    var len = inputStream.readInt()
+                    val receivedBall = HashMap<UUID, Event>()
+                    logger.debug("Size: $len")
+                    while (len > 0) {
+                        val event = inputStream.readObject(Event::class.java) as Event
+                        receivedBall[event.id] = event
+                        len--
+                    }
                     inputStream.close()
-                    logger.debug("RECEIVED message")
+                    disseminationComponent.receive(receivedBall)
                 }
             } catch (e: Exception) {
                 logger.error("Error receiving a packet", e)
@@ -53,13 +63,13 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     }
 
     fun stop() {
-        is_running = false
+        isRunning = false
         disseminationComponent.stop()
         core.stop()
     }
 
     companion object {
 
-        const internal val DELTA = 5000L
+        const internal val DELTA = 1000L
     }
 }

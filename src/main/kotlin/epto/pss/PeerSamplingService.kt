@@ -2,9 +2,7 @@ package epto.pss
 
 import epto.libs.Delegates.logger
 import epto.udp.Core
-import org.nustaq.serialization.FSTObjectOutput
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import epto.utilities.Application
 import java.io.Serializable
 import java.net.InetAddress
 import java.util.*
@@ -60,7 +58,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     fun start() {
         Thread(passiveThread).start()
         //Run the PSS 3 times
-        for(i in 1..3) {
+        for (i in 1..3) {
             logger.debug("Running init PSS-$i")
             activeThread.run()
         }
@@ -106,19 +104,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } else {
             toSend.addAll(view)
         }
-
-        val byteOut = ByteArrayOutputStream()
-        val out = FSTObjectOutput(byteOut)
-        try {
-            out.writeObject(Pair(isPull, toSend))
-            out.flush()
-        } catch (e: IOException) {
-            logger.error("Exception while selecting peers to send", e)
-            e.printStackTrace()
-        } finally {
-            out.close()
-        }
-        return byteOut.toByteArray()
+        return Application.conf.asByteArray(Pair(isPull, toSend))
     }
 
     /**
