@@ -22,7 +22,7 @@ class Gossip(val core: Core, val K: Int = 15) {
             return
         }
         val byteOut = ByteArrayOutputStream()
-        val gzipOut = GZIPOutputStream(byteOut)
+        val gzipOut = GZIPOutputStream(byteOut, 8192)
         val out = Application.conf.getObjectOutput(gzipOut)
         try {
             out.writeInt(nextBall.size)
@@ -37,7 +37,7 @@ class Gossip(val core: Core, val K: Int = 15) {
 
         logger.debug("Ball size in Bytes: ${byteOut.size()}")
         if (byteOut.size() >= 65507) {
-            logger.debug("Ball size too big !")
+            logger.warn("Ball size too big !")
         }
         selectKFromView().forEach {
             core.send(byteOut.toByteArray(), it.address)

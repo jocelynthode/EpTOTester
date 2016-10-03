@@ -42,11 +42,11 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                 val bb = ByteBuffer.wrap(buf)
                 if (core.gossipChannel.receive(bb) != null) {
                     val byteIn = ByteArrayInputStream(bb.array())
-                    val gzipIn = GZIPInputStream(byteIn)
+                    val gzipIn = GZIPInputStream(byteIn, 8192)
                     val inputStream = FSTObjectInput(gzipIn)
                     var len = inputStream.readInt()
                     val receivedBall = HashMap<UUID, Event>()
-                    logger.debug("Size: $len")
+                    logger.debug("ReceivedBall size: $len")
                     while (len > 0) {
                         val event = inputStream.readObject(Event::class.java) as Event
                         receivedBall[event.id] = event
@@ -70,6 +70,6 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
 
     companion object {
 
-        const internal val DELTA = 1000L
+        const internal val DELTA = 10000L
     }
 }
