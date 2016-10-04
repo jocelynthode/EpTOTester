@@ -58,7 +58,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         }
     }
 
-    private fun  relaySplitted(values: List<Event>, gossip: Gossip) {
+    private fun relaySplitted(values: List<Event>, gossip: Gossip) {
         var ballsToSend = Math.ceil(values.size / MAX_EVENTS.toDouble()).toInt()
         var i = 0
         while (ballsToSend > 0) {
