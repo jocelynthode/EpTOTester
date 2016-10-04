@@ -70,6 +70,6 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
 
     companion object {
 
-        const internal val DELTA = 10000L
+        const internal val DELTA = 4100L
     }
 }

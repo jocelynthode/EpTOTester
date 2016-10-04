@@ -29,7 +29,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             tmp_view = result.split('|').toMutableList()
         } while (tmp_view!!.size < 25)
 
-        logger.info(result)
+        logger.debug(result)
         if (tmp_view.contains(myIp.hostAddress)) {
             tmp_view.remove(myIp.hostAddress)
         }

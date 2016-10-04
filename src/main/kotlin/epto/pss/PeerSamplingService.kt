@@ -161,6 +161,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     private fun debug() {
         if (logger.isDebugEnabled) {
             val sj = StringJoiner(" ", "PSS View: ", "")
+            sj.add(core.myIp.hostAddress)
             view.forEach { sj.add(it.address.hostAddress) }
             logger.debug(sj.toString())
             logger.debug("View size : ${view.size}")
