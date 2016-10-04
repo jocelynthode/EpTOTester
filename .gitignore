@@ -188,3 +188,4 @@ gradle-app.setting
 /results/*.txt
 /scripts/*.tar.gz
 /cluster/hosts
+/results/*.tar.gz

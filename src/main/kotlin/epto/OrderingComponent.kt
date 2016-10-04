@@ -1,13 +1,9 @@
 package epto
 
 
+import epto.libs.Delegates.logger
+import epto.utilities.Application
 import epto.utilities.Event
-import net.sf.neem.impl.Application
-import org.nustaq.serialization.FSTObjectOutput
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.ObjectOutputStream
-import java.nio.ByteBuffer
 import java.util.*
 
 /**
@@ -16,7 +12,10 @@ import java.util.*
  * the received set to the delivered set, preserving the total
  * order of the events.
  */
-class OrderingComponent(private val oracle: StabilityOracle, internal var app: Application) {
+class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
+
+    val logger by logger()
+
     val received = HashMap<UUID, Event>()
     private val delivered = HashMap<UUID, Event>()
     private var lastDeliveredTs: Long = 0
@@ -43,6 +42,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
                         received.put(event.id, event)
                     }
                 }
+        logger.debug("Received size: ${received.size}")
+        logger.debug("Min TTL: ${received.values.minBy { it.ttl }?.ttl}, Max TTL: ${received.values.maxBy { it.ttl }?.ttl}")
     }
 
     /**
@@ -53,23 +54,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
     private fun deliver(deliverableEvents: List<Event>) {
         for (event in deliverableEvents) {
             delivered.put(event.id, event)
-
             lastDeliveredTs = event.timestamp
-
-            val byteOut = ByteArrayOutputStream()
-            val out = FSTObjectOutput(byteOut)
-            try {
-                out.writeObject(event)
-                out.flush()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } finally {
-                out.close()
-            }
-
-            //delivering the event
-            val bb = ByteBuffer.wrap(byteOut.toByteArray())
-            app.deliver(arrayOf(bb))
+            application.deliver(event)
         }
     }
 
@@ -97,7 +83,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
         }
 
         val eventsToRemove = ArrayList<Event>()
-
+        logger.debug("Deliverable events: ${deliverableEvents.size}")
+        logger.debug("minQueuedTs: $minQueuedTs")
         for (event in deliverableEvents) {
             if (event.timestamp >= minQueuedTs) {
                 // ignore deliverable events with timestamp greater or equal than all non-deliverable events
@@ -108,6 +95,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var app: A
             }
         }
         deliverableEvents.removeAll(eventsToRemove)
+        logger.debug("Final Deliverable events: ${deliverableEvents.size}")
 
         //sort deliverable Events by Ts and ID, ascending
         deliverableEvents.sort(null)

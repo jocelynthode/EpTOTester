@@ -1,15 +1,8 @@
 package epto
 
+import epto.libs.Delegates.logger
+import epto.udp.Gossip
 import epto.utilities.Event
-import net.sf.neem.MulticastChannel
-import org.nustaq.serialization.FSTObjectOutput
-import org.nustaq.serialization.util.FSTOutputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.ObjectOutputStream
-import java.nio.ByteBuffer
-import java.nio.channels.ClosedChannelException
-import java.security.SecureRandom
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -27,9 +20,12 @@ import java.util.concurrent.TimeUnit
  * @param neem              MultiCastChannel to gossip
  * @param orderingComponent OrderingComponent to order events
  */
-class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, neem: MulticastChannel,
+class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int) {
-    private val scheduler: ScheduledExecutorService
+
+    val logger by logger()
+
+    val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
@@ -38,29 +34,17 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
-            synchronized (nextBallLock) {
+            logger.debug("Acquiring nextBallLock")
+            synchronized(nextBallLock) {
+                logger.debug("Acquired nextBallLock")
+                logger.debug("nextBall size: ${nextBall.size}")
                 nextBall.forEach { id, event -> event.incrementTtl() }
                 if (!nextBall.isEmpty()) {
-                    val byteOut = ByteArrayOutputStream()
-                    val out = FSTObjectOutput(byteOut)
-                    try {
-                        out.writeObject(nextBall)
-                        out.flush()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    } finally {
-                        out.close()
-                    }
-
-                    try {
-                        neem.write(ByteBuffer.wrap(byteOut.toByteArray()))
-                    } catch (e: ClosedChannelException) {
-                        e.printStackTrace()
-                    }
+                    gossip.relay(nextBall)
                 }
-
                 orderingComponent.orderEvents(nextBall)
                 nextBall.clear()
+                logger.debug("Finished periodicDissemination")
             }
         }
     }
@@ -86,9 +70,11 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
-        for ((eventId, event) in ball) {
+        logger.debug("Receiving a new ball of size: ${ball.size}")
+        logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
+        ball.forEach { eventId, event ->
             if (event.ttl < oracle.TTL) {
-                synchronized (nextBallLock, fun(): Unit {
+                synchronized(nextBallLock, fun(): Unit {
                     val nextBallEvent = nextBall[eventId]
                     if (nextBallEvent != null) {
                         if (nextBallEvent.ttl < event.ttl) {
@@ -114,10 +100,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     /**
      * Stops the periodic dissemination
      */
-    fun stop() {
-        //Don't interrupt if running
-        periodicDisseminationFuture?.cancel(false)
-    }
+    fun stop() = periodicDisseminationFuture?.cancel(true)
 
     companion object {
 
