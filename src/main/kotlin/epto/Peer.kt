@@ -48,7 +48,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                     val receivedBall = HashMap<UUID, Event>()
                     logger.debug("ReceivedBall size: $len")
                     while (len > 0) {
-                        val event = inputStream.readObject(Event::class.java) as Event
+                        val event = unserializeEvent(inputStream)
                         receivedBall[event.id] = event
                         len--
                     }
@@ -62,6 +62,14 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
         }
     }
 
+    fun unserializeEvent(inputStream: FSTObjectInput): Event {
+        val id = UUID(inputStream.readLong(), inputStream.readLong())
+        val timeStamp = inputStream.readLong()
+        val ttl = inputStream.readInt()
+        val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
+        return Event(id, timeStamp, ttl, sourceId)
+    }
+
     fun stop() {
         isRunning = false
         disseminationComponent.stop()
@@ -70,6 +78,6 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
 
     companion object {
 
-        const internal val DELTA = 4100L
+        const internal val DELTA = 4500L
     }
 }

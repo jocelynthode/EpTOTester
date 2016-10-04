@@ -1,5 +1,6 @@
 package epto.utilities
 
+import org.nustaq.serialization.FSTObjectOutput
 import java.io.Serializable
 import java.util.*
 
@@ -61,4 +62,12 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
         return "Event{id=$id, timestamp=$timestamp, ttl=$ttl, sourceId=$sourceId}"
     }
 
+    fun serialize(out: FSTObjectOutput) {
+        out.writeLong(this.id.mostSignificantBits)
+        out.writeLong(this.id.leastSignificantBits)
+        out.writeLong(this.timestamp)
+        out.writeInt(this.ttl)
+        out.writeLong(this.sourceId!!.mostSignificantBits)
+        out.writeLong(this.sourceId!!.leastSignificantBits)
+    }
 }
