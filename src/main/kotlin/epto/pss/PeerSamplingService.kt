@@ -90,7 +90,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         //Move oldest H items to the end (from view)
         if (view.size > h) {
             for (i in 0..h - 1) {
-                val oldest = view.subList(0, view.size - i).maxBy {it.age}
+                val oldest = view.subList(0, view.size - i).maxBy { it.age }
                 Collections.swap(view, view.indexOf(oldest), view.size - (i + 1))
             }
         }
@@ -125,7 +125,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         //remove min(H, #view-c) oldest items
         var minimum = Math.min(h, view.size - c)
         while (minimum > 0 && view.size > 0) {
-            val oldestPeer = view.maxBy {it.age}
+            val oldestPeer = view.maxBy { it.age }
             view.remove(oldestPeer)
             minimum--
         }
