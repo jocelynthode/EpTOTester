@@ -25,6 +25,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
 
     val logger by logger()
 
+    //5000 * 8 / 240bits (for an event)
+    val MAX_EVENTS = 160
     val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()
@@ -38,14 +40,34 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
             synchronized(nextBallLock) {
                 logger.debug("Acquired nextBallLock")
                 logger.debug("nextBall size: ${nextBall.size}")
-                nextBall.forEach { id, event -> event.incrementTtl() }
+                nextBall.forEach { it.value.incrementTtl() }
                 if (!nextBall.isEmpty()) {
-                    gossip.relay(nextBall)
+                    val events = nextBall.values.toList()
+                    //MAX events based on a max limit of  5000bytes
+                    if (nextBall.size > MAX_EVENTS) {
+                        logger.warn("Ball size probably too big !")
+                        relaySplitted(events, gossip)
+                    } else {
+                        gossip.relay(events)
+                    }
                 }
                 orderingComponent.orderEvents(nextBall)
                 nextBall.clear()
                 logger.debug("Finished periodicDissemination")
             }
+        }
+    }
+
+    private fun  relaySplitted(values: List<Event>, gossip: Gossip) {
+        var ballsToSend = Math.ceil(values.size / MAX_EVENTS.toDouble()).toInt()
+        var i = 0
+        while (ballsToSend > 0) {
+            if (ballsToSend > 1)
+                gossip.relay(values.subList(i, i + MAX_EVENTS))
+            else
+                gossip.relay(values.subList(i, values.size))
+            ballsToSend--
+            i += 160
         }
     }
 
