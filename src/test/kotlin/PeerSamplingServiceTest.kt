@@ -63,15 +63,16 @@ class PeerSamplingServiceTest {
                 PeerSamplingService.PeerInfo(core4.myIp),
                 PeerSamplingService.PeerInfo(core1.myIp)
         ))
+
+        core1.startPss()
+        //core2.startPss()
+        //core3.startPss()
+        //core4.startPss()
     }
 
     @Test
     fun testPSS() {
-        core1.pss.start()
-        core2.pss.start()
-        core3.pss.start()
-        core4.pss.start()
-        core5.pss.start()
-
+        Thread.sleep(5000)
+        Thread.sleep(10000)
     }
 }
