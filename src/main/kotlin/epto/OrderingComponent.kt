@@ -43,7 +43,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                     }
                 }
         logger.debug("Received size: ${received.size}")
-        logger.debug("Min TTL: ${Collections.min(received.values.map { it.ttl })}, Max TTL: ${Collections.max(received.values.map { it.ttl })}")
+        logger.debug("Min TTL: ${received.values.minBy { it.ttl }?.ttl}, Max TTL: ${received.values.maxBy { it.ttl }?.ttl}")
     }
 
     /**

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
  * @param h the healing parameter
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
-                          val s: Int = 6, val h: Int = 1) {
+                          val s: Int = 8, val h: Int = 1) {
 
     val logger by logger()
 
@@ -90,7 +90,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         //Move oldest H items to the end (from view)
         if (view.size > h) {
             for (i in 0..h - 1) {
-                val oldest = Collections.max(view.subList(0, view.size - i)) { o1, o2 -> o1.age - o2.age }
+                val oldest = view.subList(0, view.size - i).maxBy {it.age}
                 Collections.swap(view, view.indexOf(oldest), view.size - (i + 1))
             }
         }
@@ -125,7 +125,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         //remove min(H, #view-c) oldest items
         var minimum = Math.min(h, view.size - c)
         while (minimum > 0 && view.size > 0) {
-            val oldestPeer = Collections.max(view) { o1, o2 -> o1.age - o2.age }
+            val oldestPeer = view.maxBy {it.age}
             view.remove(oldestPeer)
             minimum--
         }
