@@ -29,25 +29,25 @@ parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:237
 # If networking doesn't work use ingress
 docker network create -d overlay --subnet=172.28.0.0/16 epto-network
 
-docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 370m swarm-m:5000/tracker
+docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 350m swarm-m:5000/tracker
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --env "PEER_NUMBER=${PEER_NUMBER}" \
---limit-memory 370m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
+--limit-memory 250m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
 echo "Fleshing out the network..."
-sleep 30s
+sleep 20s
 
 #wait for apps to finish
-for i in {1..60} :
+for i in {1..185} :
 do
 	sleep 20s
     echo "waiting..."
 done
 
-#docker service rm epto-service
-#docker service rm epto-tracker
-#docker network rm epto-network
-#parallel-ssh -t 0 -h hosts "docker swarm leave"
-#docker swarm leave --force
+docker service rm epto-service
+docker service rm epto-tracker
+docker network rm epto-network
+parallel-ssh -t 0 -h hosts "docker swarm leave"
+docker swarm leave --force
 
 
 #while read ip; do
