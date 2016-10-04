@@ -2,7 +2,7 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%r [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
         <Console name="ConsoleSimple" target="SYSTEM_OUT">
             <PatternLayout pattern="%r - %msg%n"/>
@@ -15,9 +15,12 @@
         <Logger name="epto.utilities.Main$Companion" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
+        <Logger name="epto.pss.PeerSamplingService" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
+        <Logger name="epto.udp.Gossip" level="info"/>
+        <Logger name="epto.DisseminationComponent" level="info"/>
+        <Logger name="epto.OrderingComponent" level="info"/>
         <Logger name="epto.pss.PassiveThread" level="info"/>
         <Root level="info">
             <AppenderRef ref="Console"/>
