@@ -43,6 +43,7 @@ class Main {
             logger.info("TTL : $ttl, K : $k")
 
             application.start()
+            Thread.sleep(10000)
 
             var eventsSent = 0
             while (eventsSent != EVENTS_TO_SEND) {
@@ -51,7 +52,8 @@ class Main {
                 eventsSent++
             }
             while (true) {
-                Thread.sleep(500)
+                logger.info("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
+                Thread.sleep(10000)
             }
             //neem.close();
 

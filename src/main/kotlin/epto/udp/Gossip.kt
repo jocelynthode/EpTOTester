@@ -42,6 +42,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         selectKFromView().forEach {
             core.send(byteOut.toByteArray(), it.address)
         }
+        logger.debug("Sent Ball")
     }
 
     private fun selectKFromView(): ArrayList<PeerInfo> {

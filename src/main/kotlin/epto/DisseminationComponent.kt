@@ -34,7 +34,9 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
+            logger.debug("Acquiring nextBallLock")
             synchronized(nextBallLock) {
+                logger.debug("Acquired nextBallLock")
                 logger.debug("nextBall size: ${nextBall.size}")
                 nextBall.forEach { id, event -> event.incrementTtl() }
                 if (!nextBall.isEmpty()) {
@@ -42,6 +44,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                 }
                 orderingComponent.orderEvents(nextBall)
                 nextBall.clear()
+                logger.debug("Finished periodicDissemination")
             }
         }
     }
