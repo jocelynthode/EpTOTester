@@ -25,8 +25,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
 
     val logger by logger()
 
-    //5000 * 8 / 240bits (for an event)
-    val MAX_EVENTS = 160
+    //5000 * 8 / 260bits (for an event)
+    val MAX_EVENTS = 150
     val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()
