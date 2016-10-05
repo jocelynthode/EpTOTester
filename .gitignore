@@ -186,6 +186,8 @@ gradle-app.setting
 *.tdo
 
 /results/*.txt
+/results/pss/*.txt
 /scripts/*.tar.gz
 /cluster/hosts
 /results/*.tar.gz
+/results/pss/*.tar.gz
