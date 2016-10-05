@@ -5,7 +5,6 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.net.InetAddress
-import kotlin.concurrent.thread
 
 /**
  * Created by jocelyn on 19.09.16.
@@ -23,7 +22,7 @@ class Main {
             parser.defaultHelp(true)
             parser.addArgument("localIp").help("Peer local IP")
             parser.addArgument("tracker").help("Tracker used to fetch initial view").
-                    setDefault("http://epto-tracker:4321")
+                    setDefault("http://localhost:4321")
             parser.addArgument("peerNumber").help("Peer number")
                     .type(Integer.TYPE)
                     .setDefault(35)
@@ -71,21 +70,25 @@ class Main {
 
             val application = Application(ttl, k, tracker, expectedEvents, InetAddress.getByName(localIp))
 
-            Runtime.getRuntime().addShutdownHook(thread {
-                logger.info("Quitting EpTO tester")
+            /*
+            Runtime.getRuntime().addShutdownHook(Thread {
+                println("Quitting EpTO tester")
+                println("EpTO messages sent: ${application.peer.core.gossipMessages}")
+                println("EpTO messages received: ${application.peer.messagesReceived}")
+                println("PSS messages sent: ${application.peer.core.pssMessages}")
+                println("PSS messages received: ${application.peer.core.pss.passiveThread.messagesReceived}")
                 application.stop()
-                logger.info("EpTO messages sent: ${application.peer.core.gossipMessages}")
-                logger.info("EpTO messages received: ${application.peer.messagesReceived}")
-                logger.info("PSS messages sent: ${application.peer.core.pssMessages}")
             })
+            */
 
             application.start()
+
             //Let all docker instances be created
             logger.info("Started: $localIp")
             logger.info("Peer ID : ${application.peer.uuid}")
             logger.info("Peer Number : ${n.toInt()}")
             logger.info("TTL : $ttl, K : $k")
-            Thread.sleep(70000)
+            Thread.sleep(10000)
 
             var eventsSent = 0
             while (eventsSent != eventsToSend) {
@@ -93,10 +96,18 @@ class Main {
                 Thread.sleep(1000)
                 eventsSent++
             }
-            while (true) {
+            var i = 0
+            while (i < 60) {
                 logger.info("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
                 Thread.sleep(10000)
+                i++
             }
+            logger.info("Quitting EpTO tester")
+            logger.info("EpTO messages sent: ${application.peer.core.gossipMessages}")
+            logger.info("EpTO messages received: ${application.peer.messagesReceived}")
+            logger.info("PSS messages sent: ${application.peer.core.pssMessages}")
+            logger.info("PSS messages received: ${application.peer.core.pss.passiveThread.messagesReceived}")
+            application.stop()
         }
     }
 }
