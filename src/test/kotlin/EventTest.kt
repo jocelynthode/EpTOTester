@@ -3,13 +3,9 @@ import epto.utilities.Event
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.nustaq.serialization.FSTObjectInput
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.nio.ByteBuffer
 import java.util.*
-import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 /**
@@ -56,7 +52,7 @@ class EventTest {
     }
 
     @Test
-    fun testEventOverhead()  {
+    fun testEventOverhead() {
         val byteOut = ByteArrayOutputStream()
         val gzipOut = GZIPOutputStream(byteOut, 65536)
         val out = Application.conf.getObjectOutput(byteOut)
@@ -120,28 +116,28 @@ class EventTest {
         val gzipOut2 = GZIPOutputStream(byteOut2, 65536)
         val out2 = Application.conf.getObjectOutput(byteOut2)
 
-        out2.writeObject(event4.id,  UUID::class.java)
+        out2.writeObject(event4.id, UUID::class.java)
         out2.writeLong(event4.timestamp)
         out2.writeInt(event4.ttl)
-        out2.writeObject(event4.sourceId,  UUID::class.java)
+        out2.writeObject(event4.sourceId, UUID::class.java)
         out2.flush()
         println(byteOut2.toByteArray().size)
-        out2.writeObject(event5.id,  UUID::class.java)
+        out2.writeObject(event5.id, UUID::class.java)
         out2.writeLong(event5.timestamp)
         out2.writeInt(event5.ttl)
-        out2.writeObject(event5.sourceId,  UUID::class.java)
+        out2.writeObject(event5.sourceId, UUID::class.java)
         out2.flush()
         println(byteOut2.toByteArray().size)
-        out2.writeObject(event6.id,  UUID::class.java)
+        out2.writeObject(event6.id, UUID::class.java)
         out2.writeLong(event6.timestamp)
         out2.writeInt(event6.ttl)
-        out2.writeObject(event6.sourceId,  UUID::class.java)
+        out2.writeObject(event6.sourceId, UUID::class.java)
         out2.flush()
         println(byteOut2.toByteArray().size)
-        out2.writeObject(event7.id,  UUID::class.java)
+        out2.writeObject(event7.id, UUID::class.java)
         out2.writeLong(event7.timestamp)
         out2.writeInt(event7.ttl)
-        out2.writeObject(event7.sourceId,  UUID::class.java)
+        out2.writeObject(event7.sourceId, UUID::class.java)
         out2.flush()
         println(byteOut2.toByteArray().size)
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3.5
-import matplotlib.pyplot as plt
-import networkx as nx
 import re
 import sys
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import networkx as nx
 
 graph = []
 
@@ -52,8 +53,8 @@ nx.draw_circular(G, with_labels=True)
 print(nx.average_shortest_path_length(D))
 print(nx.average_clustering(G))
 indeg = D.in_degree()
-#print(indeg)
-print("Node nb: "+ str(len(indeg)))
-print("Average indegree: "+ str(sum(indeg.values()) / len(indeg)))
+# print(indeg)
+print("Node nb: " + str(len(indeg)))
+print("Average indegree: " + str(sum(indeg.values()) / len(indeg)))
 
 plt.show()

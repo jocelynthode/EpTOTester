@@ -61,7 +61,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                 logger.error("Error receiving a packet", e)
                 e.printStackTrace()
             }
-        messagesReceived++
+            messagesReceived++
         }
     }
 

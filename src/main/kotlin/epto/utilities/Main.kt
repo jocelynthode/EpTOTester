@@ -44,7 +44,7 @@ class Main {
             }
         }
 
-        @JvmStatic private fun  startProgram(namespace: Namespace) {
+        @JvmStatic private fun startProgram(namespace: Namespace) {
 
             val eventsToSend = namespace.getInt("events")
             val localIp = namespace.getString("localIp")
