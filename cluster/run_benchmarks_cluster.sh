@@ -15,40 +15,28 @@ fi
 echo "START..."
 
 # Clean everything at Ctrl+C
-trap 'docker service rm epto-service && docker service rm epto-tracker && \
-parallel-ssh -t 180 -h hosts "docker swarm leave" && docker network rm epto-network && \
-docker swarm leave --force && exit' TERM INT
+trap 'docker service rm epto-service && docker service rm epto-tracker && exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
 docker pull swarm-m:5000/tracker:latest
 
-docker swarm init
-TOKEN=$(docker swarm join-token -q worker)
-parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377"
-
-# If networking doesn't work use ingress
-docker network create -d overlay --subnet=172.28.0.0/16 epto-network
+docker swarm init && \
+TOKEN=$(docker swarm join-token -q worker) && \
+parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
+docker network create -d overlay --subnet=172.28.0.0/16 epto-network || \
+exit
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 350m swarm-m:5000/tracker
-docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} --env "PEER_NUMBER=${PEER_NUMBER}" \
---limit-memory 250m --log-driver=journald --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
+docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
+--env "PEER_NUMBER=${PEER_NUMBER}" \
+--limit-memory 250m --log-driver=journald --restart-condition=none \
+--mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
-echo "Fleshing out the network..."
-sleep 20s
-
-#wait for apps to finish
-for i in {1..185} :
+echo "Running EpTO tester..."
+while true
 do
-	sleep 20s
-    echo "waiting..."
+    sleep 10s
 done
-
-docker service rm epto-service
-docker service rm epto-tracker
-docker network rm epto-network
-parallel-ssh -t 0 -h hosts "docker swarm leave"
-docker swarm leave --force
-
 
 #while read ip; do
 #    rsync -av ${ip}:~/data/ ../data/
