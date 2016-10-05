@@ -72,6 +72,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     fun stop() {
         passiveThread.stop()
         activeThreadFuture?.cancel(true)
+        
     }
 
     /**

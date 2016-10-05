@@ -25,8 +25,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
 
     val logger by logger()
 
-    //5000 * 8 / 260bits (for an event)
-    val MAX_EVENTS = 150
+
     val scheduler: ScheduledExecutorService
     private val periodicDissemination: Runnable
     private val nextBall = HashMap<UUID, Event>()
@@ -36,38 +35,20 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
-            logger.debug("Acquiring nextBallLock")
             synchronized(nextBallLock) {
-                logger.debug("Acquired nextBallLock")
                 logger.debug("nextBall size: ${nextBall.size}")
                 nextBall.forEach { it.value.incrementTtl() }
                 if (!nextBall.isEmpty()) {
                     val events = nextBall.values.toList()
-                    //MAX events based on a max limit of  5000bytes
-                    if (nextBall.size > MAX_EVENTS) {
-                        logger.warn("Ball size probably too big !")
-                        relaySplitted(events, gossip)
-                    } else {
+                    try {
                         gossip.relay(events)
+                    } catch (e: Gossip.ViewSizeException) {
+                        logger.error(e)
                     }
                 }
                 orderingComponent.orderEvents(nextBall)
                 nextBall.clear()
-                logger.debug("Finished periodicDissemination")
             }
-        }
-    }
-
-    private fun relaySplitted(values: List<Event>, gossip: Gossip) {
-        var ballsToSend = Math.ceil(values.size / MAX_EVENTS.toDouble()).toInt()
-        var i = 0
-        while (ballsToSend > 0) {
-            if (ballsToSend > 1)
-                gossip.relay(values.subList(i, i + MAX_EVENTS))
-            else
-                gossip.relay(values.subList(i, values.size))
-            ballsToSend--
-            i += 160
         }
     }
 
@@ -92,8 +73,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
-        logger.debug("Receiving a new ball of size: ${ball.size}")
-        logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
+        //logger.debug("Receiving a new ball of size: ${ball.size}")
+        //logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
         ball.forEach { eventId, event ->
             if (event.ttl < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {

@@ -3,6 +3,7 @@ package epto.pss
 import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import epto.utilities.Application
+import java.io.IOException
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.*
@@ -29,24 +30,27 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 val bb = ByteBuffer.wrap(buf)
                 val address = pss.core.pssChannel.receive(bb)
                 if (address != null) {
-                    val (isPull, receivedView) = Application.conf.asObject(buf)
-                            as Pair<Boolean, ArrayList<PeerInfo>>
-                    synchronized(pssLock) {
-                        //TODO maybe remove oneself
-                        logger.debug("isPull : $isPull")
-                        if (!isPull) {
-                            val toSend = pss.selectToSend(true)
-                            logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
-                            pss.core.sendPss(toSend, (address as InetSocketAddress).address)
+                    try {
+                        val (isPull, receivedView) = Application.conf.asObject(buf) as Pair<Boolean, ArrayList<PeerInfo>>
+
+                        synchronized(pssLock) {
+                            //TODO maybe remove oneself
+                            logger.debug("isPull : $isPull")
+                            if (!isPull) {
+                                val toSend = pss.selectToSend(true)
+                                logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
+                                pss.core.sendPss(toSend, address.address)
+                            }
+                            pss.selectToKeep(receivedView)
                         }
-                        pss.selectToKeep(receivedView)
+                        messagesReceived++
+                    } catch (e: Exception) {
+                        logger.error("Error unserializing view", e)
                     }
                 }
-            } catch (e: Exception) {
-                logger.error("Error receiving a packet", e)
-                e.printStackTrace()
+            } catch (e: IOException) {
+                isRunning = false
             }
-            messagesReceived++
         }
     }
 

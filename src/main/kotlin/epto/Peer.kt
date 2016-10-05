@@ -6,6 +6,7 @@ import epto.utilities.Application
 import epto.utilities.Event
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.*
@@ -37,7 +38,6 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
         logger.debug("Starting Peer")
         disseminationComponent.start()
         isRunning = true
-
         while (isRunning) {
             try {
                 val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
@@ -56,21 +56,26 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                     }
                     inputStream.close()
                     disseminationComponent.receive(receivedBall)
+                    messagesReceived++
                 }
-            } catch (e: Exception) {
-                logger.error("Error receiving a packet", e)
-                e.printStackTrace()
+            } catch (e: IOException) {
+                isRunning = false
+            } catch (e: EventUnserializeException) {
+                logger.error(e)
             }
-            messagesReceived++
         }
     }
 
     fun unserializeEvent(inputStream: FSTObjectInput): Event {
-        val id = UUID(inputStream.readLong(), inputStream.readLong())
-        val timeStamp = inputStream.readLong()
-        val ttl = inputStream.readInt()
-        val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
-        return Event(id, timeStamp, ttl, sourceId)
+        try {
+            val id = UUID(inputStream.readLong(), inputStream.readLong())
+            val timeStamp = inputStream.readLong()
+            val ttl = inputStream.readInt()
+            val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
+            return Event(id, timeStamp, ttl, sourceId)
+        } catch (e: IOException) {
+            throw EventUnserializeException("Error unserializing the event values")
+        }
     }
 
     fun stop() {
@@ -81,6 +86,10 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
 
     companion object {
 
-        const internal val DELTA = 4500L
+        const internal val DELTA = 200L
     }
+
+    class EventUnserializeException(s: String) : Throwable() {}
 }
+
+
