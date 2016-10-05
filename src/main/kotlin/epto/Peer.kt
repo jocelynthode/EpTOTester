@@ -27,6 +27,8 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
     private var isRunning = false
+    var messagesReceived = 0
+        private set
 
     /**
      * The peer main function
@@ -59,6 +61,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                 logger.error("Error receiving a packet", e)
                 e.printStackTrace()
             }
+        messagesReceived++
         }
     }
 

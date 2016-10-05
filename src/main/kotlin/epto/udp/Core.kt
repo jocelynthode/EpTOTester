@@ -26,6 +26,8 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(50000, this)
     val gossip = Gossip(this, K)
+    var pssMessages = 0
+    var gossipMessages = 0
 
     init {
         gossipChannel.configureBlocking(true)
@@ -41,6 +43,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
      */
     fun send(message: ByteArray, target: InetAddress) {
         gossipChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, gossipPort))
+        gossipMessages++
     }
 
     /**
@@ -52,6 +55,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
      */
     fun sendPss(message: ByteArray, target: InetAddress) {
         pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
+        pssMessages++
     }
 
     fun startPss() {

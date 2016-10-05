@@ -27,7 +27,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             Thread.sleep(5000)
             result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
             tmp_view = result.split('|').toMutableList()
-        } while (tmp_view!!.size < 25)
+        } while (tmp_view!!.size < (K+1))
 
         logger.debug(result)
         if (tmp_view.contains(myIp.hostAddress)) {
@@ -42,7 +42,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
     @Synchronized fun deliver(event: Event) {
         expectedEvents--
         logger.info("Delivered : ${event.id}")
-        logger.info("Expected events: ${expectedEvents}")
+        logger.debug("Expected events: ${expectedEvents}")
         if (expectedEvents <= 0) {
             logger.info("All events delivered !")
         }

@@ -18,6 +18,8 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     val logger by logger()
     private var isRunning = false
+    var messagesReceived = 0
+        private set
 
     override fun run() {
         isRunning = true
@@ -44,6 +46,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 logger.error("Error receiving a packet", e)
                 e.printStackTrace()
             }
+            messagesReceived++
         }
     }
 
