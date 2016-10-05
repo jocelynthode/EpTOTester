@@ -43,7 +43,3 @@ docker service rm epto-tracker
 docker network rm epto-network
 docker swarm leave --force
 
-
-#while read ip; do
-#    rsync -av ${ip}:~/data/ ../data/
-#done <hosts
