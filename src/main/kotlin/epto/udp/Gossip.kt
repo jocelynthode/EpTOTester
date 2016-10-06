@@ -17,6 +17,7 @@ class Gossip(val core: Core, val K: Int = 15) {
 
 
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
+    //We substract 4Bytes for the ball size
     val MAX_EVENTS = (core.MAX_SIZE - 4) / 40
 
     fun relay(nextBall: List<Event>) {

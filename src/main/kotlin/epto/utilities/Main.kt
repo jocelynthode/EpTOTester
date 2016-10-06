@@ -59,8 +59,8 @@ class Main {
             val tracker = namespace.getString("tracker")
             val n = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
-            val gossipPort = namespace.getInt("gossip-port")
-            val pssPort = namespace.getInt("pss-port")
+            val gossipPort = namespace.getInt("gossip_port")
+            val pssPort = namespace.getInt("pss_port")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val log2N = Math.log(n) / Math.log(2.0)
@@ -98,10 +98,11 @@ class Main {
 
             //Let all docker instances be created
             logger.info("Started: $localIp")
-            logger.info("Peer ID : ${application.peer.uuid}")
-            logger.info("Peer Number : ${n.toInt()}")
-            logger.info("TTL : $ttl, K : $k")
-            Thread.sleep(20000)
+            logger.info("Peer ID: ${application.peer.uuid}")
+            logger.info("Peer Number: ${n.toInt()}")
+            logger.info("TTL: $ttl, K: $k")
+            logger.info("Delta: $delta")
+            Thread.sleep(60000)
 
             var eventsSent = 0
             while (eventsSent != eventsToSend) {

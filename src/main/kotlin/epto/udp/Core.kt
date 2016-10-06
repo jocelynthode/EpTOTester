@@ -22,7 +22,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
 
     val logger by logger()
 
-    val MAX_SIZE = 5000
+    val MAX_SIZE = 1400
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(50000, this)
