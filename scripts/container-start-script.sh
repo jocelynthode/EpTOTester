@@ -3,9 +3,6 @@
 
 MY_IP_ADDR=$(/bin/hostname -i)
 
-# wait for all peers
-sleep 30s
-
 echo 'Starting epto peer'
 echo "${MY_IP_ADDR}"
 echo "${PEER_NUMBER}"

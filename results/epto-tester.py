@@ -10,7 +10,7 @@ def extract_duration(lines):
     end_at = 0
     start_at = 0
     for line in it:
-        match = re.match(r'(\d+) -  sending:', line)
+        match = re.match(r'(\d+) - sending:', line)
         if match:
             start_at = int(match.group(1))
             break
