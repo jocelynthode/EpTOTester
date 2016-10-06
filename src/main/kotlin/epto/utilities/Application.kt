@@ -5,7 +5,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
 import epto.libs.Delegates.logger
-import epto.pss.PeerSamplingService
+import epto.pss.PeerSamplingService.PeerInfo
 import org.nustaq.serialization.FSTConfiguration
 import java.net.InetAddress
 import java.util.*
@@ -34,14 +34,14 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
             tmp_view.remove(myIp.hostAddress)
         }
         //Add seeds to the PSS view
-        peer.core.pss.view.addAll(tmp_view.map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
+        peer.core.pss.view.addAll(tmp_view.map { PeerInfo(InetAddress.getByName(it)) })
         //Start after we have a view
         peer.core.startPss()
     }
 
     @Synchronized fun deliver(event: Event) {
         expectedEvents--
-        logger.info("Delivered : ${event.id}")
+        logger.info("Delivered: ${event.id}")
         logger.debug("Expected events: ${expectedEvents}")
         if (expectedEvents <= 0) {
             logger.info("All events delivered !")
@@ -55,7 +55,7 @@ open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: In
     @Throws(InterruptedException::class)
     open fun broadcast(event: Event = Event()) {
         peer.disseminationComponent.broadcast(event)
-        logger.info(" sending: " + event.id.toString())
+        logger.info("Sending: ${event.id}")
     }
 
     companion object {
