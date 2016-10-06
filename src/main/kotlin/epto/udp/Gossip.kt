@@ -7,7 +7,6 @@ import epto.utilities.Event
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
-import java.util.zip.GZIPOutputStream
 
 /**
  * Created by jocelyn on 29.09.16.
@@ -16,9 +15,9 @@ class Gossip(val core: Core, val K: Int = 15) {
 
     val logger by logger()
 
-    val MAX_SIZE = 5000
-    //260bits (for an event)
-    val MAX_EVENTS = (MAX_SIZE * 8) / 260
+
+    //~25 Bytes for an event and 4 bytes for the nb of events
+    val MAX_EVENTS = (core.MAX_SIZE -4) / 25
 
     fun relay(nextBall: List<Event>) {
         if (core.pss.view.size < K) throw ViewSizeException("View is smaller than fanout K")
@@ -26,6 +25,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         val kView = selectKFromView()
         val ballsToSend = Math.ceil(nextBall.size / MAX_EVENTS.toDouble()).toInt()
 
+        logger.debug("Ball size in Events: ${nextBall.size}")
         if (ballsToSend > 1) {
             relaySplitted(nextBall, ballsToSend, kView)
         } else {
@@ -35,8 +35,7 @@ class Gossip(val core: Core, val K: Int = 15) {
 
     private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
         val byteOut = ByteArrayOutputStream()
-        val gzipOut = GZIPOutputStream(byteOut, 8192)
-        val out = Application.conf.getObjectOutput(gzipOut)
+        val out = Application.conf.getObjectOutput(byteOut)
         try {
             out.writeInt(nextBall.size)
             nextBall.forEach { it.serialize(out) }
@@ -47,9 +46,8 @@ class Gossip(val core: Core, val K: Int = 15) {
             out.close()
         }
 
-        logger.debug("Ball size in Events: ${nextBall.size}")
         logger.debug("Ball size in Bytes: ${byteOut.size()}")
-        if (byteOut.size() > MAX_SIZE) {
+        if (byteOut.size() > core.MAX_SIZE) {
             logger.warn("Ball size is too big !")
         }
         kView.forEach {
@@ -61,7 +59,7 @@ class Gossip(val core: Core, val K: Int = 15) {
     private fun relaySplitted(values: List<Event>, ballsToSend: Int, kView: ArrayList<PeerInfo>) {
         var ballsToSend = ballsToSend
         var i = 0
-        logger.debug("total Ball size: ${values.size}")
+
         logger.debug("ballsToSend: $ballsToSend")
         while (ballsToSend > 0) {
             if (ballsToSend > 1) {

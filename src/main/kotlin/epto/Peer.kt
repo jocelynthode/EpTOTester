@@ -10,7 +10,6 @@ import java.io.IOException
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.*
-import java.util.zip.GZIPInputStream
 
 /**
  * Implementation of a peer as described in EpTO. This class implements the structure of a peer.
@@ -44,8 +43,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
                 val bb = ByteBuffer.wrap(buf)
                 if (core.gossipChannel.receive(bb) != null) {
                     val byteIn = ByteArrayInputStream(bb.array())
-                    val gzipIn = GZIPInputStream(byteIn, 8192)
-                    val inputStream = FSTObjectInput(gzipIn)
+                    val inputStream = FSTObjectInput(byteIn)
                     var len = inputStream.readInt()
                     val receivedBall = HashMap<UUID, Event>()
                     logger.debug("ReceivedBall size: $len")
