@@ -82,7 +82,7 @@ This way assumes you have a key-pair to connect to your master.
  ./setup_cluster.sh
  ```
  
- ## Run the benchmarks (on the master node)
+## Run the benchmarks (on the master node)
  
 * start ~/epto/run_benchmarks_cluster.sh
 * Wait for the script to complete
