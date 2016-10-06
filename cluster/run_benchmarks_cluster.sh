@@ -36,11 +36,11 @@ docker swarm init && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
 docker network create -d overlay --subnet=172.104.0.0/16 epto-network || exit)
 
-docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 350m swarm-m:5000/tracker
+docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 250m swarm-m:5000/tracker
 sleep 10s
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" \
---limit-memory 250m --log-driver=journald --restart-condition=none \
+--limit-memory 200m --log-driver=journald --restart-condition=none \
 --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
 echo "Running EpTO tester..."
