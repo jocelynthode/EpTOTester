@@ -9,7 +9,7 @@ import java.util.*
  */
 data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializable {
 
-    var timestamp: Long = 0
+    var timestamp: Int = 0
     var ttl: Int = 0
     var sourceId: UUID? = null
 
@@ -24,7 +24,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      * *
      * @param sourceId  the id of the peer sending this event
      */
-    constructor(id: UUID, timeStamp: Long, ttl: Int, sourceId: UUID) : this(id) {
+    constructor(id: UUID, timeStamp: Int, ttl: Int, sourceId: UUID) : this(id) {
         this.timestamp = timeStamp
         this.ttl = ttl
         this.sourceId = sourceId
@@ -65,7 +65,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
     fun serialize(out: FSTObjectOutput) {
         out.writeLong(this.id.mostSignificantBits)
         out.writeLong(this.id.leastSignificantBits)
-        out.writeLong(this.timestamp)
+        out.writeInt(this.timestamp)
         out.writeInt(this.ttl)
         out.writeLong(this.sourceId!!.mostSignificantBits)
         out.writeLong(this.sourceId!!.leastSignificantBits)

@@ -17,7 +17,7 @@ import java.util.*
  * Initializes a peer
  *
  */
-class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
+class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAddress, gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
 
     val logger by logger()
 
@@ -25,7 +25,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     val core = Core(myIp, K, gossipPort, pssPort)
     private val oracle = StabilityOracle(TTL)
     val orderingComponent = OrderingComponent(oracle, application)
-    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K)
+    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K, delta)
     private var isRunning = false
     var messagesReceived = 0
         private set
@@ -67,7 +67,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
     fun unserializeEvent(inputStream: FSTObjectInput): Event {
         try {
             val id = UUID(inputStream.readLong(), inputStream.readLong())
-            val timeStamp = inputStream.readLong()
+            val timeStamp = inputStream.readInt()
             val ttl = inputStream.readInt()
             val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
             return Event(id, timeStamp, ttl, sourceId)
@@ -82,12 +82,7 @@ class Peer(application: Application, TTL: Int, K: Int, myIp: InetAddress, gossip
         core.stop()
     }
 
-    companion object {
-
-        const internal val DELTA = 200L
-    }
-
-    class EventUnserializeException(s: String) : Throwable() {}
+    class EventUnserializeException(s: String) : Throwable(s) {}
 }
 
 

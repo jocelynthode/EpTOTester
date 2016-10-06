@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
  * @param orderingComponent OrderingComponent to order events
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
-                             orderingComponent: OrderingComponent, val K: Int) {
+                             orderingComponent: OrderingComponent, val K: Int, val delta: Long) {
 
     val logger by logger()
 
@@ -97,7 +97,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      */
     fun start() {
         periodicDisseminationFuture = scheduler.scheduleWithFixedDelay(periodicDissemination, 0,
-                Peer.DELTA, TimeUnit.MILLISECONDS)
+                delta, TimeUnit.MILLISECONDS)
     }
 
     /**

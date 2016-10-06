@@ -18,7 +18,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     val received = HashMap<UUID, Event>()
     private val delivered = HashMap<UUID, Event>()
-    private var lastDeliveredTs: Long = 0
+    private var lastDeliveredTs: Int = 0
 
     /**
      * Update the received hash map TTL values and either add the new events to received or
@@ -71,7 +71,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
         // collect deliverable events and determine smallest
         // timestamp of non deliverable events
-        var minQueuedTs = Long.MAX_VALUE
+        var minQueuedTs = Int.MAX_VALUE
         val deliverableEvents = ArrayList<Event>()
 
         for (event in received.values) {

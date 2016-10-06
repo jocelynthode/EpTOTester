@@ -13,10 +13,11 @@ import java.util.*
 /**
  * Implementation of an Application
  */
-open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1, myIp: InetAddress, myPort: Int = 10353) {
+open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1,
+                       delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) {
 
     val logger by logger()
-    val peer = Peer(this, TTL, K, myIp, myPort)
+    val peer = Peer(this, TTL, K, delta, myIp, gossipPort, pssPort)
 
     init {
         conf.registerClass(HashMap::class.java, Pair::class.java, Event::class.java)

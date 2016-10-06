@@ -16,8 +16,8 @@ class Gossip(val core: Core, val K: Int = 15) {
     val logger by logger()
 
 
-    //~25 Bytes for an event and 4 bytes for the nb of events
-    val MAX_EVENTS = (core.MAX_SIZE -4) / 25
+    //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
+    val MAX_EVENTS = (core.MAX_SIZE - 4) / 40
 
     fun relay(nextBall: List<Event>) {
         if (core.pss.view.size < K) throw ViewSizeException("View is smaller than fanout K")
@@ -25,7 +25,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         val kView = selectKFromView()
         val ballsToSend = Math.ceil(nextBall.size / MAX_EVENTS.toDouble()).toInt()
 
-        logger.debug("Ball size in Events: ${nextBall.size}")
+        logger.debug("Total Ball size in Events: ${nextBall.size}")
         if (ballsToSend > 1) {
             relaySplitted(nextBall, ballsToSend, kView)
         } else {
@@ -34,6 +34,7 @@ class Gossip(val core: Core, val K: Int = 15) {
     }
 
     private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
+        logger.debug("Relay Ball size in Events: ${nextBall.size}")
         val byteOut = ByteArrayOutputStream()
         val out = Application.conf.getObjectOutput(byteOut)
         try {
@@ -57,17 +58,17 @@ class Gossip(val core: Core, val K: Int = 15) {
     }
 
     private fun relaySplitted(values: List<Event>, ballsToSend: Int, kView: ArrayList<PeerInfo>) {
-        var ballsToSend = ballsToSend
+        var ballsNumber = ballsToSend
         var i = 0
 
-        logger.debug("ballsToSend: $ballsToSend")
-        while (ballsToSend > 0) {
-            if (ballsToSend > 1) {
+        while (ballsNumber > 0) {
+            logger.debug("ballsToSend: $ballsNumber")
+            if (ballsNumber > 1) {
                 sendRelay(values.subList(i, i + MAX_EVENTS), kView)
             } else {
                 sendRelay(values.subList(i, values.size), kView)
             }
-            ballsToSend--
+            ballsNumber--
             i += MAX_EVENTS
         }
     }
@@ -80,7 +81,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         return tmpList
     }
 
-    class ViewSizeException(s: String) : Throwable() {}
+    class ViewSizeException(s: String) : Throwable(s) {}
 }
 
 

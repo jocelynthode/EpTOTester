@@ -6,7 +6,7 @@ import epto.utilities.Event
  * Implementation of the stability oracle. This class implements the logical clock.
  */
 class StabilityOracle(val TTL: Int) {
-    internal var logicalClock: Long = 0
+    internal var logicalClock: Int = 0
 
     /**
      * This function tells us if the event is ready to be delivered or not according to the TTL.
@@ -24,7 +24,7 @@ class StabilityOracle(val TTL: Int) {
 
      * @return the incremented clock
      */
-    @Synchronized fun incrementAndGetClock(): Long {
+    @Synchronized fun incrementAndGetClock(): Int {
         logicalClock++
         return logicalClock
     }
@@ -34,7 +34,7 @@ class StabilityOracle(val TTL: Int) {
 
      * @param ts the new clock value
      */
-    @Synchronized fun updateClock(ts: Long) {
+    @Synchronized fun updateClock(ts: Int) {
         if (ts > logicalClock)
             logicalClock = ts
     }

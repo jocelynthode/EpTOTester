@@ -33,6 +33,15 @@ class Main {
                     .type(Integer.TYPE)
             parser.addArgument("-t", "--ttl").help("Number of rounds before considering an event mature")
                     .type(Integer.TYPE)
+            parser.addArgument("-d", "--delta").help("EpTO dissemination period in milliseconds")
+                    .type(Long::class.java)
+                    .setDefault(6000)
+            parser.addArgument("-g", "--gossip-port").help("Port on which the gossip channel will listen")
+                    .type(Integer.TYPE)
+                    .setDefault(10353)
+            parser.addArgument("-p", "--pss-port").help("Port on which the pss channel will listen")
+                    .type(Integer.TYPE)
+                    .setDefault(10453)
 
 
             try {
@@ -49,6 +58,9 @@ class Main {
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
             val n = namespace.getInt("peerNumber").toDouble()
+            val delta = namespace.getLong("delta")
+            val gossipPort = namespace.getInt("gossip-port")
+            val pssPort = namespace.getInt("pss-port")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val log2N = Math.log(n) / Math.log(2.0)
@@ -68,7 +80,8 @@ class Main {
 
             expectedEvents = eventsToSend * n.toInt()
 
-            val application = Application(ttl, k, tracker, expectedEvents, InetAddress.getByName(localIp))
+            val application = Application(ttl, k, tracker, expectedEvents, delta, InetAddress.getByName(localIp),
+                    gossipPort, pssPort)
 
             /*
             Runtime.getRuntime().addShutdownHook(Thread {
@@ -88,7 +101,7 @@ class Main {
             logger.info("Peer ID : ${application.peer.uuid}")
             logger.info("Peer Number : ${n.toInt()}")
             logger.info("TTL : $ttl, K : $k")
-            Thread.sleep(10000)
+            Thread.sleep(20000)
 
             var eventsSent = 0
             while (eventsSent != eventsToSend) {
@@ -97,8 +110,8 @@ class Main {
                 eventsSent++
             }
             var i = 0
-            while (i < 60) {
-                logger.info("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
+            while (i < 15) {
+                logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
                 Thread.sleep(10000)
                 i++
             }

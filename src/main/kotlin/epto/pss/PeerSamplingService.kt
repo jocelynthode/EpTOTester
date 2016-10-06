@@ -108,6 +108,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } else {
             toSend.addAll(view)
         }
+        logger.debug("toSend size in address: ${toSend.size}")
         return asByteArray(isPull, toSend)
     }
 
