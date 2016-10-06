@@ -9,20 +9,20 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="epto.utilities.Application" level="debug" additivity="false">
+        <Logger name="epto.utilities.Application" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.utilities.Main$Companion" level="debug" additivity="false">
+        <Logger name="epto.utilities.Main$Companion" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
+        <Logger name="epto.pss.PeerSamplingService" level="info" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.udp.Gossip" level="debug"/>
-        <Logger name="epto.DisseminationComponent" level="debug"/>
-        <Logger name="epto.OrderingComponent" level="debug"/>
-        <Logger name="epto.pss.PassiveThread" level="debug"/>
-        <Root level="debug">
+        <Logger name="epto.udp.Gossip" level="info"/>
+        <Logger name="epto.DisseminationComponent" level="info"/>
+        <Logger name="epto.OrderingComponent" level="info"/>
+        <Logger name="epto.pss.PassiveThread" level="info"/>
+        <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
