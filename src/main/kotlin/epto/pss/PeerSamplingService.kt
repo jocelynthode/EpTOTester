@@ -34,7 +34,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     val logger by logger()
 
     val view = ArrayList<PeerInfo>()
-    val pssLock = Any()
+    private val pssLock = Any()
     val passiveThread = PassiveThread(pssLock, this)
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)

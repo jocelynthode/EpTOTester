@@ -25,10 +25,10 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
 
     val logger by logger()
 
-
-    val scheduler: ScheduledExecutorService
-    private val periodicDissemination: Runnable
+    private val scheduler: ScheduledExecutorService
     private val nextBall = HashMap<UUID, Event>()
+    private val nextBallLock = Any()
+    private val periodicDissemination: Runnable
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
 
 
@@ -104,9 +104,4 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * Stops the periodic dissemination
      */
     fun stop() = periodicDisseminationFuture?.cancel(true)
-
-    companion object {
-
-        private val nextBallLock = Object() //for synchronization of nextBall
-    }
 }

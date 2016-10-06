@@ -16,15 +16,16 @@ class Gossip(val core: Core, val K: Int = 15) {
     val logger by logger()
 
 
+    private val maxSize = 1400
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
     //We substract 4Bytes for the ball size
-    val MAX_EVENTS = (core.MAX_SIZE - 4) / 40
+    private val maxEvents = (maxSize - 4) / 40
 
     fun relay(nextBall: List<Event>) {
         if (core.pss.view.size < K) throw ViewSizeException("View is smaller than fanout K")
 
         val kView = selectKFromView()
-        val ballsToSend = Math.ceil(nextBall.size / MAX_EVENTS.toDouble()).toInt()
+        val ballsToSend = Math.ceil(nextBall.size / maxEvents.toDouble()).toInt()
 
         logger.debug("Total Ball size in Events: ${nextBall.size}")
         if (ballsToSend > 1) {
@@ -49,7 +50,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         }
 
         logger.debug("Ball size in Bytes: ${byteOut.size()}")
-        if (byteOut.size() > core.MAX_SIZE) {
+        if (byteOut.size() > maxSize) {
             logger.warn("Ball size is too big !")
         }
         kView.forEach {
@@ -65,12 +66,12 @@ class Gossip(val core: Core, val K: Int = 15) {
         while (ballsNumber > 0) {
             logger.debug("ballsToSend: $ballsNumber")
             if (ballsNumber > 1) {
-                sendRelay(values.subList(i, i + MAX_EVENTS), kView)
+                sendRelay(values.subList(i, i + maxEvents), kView)
             } else {
                 sendRelay(values.subList(i, values.size), kView)
             }
             ballsNumber--
-            i += MAX_EVENTS
+            i += maxEvents
         }
     }
 

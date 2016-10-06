@@ -20,9 +20,9 @@ import java.util.*
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     val logger by logger()
-    private var isRunning = false
     var messagesReceived = 0
         private set
+    private var isRunning = false
 
     override fun run() {
         isRunning = true

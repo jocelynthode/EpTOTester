@@ -1,14 +1,11 @@
-import epto.pss.PeerSamplingService
 import epto.pss.PeerSamplingService.PeerInfo
 import epto.utilities.Application
-import epto.utilities.Event
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.InetAddress
-import java.util.*
+
 /**
  * Created by jocelyn on 06.10.16.
  */
