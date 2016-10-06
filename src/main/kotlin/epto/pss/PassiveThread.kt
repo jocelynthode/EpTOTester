@@ -2,8 +2,10 @@ package epto.pss
 
 import epto.libs.Delegates.logger
 import epto.pss.PeerSamplingService.PeerInfo
-import epto.utilities.Application
+import org.nustaq.serialization.FSTObjectInput
+import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.*
@@ -31,8 +33,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 val address = pss.core.pssChannel.receive(bb)
                 if (address != null) {
                     try {
-                        val (isPull, receivedView) = Application.conf.asObject(buf) as Pair<Boolean, ArrayList<PeerInfo>>
-
+                        val (isPull, receivedView) = unserialize(buf)
                         synchronized(pssLock) {
                             //TODO maybe remove oneself
                             logger.debug("isPull : $isPull")
@@ -44,7 +45,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                             pss.selectToKeep(receivedView)
                         }
                         messagesReceived++
-                    } catch (e: Exception) {
+                    } catch (e: IOException) {
                         logger.error("Error unserializing view", e)
                     }
                 }
@@ -52,6 +53,28 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 isRunning = false
             }
         }
+    }
+
+    data class Result(val isPull: Boolean, val receivedView: ArrayList<PeerInfo>)
+
+    private fun unserialize(buf: ByteArray): Result {
+        val byteIn = ByteArrayInputStream(buf)
+        val inputStream = FSTObjectInput(byteIn)
+
+        val isPull = inputStream.readBoolean()
+        var len = inputStream.readInt()
+        val receivedView = ArrayList<PeerInfo>()
+        while (len > 0) {
+            val byteArray = ByteArray(4)
+            inputStream.read(byteArray)
+            val address = InetAddress.getByAddress(byteArray)
+            val age = inputStream.readInt()
+            val peerInfo = PeerInfo(address, age)
+            receivedView.add(peerInfo)
+            len--
+        }
+        return Result(isPull, receivedView)
+
     }
 
     fun stop() {

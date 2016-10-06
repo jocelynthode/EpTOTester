@@ -3,6 +3,9 @@ package epto.pss
 import epto.libs.Delegates.logger
 import epto.udp.Core
 import epto.utilities.Application
+import org.nustaq.serialization.FSTObjectOutput
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.Serializable
 import java.net.InetAddress
 import java.util.*
@@ -72,7 +75,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     fun stop() {
         passiveThread.stop()
         activeThreadFuture?.cancel(true)
-        
+
     }
 
     /**
@@ -105,7 +108,39 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } else {
             toSend.addAll(view)
         }
-        return Application.conf.asByteArray(Pair(isPull, toSend))
+        return asByteArray(isPull, toSend)
+    }
+
+    /**
+     * We never should have to split the view. As a PeerInfo is 8Bytes maximum,
+     * A boolean is usually 2Bytes and the size is 4Bytes maximum this gives us
+     *
+     * 6Bytes + 8Bytes per PeerInfo (If we had a view of 100 (exch = 50) and a max Packet size of
+     * 512Bytes => Give 12Bytes for the Boolean and size
+     *
+     * 500 Bytes / 8Bytes = 62.5 PeerInfos
+     *
+     * For a total Datagram Packet Size of 512Bytes Payload + IPV4 Header (20Bytes) + UDP Header (8Bytes)
+     * => 540 Bytes which is under 576Bytes
+     *
+     * Source : http://stackoverflow.com/questions/900697/how-to-find-the-largest-udp-packet-i-can-send-without-fragmenting
+     */
+    private fun asByteArray(isPull: Boolean, toSend: ArrayList<PeerInfo>): ByteArray {
+        val byteOut = ByteArrayOutputStream()
+        val out = Application.conf.getObjectOutput(byteOut)
+
+        try {
+            out.writeBoolean(isPull)
+            out.writeInt(toSend.size)
+            toSend.forEach { it.serialize(out) }
+            out.flush()
+        } catch (e: IOException) {
+            logger.error("Error serializing the PeerInfos", e)
+        } finally {
+            out.close()
+        }
+        logger.debug("toSendView size in Bytes: ${byteOut.toByteArray().size}")
+        return byteOut.toByteArray()
     }
 
     /**
@@ -172,7 +207,12 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     /**
      * Data class used to represent a peer
      */
-    data class PeerInfo(val address: InetAddress, var age: Int = 0) : Serializable
+    data class PeerInfo(val address: InetAddress, var age: Int = 0) : Serializable {
+        fun serialize(out: FSTObjectOutput): Unit {
+            out.write(address.address)
+            out.writeInt(age)
+        }
+    }
 }
 
 
