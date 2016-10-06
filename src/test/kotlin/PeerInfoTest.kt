@@ -33,7 +33,7 @@ class PeerInfoTest {
     }
 
     @Test
-    fun testSerialization() {
+    fun testSerializationOverhead() {
         var byteOut = ByteArrayOutputStream()
         var out = Application.conf.getObjectOutput(byteOut)
 

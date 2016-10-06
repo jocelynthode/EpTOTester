@@ -1,6 +1,10 @@
 package epto.utilities
 
+import epto.Peer
+import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
+import java.io.BufferedInputStream
+import java.io.IOException
 import java.io.Serializable
 import java.util.*
 
@@ -70,4 +74,19 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
         out.writeLong(this.sourceId!!.mostSignificantBits)
         out.writeLong(this.sourceId!!.leastSignificantBits)
     }
+
+    companion object {
+        fun unserialize(inputStream: FSTObjectInput): Event  {
+            try {
+                val id = UUID(inputStream.readLong(), inputStream.readLong())
+                val timeStamp = inputStream.readInt()
+                val ttl = inputStream.readInt()
+                val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
+                return Event(id, timeStamp, ttl, sourceId)
+            } catch (e: IOException) {
+                throw EventUnserializeException("Error unserializing the event values")
+            }
+        }
+    }
+    class EventUnserializeException(s: String) : Throwable(s) {}
 }

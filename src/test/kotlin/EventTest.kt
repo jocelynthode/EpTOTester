@@ -3,6 +3,8 @@ import epto.utilities.Event
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.nustaq.serialization.FSTObjectInput
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
@@ -47,12 +49,27 @@ class EventTest {
     }
 
     @Test
+    fun testSerializeUnserialize() {
+        val byteOut = ByteArrayOutputStream()
+        val out = Application.conf.getObjectOutput(byteOut)
+
+        event.serialize(out)
+        out.close()
+
+        val byteIn = ByteArrayInputStream(byteOut.toByteArray())
+        val inputStream = FSTObjectInput(byteIn)
+
+        val test = Event.unserialize(inputStream)
+        Assert.assertEquals(event, test)
+    }
+
+    @Test
     fun testEventOverhead() {
         val EVENTS = 20
         val rand = Random()
         val byteOut = ByteArrayOutputStream()
         val gzipOut = GZIPOutputStream(byteOut)
-        val out = Application.conf.getObjectOutput(gzipOut)
+        val out = Application.conf.getObjectOutput(byteOut)
 
         for (i in 1..EVENTS) {
             val event = Event(UUID.randomUUID(), rand.nextInt(10), rand.nextInt(30), UUID.randomUUID())
@@ -65,7 +82,7 @@ class EventTest {
 
         val byteOut1 = ByteArrayOutputStream()
         val gzipOut1 = GZIPOutputStream(byteOut1)
-        val out1 = Application.conf.getObjectOutput(gzipOut1)
+        val out1 = Application.conf.getObjectOutput(byteOut1)
         for (i in 1..EVENTS) {
             val id = UUID.randomUUID()
             val timestamp = rand.nextInt(10)
@@ -86,7 +103,7 @@ class EventTest {
 
         val byteOut2 = ByteArrayOutputStream()
         val gzipOut2 = GZIPOutputStream(byteOut2)
-        val out2 = Application.conf.getObjectOutput(gzipOut2)
+        val out2 = Application.conf.getObjectOutput(byteOut2)
         for (i in 1..EVENTS) {
             val id = UUID.randomUUID()
             val timestamp = rand.nextInt(10)

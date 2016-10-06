@@ -48,7 +48,7 @@ class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAd
                     val receivedBall = HashMap<UUID, Event>()
                     logger.debug("ReceivedBall size: $len")
                     while (len > 0) {
-                        val event = unserializeEvent(inputStream)
+                        val event = Event.unserialize(inputStream)
                         receivedBall[event.id] = event
                         len--
                     }
@@ -58,21 +58,9 @@ class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAd
                 }
             } catch (e: IOException) {
                 isRunning = false
-            } catch (e: EventUnserializeException) {
+            } catch (e: Event.EventUnserializeException) {
                 logger.error(e)
             }
-        }
-    }
-
-    fun unserializeEvent(inputStream: FSTObjectInput): Event {
-        try {
-            val id = UUID(inputStream.readLong(), inputStream.readLong())
-            val timeStamp = inputStream.readInt()
-            val ttl = inputStream.readInt()
-            val sourceId = UUID(inputStream.readLong(), inputStream.readLong())
-            return Event(id, timeStamp, ttl, sourceId)
-        } catch (e: IOException) {
-            throw EventUnserializeException("Error unserializing the event values")
         }
     }
 
@@ -81,8 +69,6 @@ class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAd
         disseminationComponent.stop()
         core.stop()
     }
-
-    class EventUnserializeException(s: String) : Throwable(s) {}
 }
 
 
