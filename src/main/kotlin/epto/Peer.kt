@@ -2,14 +2,11 @@ package epto
 
 import epto.libs.Utilities.logger
 import epto.udp.Core
-import epto.utilities.Application
-import epto.utilities.Event
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -17,17 +14,37 @@ import java.util.*
  *
  * Initializes a peer
  *
+ * @param application the application
+ * @param ttl the ttl
+ * @param k the fanout
+ * @param delta the delta
+ * @param myIp the Peer IP address
+ * @param gossipPort the gossip port
+ * @param pssPort the PSS port
+ *
+ * @property uuid the Peer UUID
+ * @property core the UDP core
+ * @property oracle the Stability oracle
+ * @property orderingComponent the Ordering component
+ * @property disseminationComponent the Dissemination component
+ *
+ * @see Application
+ * @see Core
+ * @see StabilityOracle
+ * @see OrderingComponent
+ * @see DisseminationComponent
+ *
  */
-class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAddress,
-           gossipPort: Int = 10353, pssPort: Int = 10453, scheduleAt: Long) : Runnable {
+class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAddress,
+           gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
 
     val logger by logger()
 
     val uuid = UUID.randomUUID()!!
-    val core = Core(myIp, K, gossipPort, pssPort)
-    private val oracle = StabilityOracle(TTL)
+    val core = Core(myIp, k, gossipPort, pssPort)
+    val oracle = StabilityOracle(ttl)
     val orderingComponent = OrderingComponent(oracle, application)
-    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K, delta, scheduleAt)
+    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, k, delta)
     private var isRunning = false
     var messagesReceived = 0
         private set

@@ -10,15 +10,26 @@ import java.nio.channels.DatagramChannel
 /**
  * Represent the core of the UDP protocols in EpTO/PSS
  *
- * @param myIp The IP on which the main channel will be bound
+ * @property myIp The IP on which the main channel will be bound
  *
- * @param K the gossip fanout parameter
+ * @property k the gossip fanout parameter
  *
- * @param gossipPort the port used for the main channel
+ * @property gossipPort the port used for the main channel
  *
- * @param pssPort the port used for the PSS
+ * @property pssPort the port used for the PSS
+ *
+ * @property gossipChannel the channel on which EpTO gossips
+ *
+ * @property pssChannel the channel on which the PSS gossips
+ *
+ * @property pss the PSS
+ *
+ * @property gossip the Gossip
+ *
+ * @see PeerSamplingService
+ * @see Gossip
  */
-class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453) {
+class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453) {
 
     val logger by logger()
 
@@ -26,7 +37,7 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(50000, this)
-    val gossip = Gossip(this, K)
+    val gossip = Gossip(this, k)
     var pssMessages = 0
     var gossipMessages = 0
 
@@ -59,6 +70,9 @@ class Core(val myIp: InetAddress, K: Int, val gossipPort: Int = 10353, val pssPo
         pssMessages++
     }
 
+    /**
+     * Start the pss
+     */
     fun startPss() {
         pss.start()
     }

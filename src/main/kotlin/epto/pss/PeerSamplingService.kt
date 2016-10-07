@@ -1,8 +1,8 @@
 package epto.pss
 
+import epto.Application
 import epto.libs.Utilities.logger
 import epto.udp.Core
-import epto.utilities.Application
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -16,17 +16,24 @@ import java.util.concurrent.TimeUnit
 /**
  * Implementation of a Peer Sampling Service
  *
- * @param gossipInterval the interval at which to perform the active thread of the PSS
+ * @property gossipInterval the interval at which to perform the active thread of the PSS
  *
- * @param core the Class responsible for the datagram channels
+ * @property core the Class responsible for the datagram channels
  *
- * @param c the ideal view size
+ * @property c the ideal view size
  *
- * @param exch the number of peers to exch
+ * @property exch the number of peers to exch
  *
- * @param s the swapping parameter
+ * @property s the swapping parameter
  *
- * @param h the healing parameter
+ * @property h the healing parameter
+ *
+ * @property view the current view
+ *
+ * @property passiveThread the thread in charge of receiving messages
+ *
+ * @see Core
+ * @see PassiveThread
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
                           val s: Int = 8, val h: Int = 1) {
@@ -70,7 +77,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     }
 
     /**
-     * Stop the PSS
+     * Stop the Peer Sampling Service
      */
     fun stop() {
         passiveThread.stop()
@@ -207,8 +214,17 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
 
     /**
      * Data class used to represent a peer
+     *
+     * @property address the address of the peer
+     * @property age the age of the peer
      */
     data class PeerInfo(val address: InetAddress, var age: Int = 0) : Serializable {
+
+        /**
+         * Serialize a peer to the provided output stream
+         *
+         * @param out an FSTObjectOutput stream
+         */
         fun serialize(out: FSTObjectOutput): Unit {
             out.write(address.address)
             out.writeInt(age)

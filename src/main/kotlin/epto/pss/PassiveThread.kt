@@ -13,9 +13,11 @@ import java.util.*
 /**
  * Implementation of a PSS passive thread receiving views from other peers
  *
- * @param pssLock the lock used for the active and passive threads
+ * @property pssLock the lock used for the active and passive threads
  *
- * @param pss The Peer Sampling Service on which this passive thread depends
+ * @property pss The Peer Sampling Service on which this passive thread depends
+ *
+ * @see PeerSamplingService
  */
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
@@ -55,8 +57,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
         }
     }
 
-    data class Result(val isPull: Boolean, val receivedView: ArrayList<PeerInfo>)
-
+    private data class Result(val isPull: Boolean, val receivedView: ArrayList<PeerInfo>)
     private fun unserialize(buf: ByteArray): Result {
         val byteIn = ByteArrayInputStream(buf)
         val inputStream = FSTObjectInput(byteIn)

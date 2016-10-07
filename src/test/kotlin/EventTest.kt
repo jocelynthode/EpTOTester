@@ -1,5 +1,5 @@
-import epto.utilities.Application
-import epto.utilities.Event
+import epto.Application
+import epto.Event
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

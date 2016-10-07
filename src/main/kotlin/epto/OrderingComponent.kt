@@ -2,8 +2,6 @@ package epto
 
 
 import epto.libs.Utilities.logger
-import epto.utilities.Application
-import epto.utilities.Event
 import java.util.*
 
 /**
@@ -11,6 +9,16 @@ import java.util.*
  * The main task of this procedure is to move events from
  * the received set to the delivered set, preserving the total
  * order of the events.
+ *
+ * @property oracle the stability oracle
+ * @property application the application
+ * @property received an HashMap of received but not yet delivered events
+ * @property delivered an HashMap of delivered events
+ * @property lastDeliveredTs Minimum timestamp for an event to be deliverable
+ *
+ * @see StabilityOracle
+ * @see Application
+ *
  */
 class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
 
@@ -23,7 +31,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     /**
      * Update the received hash map TTL values and either add the new events to received or
      * update their ttl
-
+     *
      * @param ball the received ball
      */
     private fun updateReceived(ball: HashMap<UUID, Event>) {
@@ -48,7 +56,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     /**
      * Deliver events mature enough that haven't been yet delivered to the application
-
+     *
      * @param deliverableEvents events mature enough to be delivered
      */
     private fun deliver(deliverableEvents: List<Event>) {
@@ -62,7 +70,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     /**
      * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
-
+     *
      * @param ball the ball containing the received events
      */
     fun orderEvents(ball: HashMap<UUID, Event>) {

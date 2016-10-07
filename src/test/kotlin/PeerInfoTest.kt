@@ -1,5 +1,5 @@
+import epto.Application
 import epto.pss.PeerSamplingService.PeerInfo
-import epto.utilities.Application
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream

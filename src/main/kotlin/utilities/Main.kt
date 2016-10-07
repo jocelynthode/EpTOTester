@@ -1,12 +1,13 @@
-package epto.utilities
+package utilities
 
+import epto.libs.Utilities
 import epto.libs.Utilities.logger
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.net.InetAddress
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by jocelyn on 19.09.16.
@@ -61,7 +62,7 @@ class Main {
             val eventsToSend = namespace.getInt("events")
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
-            val scheduleAt = namespace.getLong("scheduleAt")
+            val time = namespace.getLong("scheduleAt")
             val n = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
             val gossipPort = namespace.getInt("gossip_port")
@@ -85,8 +86,9 @@ class Main {
 
             expectedEvents = eventsToSend * n.toInt()
 
-            val application = Application(ttl, k, tracker, expectedEvents, delta, InetAddress.getByName(localIp),
-                    gossipPort, pssPort, scheduleAt)
+            val application = TesterApplication(ttl, k, tracker, expectedEvents, delta, InetAddress.getByName(localIp),
+                    gossipPort, pssPort)
+            application.start()
 
             /*
             Runtime.getRuntime().addShutdownHook(Thread {
@@ -98,39 +100,24 @@ class Main {
                 application.stop()
             })
             */
-
-            application.start()
-
-            //Let all docker instances be created
-            logger.info("Started: $localIp")
-            logger.info("Peer ID: ${application.peer.uuid}")
-            logger.info("Peer Number: ${n.toInt()}")
-            logger.info("TTL: $ttl, K: $k")
-            logger.info("Delta: $delta")
-
-            //Wait till EpTO has started to send events
-            val date = LocalDateTime.ofEpochSecond((scheduleAt / 1000), 0, ZoneOffset.UTC)
-            while (date.isBefore(LocalDateTime.now())) {
-                Thread.sleep(50)
+            val scheduler = Executors.newScheduledThreadPool(1)
+            val runEpto = Runnable {
+                var eventsSent = 0
+                while (eventsSent != eventsToSend) {
+                    application.broadcast()
+                    Thread.sleep(1000)
+                    eventsSent++
+                }
+                var i = 0
+                while (i < 30) {
+                    logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
+                    Thread.sleep(10000)
+                    i++
+                }
+                application.stop()
             }
-            var eventsSent = 0
-            while (eventsSent != eventsToSend) {
-                application.broadcast()
-                Thread.sleep(1000)
-                eventsSent++
-            }
-            var i = 0
-            while (i < 15) {
-                logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
-                Thread.sleep(10000)
-                i++
-            }
-            logger.info("Quitting EpTO tester")
-            logger.info("EpTO messages sent: ${application.peer.core.gossipMessages}")
-            logger.info("EpTO messages received: ${application.peer.messagesReceived}")
-            logger.info("PSS messages sent: ${application.peer.core.pssMessages}")
-            logger.info("PSS messages received: ${application.peer.core.pss.passiveThread.messagesReceived}")
-            application.stop()
+
+            scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
         }
     }
 }

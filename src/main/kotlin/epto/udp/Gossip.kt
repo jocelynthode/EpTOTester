@@ -1,15 +1,21 @@
 package epto.udp
 
+import epto.Application
+import epto.Event
 import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService.PeerInfo
-import epto.utilities.Application
-import epto.utilities.Event
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
 
 /**
- * Created by jocelyn on 29.09.16.
+ * Class gossiping the EpTO messages
+ *
+ * @property core the Core
+ *
+ * @property K the gossip fanout
+ *
+ * @see Core
  */
 class Gossip(val core: Core, val K: Int = 15) {
 
@@ -21,6 +27,13 @@ class Gossip(val core: Core, val K: Int = 15) {
     //We substract 4Bytes for the ball size
     private val maxEvents = (maxSize - 4) / 40
 
+    /**
+     * Relay a ball of event to other EpTO peers
+     *
+     * @throws ViewSizeException if the view is smaller than the required fanout K
+     *
+     * @param nextBall the ball of events to send
+     */
     fun relay(nextBall: List<Event>) {
         if (core.pss.view.size < K) throw ViewSizeException("View is smaller than fanout K")
 
@@ -83,7 +96,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         return tmpList
     }
 
-    class ViewSizeException(s: String) : Throwable(s) {}
+    internal class ViewSizeException(s: String) : Throwable(s) {}
 }
 
 

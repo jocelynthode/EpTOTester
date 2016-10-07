@@ -1,9 +1,7 @@
 package epto
 
 import epto.libs.Utilities.logger
-import epto.libs.Utilities.scheduleAt
 import epto.udp.Gossip
-import epto.utilities.Event
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -16,14 +14,20 @@ import java.util.concurrent.TimeUnit
  *
  * Creates a new instance of DisseminationComponent
  *
- * @param oracle            StabilityOracle for the clock
- * @param peer              parent Peer
- * @param neem              MultiCastChannel to gossip
+ * @property oracle            StabilityOracle for the clock
+ * @property peer              the Peer
+ * @param gossip    the gossip
  * @param orderingComponent OrderingComponent to order events
+ * @property K the fanout used to send balls
+ * @property delta the delay between each execution of EpTO
+ *
+ * @see StabilityOracle
+ * @see Peer
+ * @see Gossip
+ * @see OrderingComponent
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
-                             orderingComponent: OrderingComponent, val K: Int, val delta: Long,
-                             val time: Long) {
+                             orderingComponent: OrderingComponent, val K: Int, val delta: Long) {
 
     val logger by logger()
 
@@ -56,7 +60,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
 
     /**
      * Add the event to nextBall
-
+     *
      * @param event The new event
      */
     fun broadcast(event: Event) {
@@ -71,12 +75,12 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     /**
      * Updates nextBall events with the new ball events only if the TTL is smaller and finally updates
      * the clock.
-
+     *
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
-        //logger.debug("Receiving a new ball of size: ${ball.size}")
-        //logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
+        logger.debug("Receiving a new ball of size: ${ball.size}")
+        logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
         ball.forEach { eventId, event ->
             if (event.ttl < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {
@@ -99,7 +103,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      */
     fun start() {
         periodicDisseminationFuture = scheduler.scheduleAtFixedRate(periodicDissemination,
-                scheduleAt(time), delta, TimeUnit.MILLISECONDS)
+                0, delta, TimeUnit.MILLISECONDS)
     }
 
     /**

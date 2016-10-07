@@ -1,7 +1,5 @@
 package epto
 
-import epto.utilities.Event
-
 /**
  * Implementation of the stability oracle. This class implements the logical clock.
  */
