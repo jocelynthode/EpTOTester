@@ -1,6 +1,6 @@
 package epto
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.udp.Core
 import epto.utilities.Application
 import epto.utilities.Event
@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -17,7 +18,8 @@ import java.util.*
  * Initializes a peer
  *
  */
-class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAddress, gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
+class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAddress,
+           gossipPort: Int = 10353, pssPort: Int = 10453, scheduleAt: Long) : Runnable {
 
     val logger by logger()
 
@@ -25,7 +27,7 @@ class Peer(application: Application, TTL: Int, K: Int, delta: Long, myIp: InetAd
     val core = Core(myIp, K, gossipPort, pssPort)
     private val oracle = StabilityOracle(TTL)
     val orderingComponent = OrderingComponent(oracle, application)
-    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K, delta)
+    val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, K, delta, scheduleAt)
     private var isRunning = false
     var messagesReceived = 0
         private set

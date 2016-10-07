@@ -1,7 +1,7 @@
 package epto
 
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.utilities.Application
 import epto.utilities.Event
 import java.util.*

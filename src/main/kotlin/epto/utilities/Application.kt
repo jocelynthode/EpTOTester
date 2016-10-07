@@ -4,20 +4,21 @@ package epto.utilities
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Peer
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import org.nustaq.serialization.FSTConfiguration
 import java.net.InetAddress
+import java.time.LocalDateTime
 import java.util.*
 
 /**
  * Implementation of an Application
  */
 open class Application(TTL: Int, K: Int, baseURL: String, var expectedEvents: Int = -1,
-                       delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) {
+                       delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int, scheduleAt: Long) {
 
     val logger by logger()
-    internal val peer = Peer(this, TTL, K, delta, myIp, gossipPort, pssPort)
+    internal val peer = Peer(this, TTL, K, delta, myIp, gossipPort, pssPort, scheduleAt)
 
     init {
         conf.registerClass(HashMap::class.java, Pair::class.java, Event::class.java)

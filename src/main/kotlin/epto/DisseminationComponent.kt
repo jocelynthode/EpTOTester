@@ -1,6 +1,7 @@
 package epto
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
+import epto.libs.Utilities.scheduleAt
 import epto.udp.Gossip
 import epto.utilities.Event
 import java.util.*
@@ -21,7 +22,8 @@ import java.util.concurrent.TimeUnit
  * @param orderingComponent OrderingComponent to order events
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
-                             orderingComponent: OrderingComponent, val K: Int, val delta: Long) {
+                             orderingComponent: OrderingComponent, val K: Int, val delta: Long,
+                             val time: Long) {
 
     val logger by logger()
 
@@ -96,8 +98,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * Starts the periodic dissemination
      */
     fun start() {
-        periodicDisseminationFuture = scheduler.scheduleWithFixedDelay(periodicDissemination, 0,
-                delta, TimeUnit.MILLISECONDS)
+        periodicDisseminationFuture = scheduler.scheduleAtFixedRate(periodicDissemination,
+                scheduleAt(time), delta, TimeUnit.MILLISECONDS)
     }
 
     /**

@@ -1,6 +1,6 @@
 package epto.pss
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.udp.Core
 import epto.utilities.Application
 import org.nustaq.serialization.FSTObjectOutput
@@ -65,7 +65,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             logger.debug("Running init PSS-$i")
             activeThread.run()
         }
-        activeThreadFuture = scheduler.scheduleWithFixedDelay(activeThread, 0, gossipInterval.toLong(),
+        activeThreadFuture = scheduler.scheduleAtFixedRate(activeThread, 0, gossipInterval.toLong(),
                 TimeUnit.MILLISECONDS)
     }
 

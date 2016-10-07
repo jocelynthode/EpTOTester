@@ -1,10 +1,12 @@
 package epto.utilities
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.net.InetAddress
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 /**
  * Created by jocelyn on 19.09.16.
@@ -26,6 +28,8 @@ class Main {
             parser.addArgument("peerNumber").help("Peer number")
                     .type(Integer.TYPE)
                     .setDefault(35)
+            parser.addArgument("scheduleAt").help("Schedule EpTO to start at a specific time in milliseconds")
+                    .type(Long::class.java)
             parser.addArgument("-e", "--events").help("Number of events to send")
                     .type(Integer.TYPE)
                     .setDefault(12)
@@ -57,6 +61,7 @@ class Main {
             val eventsToSend = namespace.getInt("events")
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
+            val scheduleAt = namespace.getLong("scheduleAt")
             val n = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
             val gossipPort = namespace.getInt("gossip_port")
@@ -81,7 +86,7 @@ class Main {
             expectedEvents = eventsToSend * n.toInt()
 
             val application = Application(ttl, k, tracker, expectedEvents, delta, InetAddress.getByName(localIp),
-                    gossipPort, pssPort)
+                    gossipPort, pssPort, scheduleAt)
 
             /*
             Runtime.getRuntime().addShutdownHook(Thread {
@@ -102,8 +107,12 @@ class Main {
             logger.info("Peer Number: ${n.toInt()}")
             logger.info("TTL: $ttl, K: $k")
             logger.info("Delta: $delta")
-            Thread.sleep(60000)
 
+            //Wait till EpTO has started to send events
+            val date = LocalDateTime.ofEpochSecond((scheduleAt / 1000), 0, ZoneOffset.UTC)
+            while (date.isBefore(LocalDateTime.now())) {
+                Thread.sleep(50)
+            }
             var eventsSent = 0
             while (eventsSent != eventsToSend) {
                 application.broadcast()

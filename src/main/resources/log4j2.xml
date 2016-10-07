@@ -22,6 +22,7 @@
         <Logger name="epto.DisseminationComponent" level="info"/>
         <Logger name="epto.OrderingComponent" level="info"/>
         <Logger name="epto.pss.PassiveThread" level="info"/>
+        <Logger name="epto.libs.Utilities" level="debug"/>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>

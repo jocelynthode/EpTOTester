@@ -1,6 +1,6 @@
 package epto.udp
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import epto.utilities.Application
 import epto.utilities.Event

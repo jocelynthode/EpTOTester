@@ -1,6 +1,6 @@
 package epto.pss
 
-import epto.libs.Delegates.logger
+import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import org.nustaq.serialization.FSTObjectInput
 import java.io.ByteArrayInputStream
