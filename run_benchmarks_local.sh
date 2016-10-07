@@ -4,7 +4,7 @@
 MANAGER_IP=172.16.2.98
 PEER_NUMBER=$1
 DELTA=$2
-
+TIME_ADD=$3
 
 if [ -z "$PEER_NUMBER" ]
   then
@@ -18,6 +18,11 @@ if [ -z "$DELTA" ]
     exit
 fi
 
+if [ -z "$TIME_ADD" ]
+  then
+    echo "you have to indicate by how much you want to delay EpTO start"
+    exit
+fi
 
 echo "START..."
 ./gradlew docker
@@ -30,8 +35,9 @@ docker network create -d overlay --subnet=10.0.93.0/24 epto-network
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 300m tracker
 sleep 10s
+TIME=$(( $(date +%s%3N) + "$TIME_ADD" ))
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
---env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" \
+--env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
 --limit-memory 250m --log-driver=journald --restart-condition=none \
 --mount type=bind,source=/home/jocelyn/tmp/data,target=/data epto
 

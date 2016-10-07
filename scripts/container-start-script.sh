@@ -4,10 +4,10 @@
 MY_IP_ADDR=$(/bin/hostname -i)
 
 echo 'Starting epto peer'
-echo "${MY_IP_ADDR}"
-echo "${PEER_NUMBER}"
-echo "$DELTA"
 MY_IP_ADDR=($MY_IP_ADDR)
 echo "${MY_IP_ADDR[0]}"
+echo "${PEER_NUMBER}"
+echo "$DELTA"
+echo "$TIME"
 java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar epto.utilities.Main --delta "$DELTA" "${MY_IP_ADDR[0]}" \
-"http://epto-tracker:4321" "${PEER_NUMBER}" > "/data/${MY_IP_ADDR[0]}.txt" 2>&1
+"http://epto-tracker:4321" "${PEER_NUMBER}"  "$TIME" > "/data/${MY_IP_ADDR[0]}.txt" 2>&1
