@@ -31,7 +31,6 @@ mainClassName = 'epto.utilities.App'
 repositories {
     mavenCentral()
     jcenter()
-    flatDir { dirs 'lib' }
 }
 
 task mkdirLibs {
