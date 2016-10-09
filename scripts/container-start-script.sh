@@ -9,5 +9,5 @@ echo "${MY_IP_ADDR[0]}"
 echo "${PEER_NUMBER}"
 echo "$DELTA"
 echo "$TIME"
-java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar epto.utilities.Main --delta "$DELTA" "${MY_IP_ADDR[0]}" \
-"http://epto-tracker:4321" "${PEER_NUMBER}"  "$TIME" > "/data/${MY_IP_ADDR[0]}.txt" 2>&1
+java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar utilities.Main --delta "$DELTA" "${MY_IP_ADDR[0]}" \
+"http://epto-tracker:4321" "${PEER_NUMBER}"  "$TIME" >> "/data/${MY_IP_ADDR[0]}.txt" 2>&1
