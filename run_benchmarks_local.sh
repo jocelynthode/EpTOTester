@@ -34,18 +34,31 @@ docker swarm init && \
 docker network create -d overlay --subnet=10.0.93.0/24 epto-network
 
 docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 300m tracker
-sleep 10s
-TIME=$(( $(date +%s%3N) + "$TIME_ADD" ))
+until docker service ls | grep "1/1"
+do
+    sleep 1s
+done
+TIME=$(( $(date +%s%3N) + $TIME_ADD ))
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
 --limit-memory 250m --log-driver=journald --restart-condition=none \
 --mount type=bind,source=/home/jocelyn/tmp/data,target=/data epto
 
-echo "Running EpTO tester..."
-while true
+# wait for service to start
+while docker service ls | grep " 0/$PEER_NUMBER"
 do
-    sleep 10s
+    sleep 1s
 done
+echo "Running EpTO tester..."
+# wait for service to end
+until docker service ls | grep -q " 0/$PEER_NUMBER"
+do
+    sleep 5s
+done
+
+docker service rm epto-tracker
+docker service rm epto-service
+
 
 
 
