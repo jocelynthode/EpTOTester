@@ -21,7 +21,7 @@ fi
 
 if [ -z "$TIME_ADD" ]
   then
-    echo "you have to indicate by how much you want to delay EpTO start"
+    echo "you have to indicate by how much you want to delay EpTO start in ms"
     exit
 fi
 
@@ -36,25 +36,41 @@ docker pull swarm-m:5000/tracker:latest
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
-docker network create -d overlay --subnet=172.104.0.0/16 epto-network || exit)
+docker network create -d overlay --subnet=172.105.0.0/16 eptonetwork || exit)
 
 for i in {1..10}
 do
-    docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 300m swarm-m:5000/tracker
-    sleep 10s
-    TIME=$(( $(date +%s%3N) + "$TIME_ADD" ))
-    docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
+    docker service create --name epto-tracker --network eptonetwork --replicas 1 --limit-memory 300m \
+     --constraint 'node.role == manager' swarm-m:5000/tracker
+
+    until docker service ls | grep "1/1"
+    do
+        sleep 2s
+    done
+    TIME=$(( $(date +%s%3N) + $TIME_ADD ))
+    docker service create --name epto-service --network eptonetwork --replicas ${PEER_NUMBER} \
     --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
-    --limit-memory 250m --log-driver=journald --restart-condition=none \
+    --limit-memory 250m --log-driver=journald --restart-condition=on-failure \
     --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
-    echo "Running EpTO tester $PEER_NUMBER peers - $i"
-    sleep 5m
+    # wait for service to start
+    while docker service ls | grep " 0/$PEER_NUMBER"
+    do
+        sleep 1s
+    done
+    echo "Running EpTO tester..."
+    # wait for service to end
+    until docker service ls | grep -q " 0/$PEER_NUMBER"
+    do
+        sleep 5s
+    done
+
     docker service rm epto-tracker
     docker service rm epto-service
 
-    echo "Removed services"
-    sleep 1m
+    echo "Services removed"
+    sleep 30s
+
     while read ip; do
         rsync --remove-source-files -av "${ip}:~/data/*.txt" "../data/test-$i/"
     done <hosts
