@@ -65,3 +65,17 @@ docker {
     dependsOn tasks.shadowJar
     files 'build/libs', 'scripts/container-start-script.sh'
 }
+
+dokka {
+    linkMapping {
+        dir = "src/main/kotlin"
+        url = "https://github.com/jocelynthode/EptoTester/tree/master/src/main/kotlin"
+        suffix = "#L"
+    }
+    sourceDirs = files('src/main/kotlin')
+}
+
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/javadoc"
+}
