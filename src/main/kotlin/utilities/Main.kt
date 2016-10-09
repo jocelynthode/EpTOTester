@@ -6,6 +6,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.net.InetAddress
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -86,7 +87,7 @@ class Main {
 
             expectedEvents = eventsToSend * n.toInt()
 
-            val application = TesterApplication(ttl, k, tracker, expectedEvents, delta, InetAddress.getByName(localIp),
+            val application = TesterApplication(ttl, k, tracker, expectedEvents, n.toInt(), delta, InetAddress.getByName(localIp),
                     gossipPort, pssPort)
             application.start()
 
@@ -102,6 +103,9 @@ class Main {
             */
             val scheduler = Executors.newScheduledThreadPool(1)
             val runEpto = Runnable {
+                val randomDelay = Random().nextInt(15) * 1000L
+                logger.debug("Sleeping for ${randomDelay}ms before sending events")
+                Thread.sleep(randomDelay)
                 var eventsSent = 0
                 while (eventsSent != eventsToSend) {
                     application.broadcast()
@@ -109,15 +113,16 @@ class Main {
                     eventsSent++
                 }
                 var i = 0
-                while (i < 30) {
+                while (i < 80) {
                     logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
                     Thread.sleep(10000)
                     i++
                 }
                 application.stop()
+                System.exit(0)
             }
-
             scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
+            while (true) Thread.sleep(10000)
         }
     }
 }

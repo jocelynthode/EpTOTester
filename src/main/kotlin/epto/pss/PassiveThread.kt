@@ -58,6 +58,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
     }
 
     private data class Result(val isPull: Boolean, val receivedView: ArrayList<PeerInfo>)
+
     private fun unserialize(buf: ByteArray): Result {
         val byteIn = ByteArrayInputStream(buf)
         val inputStream = FSTObjectInput(byteIn)

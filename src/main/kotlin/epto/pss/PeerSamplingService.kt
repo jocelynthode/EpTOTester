@@ -17,19 +17,12 @@ import java.util.concurrent.TimeUnit
  * Implementation of a Peer Sampling Service
  *
  * @property gossipInterval the interval at which to perform the active thread of the PSS
- *
  * @property core the Class responsible for the datagram channels
- *
  * @property c the ideal view size
- *
  * @property exch the number of peers to exch
- *
  * @property s the swapping parameter
- *
  * @property h the healing parameter
- *
  * @property view the current view
- *
  * @property passiveThread the thread in charge of receiving messages
  *
  * @see Core

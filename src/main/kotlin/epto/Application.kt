@@ -6,6 +6,7 @@ import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService
 import org.nustaq.serialization.FSTConfiguration
 import java.net.InetAddress
+import java.util.*
 
 /**
  * Abstract class implementing the API needed to work with EpTO
@@ -30,18 +31,28 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
 
     init {
         var result: String?
-        var tmp_view: MutableList<String>?
+        var tmp_view: MutableList<String> = ArrayList()
         FuelManager.instance.basePath = trackerURL
+        var retry = 0
         do {
-            Thread.sleep(5000)
-            result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
-            tmp_view = result.split('|').toMutableList()
-        } while (tmp_view!!.size < (k + 5))
+            try {
+                Thread.sleep(5000)
+                result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
+                tmp_view = result.split('|').toMutableList()
+                logger.debug(result)
+            } catch (e: Exception) {
+                logger.error("Error while trying to get a view from the tracker", e)
+                retry++
+                if (retry > 25) {
+                    logger.error("Too many retries, Aborting...")
+                    System.exit(1)
+                }
+            }
+        } while (tmp_view.size < (k + 5))
 
         if (tmp_view.contains(myIp.hostAddress)) {
             tmp_view.remove(myIp.hostAddress)
         }
-        logger.debug(result)
         //Add seeds to the PSS view
         peer.core.pss.view.addAll(tmp_view.map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
         //Start after we have a view
@@ -65,25 +76,15 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
     /**
      * Starts the application
      */
-    fun start() {
+    open fun start() {
         Thread(peer).start()
-        logger.info("Started: ${myIp.address}")
-        logger.info("Peer ID: ${peer.uuid}")
-        logger.info("Peer Number: ${peer}")
-        logger.info("TTL: ${peer.oracle.TTL}, K: ${peer.disseminationComponent.K}")
-        logger.info("Delta: ${peer.disseminationComponent.delta}")
     }
 
     /**
      * Stops the application
      */
-    fun stop() {
+    open fun stop() {
         peer.stop()
-        logger.info("Quitting EpTO tester")
-        logger.info("EpTO messages sent: ${peer.core.gossipMessages}")
-        logger.info("EpTO messages received: ${peer.messagesReceived}")
-        logger.info("PSS messages sent: ${peer.core.pssMessages}")
-        logger.info("PSS messages received: ${peer.core.pss.passiveThread.messagesReceived}")
     }
 
     companion object {
