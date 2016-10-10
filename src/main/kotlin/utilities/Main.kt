@@ -102,6 +102,7 @@ class Main {
             })
             */
             val scheduler = Executors.newScheduledThreadPool(1)
+
             val runEpto = Runnable {
                 val randomDelay = Random().nextInt(15) * 1000L
                 logger.debug("Sleeping for ${randomDelay}ms before sending events")
@@ -109,8 +110,8 @@ class Main {
                 var eventsSent = 0
                 while (eventsSent != eventsToSend) {
                     application.broadcast()
-                    Thread.sleep(1000)
                     eventsSent++
+                    Thread.sleep(1000)
                 }
                 var i = 0
                 while (i < 80) {
@@ -121,8 +122,13 @@ class Main {
                 application.stop()
                 System.exit(0)
             }
-            scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
-            while (true) Thread.sleep(10000)
+            //scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
+            var i = 0
+            while (i < 60) {
+                Thread.sleep(10000)
+                i++
+            }
+            System.exit(0)
         }
     }
 }

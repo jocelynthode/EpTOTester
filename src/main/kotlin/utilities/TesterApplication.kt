@@ -33,8 +33,8 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents
      * {@inheritDoc}
      */
     override fun broadcast(event: Event) {
-        peer.disseminationComponent.broadcast(event)
         logger.info("Sending: ${event.id}")
+        peer.disseminationComponent.broadcast(event)
     }
 
     /**

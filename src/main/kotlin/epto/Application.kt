@@ -51,6 +51,7 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
         } while (tmp_view.size < (k + 5))
 
         if (tmp_view.contains(myIp.hostAddress)) {
+            logger.warn("View contained ourselves")
             tmp_view.remove(myIp.hostAddress)
         }
         //Add seeds to the PSS view
@@ -71,7 +72,9 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
      *
      * @param event the event to broadcast
      */
-    abstract fun broadcast(event: Event = Event())
+    open fun broadcast(event: Event = Event()) {
+        peer.disseminationComponent.broadcast(event)
+    }
 
     /**
      * Starts the application
