@@ -18,10 +18,13 @@ K = 30
 def florida_string(ip):
     available_peers[ip] = int(time.time())
 
-    if len(available_peers) > K:
-        to_send = random.sample(available_peers.keys(), K)
+    to_choose = list(available_peers.keys())
+    to_choose.remove(ip)
+
+    if len(to_choose) > K:
+        to_send = random.sample(to_choose, K)
     else:
-        to_send = list(available_peers.keys())
+        to_send = to_choose
 
     return '|'.join(to_send).encode()
 
