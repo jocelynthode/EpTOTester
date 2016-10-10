@@ -19,7 +19,7 @@ def extract_nodes(from_seconds=0):
 
     def extract_starts(lines):
         for line in lines:
-            match = re.match(r'(\d+) - Started.*', line)
+            match = re.match(r'(\d+) - Running init.*', line)
             if match:
                 yield int(match.group(1))
 
