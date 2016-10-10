@@ -26,6 +26,7 @@ class Gossip(val core: Core, val K: Int = 15) {
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
     //We substract 4Bytes for the ball size
     private val maxEvents = (maxSize - 4) / 40
+    var totalSplits = 0
 
     /**
      * Relay a ball of event to other EpTO peers
@@ -74,6 +75,7 @@ class Gossip(val core: Core, val K: Int = 15) {
 
     private fun relaySplitted(values: List<Event>, ballsToSend: Int, kView: ArrayList<PeerInfo>) {
         var ballsNumber = ballsToSend
+        totalSplits += ballsToSend
         var i = 0
 
         while (ballsNumber > 0) {

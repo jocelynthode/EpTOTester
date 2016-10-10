@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
  * @see PassiveThread
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
-                          val s: Int = 8, val h: Int = 1) {
+                          val s: Int = 8, val h: Int = 3) {
 
     val logger by logger()
 
@@ -179,18 +179,24 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         }
     }
 
-    private fun removeDuplicate(info: PeerInfo) =
-            if (view.contains(info) && view[view.indexOf(info)].age <= info.age)
-                true
-            else if (view.contains(info)) {
-                view[view.indexOf(info)].age = info.age
-                true
+    private fun removeDuplicate(info: PeerInfo): Boolean {
+        view.forEach {
+            if (it.equals(info) && it.age <= info.age) {
+                return true
+            } else if (it.equals(info)) {
+                it.age = info.age
+                return true
             } else {
-                false
+                return false
             }
+        }
+        return false
+    }
 
     /**
      * Select a partner randomly from the view
+     *
+     * @return a randomly selected PeerInfo
      */
     fun selectPartner() = view[rand.nextInt(view.size)]
 
@@ -199,9 +205,13 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         if (logger.isDebugEnabled) {
             val sj = StringJoiner(" ", "PSS View: ", "")
             sj.add(core.myIp.hostAddress)
-            view.forEach { sj.add(it.address.hostAddress) }
+            view.forEach {
+                sj.add(it.address.hostAddress)
+                if (it.address == core.myIp) logger.error("View contains our own IP!")
+            }
             logger.debug(sj.toString())
             logger.debug("View size : ${view.size}")
+            logger.debug("Distinct view size: ${view.distinctBy { it.address }.size}")
         }
     }
 
@@ -221,6 +231,17 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         fun serialize(out: FSTObjectOutput): Unit {
             out.write(address.address)
             out.writeInt(age)
+        }
+
+        /**
+         * Checks if a PeerInfo is equals only checking the InetAddress
+         *
+         * @param other a PeerInfo
+         *
+         * @return wether the two InetAddress are equals
+         */
+        fun equals(other: PeerInfo): Boolean {
+            return other.address == this.address
         }
     }
 }
