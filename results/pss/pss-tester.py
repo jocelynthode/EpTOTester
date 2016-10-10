@@ -5,6 +5,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import statistics as stats
 
 graph = []
 
@@ -50,11 +51,12 @@ def create_graph(from_seconds=30):
 G = create_graph(int(sys.argv[1]))
 D = nx.DiGraph(G)
 nx.draw_circular(G, with_labels=True)
-print(nx.average_shortest_path_length(D))
-print(nx.average_clustering(G))
+print("Average shortest path: %f" % nx.average_shortest_path_length(D))
+print("Average clustering: %f" % nx.average_clustering(G))
 indeg = D.in_degree()
 # print(indeg)
 print("Node nb: " + str(len(indeg)))
 print("Average indegree: " + str(sum(indeg.values()) / len(indeg)))
+print("Grouped Median indegree " + str(stats.median_grouped(indeg.values())))
 
 plt.show()
