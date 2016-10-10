@@ -1,7 +1,9 @@
 package epto.pss
 
 import epto.Application
+import epto.Event
 import epto.libs.Utilities.logger
+import epto.pss.PeerSamplingService.PeerInfo
 import epto.udp.Core
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
@@ -99,16 +101,13 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             }
         }
 
-        //Append the  exch-1 element from view to toSend
+        //Append the exch-1 element from view to toSend
         if (view.size > exch - 1) {
-            for (i in 0..exch - 1 - 1) {
+            for (i in 0..(exch - 2)) {
                 val peer = view[i]
                 toSend.add(peer)
             }
-        } else {
-            toSend.addAll(view)
         }
-        logger.debug("toSend size in address: ${toSend.size}")
         return asByteArray(isPull, toSend)
     }
 
@@ -150,15 +149,11 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      * @param receivedView  the received view
      */
     fun selectToKeep(receivedView: ArrayList<PeerInfo>) {
-        //remove duplicates from view
-        val toRemove = ArrayList<PeerInfo>()
-        for (peer in receivedView) {
-            val isDuplicate = removeDuplicate(peer)
-            if (isDuplicate) toRemove.add(peer)
-        }
-        receivedView.removeAll(toRemove)
-        //merge view and received in an arrayList
+        //merge view and received
         view.addAll(receivedView)
+        //remove duplicates from view
+        removeDuplicates()
+
         //remove min(H, #view-c) oldest items
         var minimum = Math.min(h, view.size - c)
         while (minimum > 0 && view.size > 0) {
@@ -179,18 +174,17 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         }
     }
 
-    private fun removeDuplicate(info: PeerInfo): Boolean {
+    private fun removeDuplicates() {
+        val set = HashMap<InetAddress, PeerInfo>()
         view.forEach {
-            if (it.equals(info) && it.age <= info.age) {
-                return true
-            } else if (it.equals(info)) {
-                it.age = info.age
-                return true
-            } else {
-                return false
+            if (!set.contains(it.address)) {
+                set[it.address] = it
+            } else if (set[it.address]!!.age > it.age) {
+                set[it.address]!!.age = it.age
             }
         }
-        return false
+        view.clear()
+        view.addAll(set.values)
     }
 
     /**
@@ -231,17 +225,6 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         fun serialize(out: FSTObjectOutput): Unit {
             out.write(address.address)
             out.writeInt(age)
-        }
-
-        /**
-         * Checks if a PeerInfo is equals only checking the InetAddress
-         *
-         * @param other a PeerInfo
-         *
-         * @return wether the two InetAddress are equals
-         */
-        fun equals(other: PeerInfo): Boolean {
-            return other.address == this.address
         }
     }
 }

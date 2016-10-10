@@ -122,13 +122,7 @@ class Main {
                 application.stop()
                 System.exit(0)
             }
-            //scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
-            var i = 0
-            while (i < 60) {
-                Thread.sleep(10000)
-                i++
-            }
-            System.exit(0)
+            scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
         }
     }
 }

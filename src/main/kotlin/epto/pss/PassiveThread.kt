@@ -39,7 +39,8 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                         synchronized(pssLock) {
                             logger.debug("isPull : $isPull")
                             if (!isPull) {
-                                pss.view.removeIf { it.address == address }
+                                val isRemoved = pss.view.removeIf { it.address == (address as InetSocketAddress).address }
+                                logger.debug("address isRemoved: $isRemoved")
                                 val toSend = pss.selectToSend(true)
                                 logger.debug("Address received : ${(address as InetSocketAddress).address.hostAddress}")
                                 pss.core.sendPss(toSend, address.address)

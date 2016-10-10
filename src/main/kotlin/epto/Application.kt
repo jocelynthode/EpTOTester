@@ -55,7 +55,7 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
             tmp_view.remove(myIp.hostAddress)
         }
         //Add seeds to the PSS view
-        peer.core.pss.view.addAll(tmp_view.map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
+        peer.core.pss.view.addAll(tmp_view.distinct().map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
         //Start after we have a view
         peer.core.startPss()
     }
