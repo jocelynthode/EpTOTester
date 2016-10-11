@@ -19,14 +19,14 @@ import java.util.*
  */
 class Gossip(val core: Core, val K: Int = 15) {
 
-    val logger by logger()
+    private val logger by logger()
 
 
     private val maxSize = 1400
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
     //We substract 4Bytes for the ball size
     private val maxEvents = (maxSize - 4) / 40
-    var totalSplits = 0
+    internal var totalSplits = 0
 
     /**
      * Relay a ball of event to other EpTO peers
@@ -95,6 +95,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         Collections.shuffle(tmpList)
         tmpList.removeIf { tmpList.indexOf(it) > (K - 1) }
         logger.debug("KList size: ${tmpList.size}")
+        logger.debug("KList: $tmpList")
         return tmpList
     }
 

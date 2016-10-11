@@ -10,7 +10,7 @@ import java.time.ZoneOffset
  */
 object Utilities {
 
-    val logger by logger()
+    private val logger by logger()
 
     /**
      * Creates a logger

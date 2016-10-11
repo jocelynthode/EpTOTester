@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int, val delta: Long) {
 
-    val logger by logger()
+    private val logger by logger()
 
     private val scheduler: ScheduledExecutorService
     private val nextBall = HashMap<UUID, Event>()

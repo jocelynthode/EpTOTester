@@ -31,15 +31,15 @@ import java.nio.channels.DatagramChannel
  */
 class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453) {
 
-    val logger by logger()
+    private val logger by logger()
 
 
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(50000, this)
     val gossip = Gossip(this, k)
-    var pssMessages = 0
-    var gossipMessages = 0
+    internal var pssMessages = 0
+    internal var gossipMessages = 0
 
     init {
         gossipChannel.configureBlocking(true)

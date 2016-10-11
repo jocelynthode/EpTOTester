@@ -17,8 +17,8 @@ class Main {
 
     companion object {
 
-        val logger by logger()
-        var expectedEvents = 0
+        private val logger by logger()
+        private var expectedEvents = 0
 
         @JvmStatic fun main(args: Array<String>) {
 
@@ -114,7 +114,7 @@ class Main {
                     Thread.sleep(1000)
                 }
                 var i = 0
-                while (i < 80) {
+                while (i < 30) {
                     logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
                     Thread.sleep(10000)
                     i++

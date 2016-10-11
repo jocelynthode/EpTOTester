@@ -22,7 +22,7 @@ import java.util.*
  */
 class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
 
-    val logger by logger()
+    private val logger by logger()
 
     internal val received = HashMap<UUID, Event>()
     private val delivered = HashMap<UUID, Event>()

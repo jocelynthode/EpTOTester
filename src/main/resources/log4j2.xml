@@ -15,7 +15,7 @@
         <Logger name="utilities.Main$Companion" level="debug" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
-        <Logger name="epto.pss.PeerSamplingService" level="info" additivity="false">
+        <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
             <AppenderRef ref="ConsoleSimple"/>
         </Logger>
         <Logger name="epto.udp.Gossip" level="info"/>

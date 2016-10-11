@@ -11,6 +11,9 @@ import java.util.*
  *
  * @constructor initializes an event with a random UUID
  * @property id the id of the event
+ * @property timestamp the timestamp of the event
+ * @property ttl the number of rounds the event has been in the system
+ * @property sourceId the id of the peer that broadcasted this event
  */
 data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializable {
 

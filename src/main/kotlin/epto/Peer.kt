@@ -38,7 +38,7 @@ import java.util.*
 class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAddress,
            gossipPort: Int = 10353, pssPort: Int = 10453) : Runnable {
 
-    val logger by logger()
+    private val logger by logger()
 
     val uuid = UUID.randomUUID()!!
     val core = Core(myIp, k, gossipPort, pssPort)

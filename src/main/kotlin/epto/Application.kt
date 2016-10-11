@@ -25,7 +25,7 @@ import java.util.*
  */
 abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, val myIp: InetAddress, gossipPort: Int, pssPort: Int) {
 
-    val logger by logger()
+    internal val logger by logger()
 
     internal val peer = Peer(this, ttl, k, delta, myIp, gossipPort, pssPort)
 
@@ -48,7 +48,7 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
                     System.exit(1)
                 }
             }
-        } while (tmp_view.size < (k + 5))
+        } while (tmp_view.size < k)
 
         if (tmp_view.contains(myIp.hostAddress)) {
             logger.warn("View contained ourselves")
