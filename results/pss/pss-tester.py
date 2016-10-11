@@ -20,7 +20,7 @@ def extract_nodes(from_seconds=0):
 
     def extract_starts(lines):
         for line in lines:
-            match = re.match(r'(\d+) - Running init.*', line)
+            match = re.match(r'(\d+) - Started:.*', line)
             if match:
                 yield int(match.group(1))
 
@@ -45,18 +45,20 @@ def extract_nodes(from_seconds=0):
 
 
 def create_graph(from_seconds=30):
-    return nx.parse_adjlist(extract_nodes(from_seconds))
+    D = nx.DiGraph()
+    return nx.parse_adjlist(extract_nodes(from_seconds), create_using=D)
 
 
 G = create_graph(int(sys.argv[1]))
-D = nx.DiGraph(G)
-nx.draw_circular(G, with_labels=True)
-print("Average shortest path: %f" % nx.average_shortest_path_length(D))
-print("Average clustering: %f" % nx.average_clustering(G))
-indeg = D.in_degree()
-# print(indeg)
-print("Node nb: " + str(len(indeg)))
-print("Average indegree: " + str(sum(indeg.values()) / len(indeg)))
-print("Grouped Median indegree " + str(stats.median_grouped(indeg.values())))
+U = G.to_undirected()
 
-plt.show()
+print("Average shortest path: %f" % nx.average_shortest_path_length(G))
+print("Average clustering: %f" % nx.average_clustering(U))
+indeg = G.in_degree()
+print(indeg)
+print("Node nb: %d" % G.number_of_nodes())
+print("Average indegree: %f" % (sum(indeg.values()) / len(indeg)))
+print("Median indegree %f" % stats.median(indeg.values()))
+
+# nx.draw_circular(G, with_labels=True)
+# plt.show()
