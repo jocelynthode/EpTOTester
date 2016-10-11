@@ -50,8 +50,10 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                         received.put(event.id, event)
                     }
                 }
-        logger.debug("Received size: ${received.size}")
-        logger.debug("Min TTL: ${received.values.minBy { it.ttl }?.ttl}, Max TTL: ${received.values.maxBy { it.ttl }?.ttl}")
+        logger.debug("Received size: {}", received.size)
+        logger.debug("Min TTL: {}, Max TTL: {}",
+                received.values.minBy { it.ttl }?.ttl,
+                received.values.maxBy { it.ttl }?.ttl)
     }
 
     /**
@@ -91,8 +93,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         }
 
         val eventsToRemove = ArrayList<Event>()
-        logger.debug("Deliverable events: ${deliverableEvents.size}")
-        logger.debug("minQueuedTs: $minQueuedTs")
+        logger.debug("Deliverable events: {}", deliverableEvents.size)
+        logger.debug("minQueuedTs: {}", minQueuedTs)
         for (event in deliverableEvents) {
             if (event.timestamp >= minQueuedTs) {
                 // ignore deliverable events with timestamp greater or equal than all non-deliverable events
@@ -103,7 +105,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
             }
         }
         deliverableEvents.removeAll(eventsToRemove)
-        logger.debug("Final Deliverable events: ${deliverableEvents.size}")
+        logger.debug("Final Deliverable events: {}", deliverableEvents.size)
 
         //sort deliverable Events by Ts and ID, ascending
         deliverableEvents.sort(null)

@@ -41,7 +41,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         val kView = selectKFromView()
         val ballsToSend = Math.ceil(nextBall.size / maxEvents.toDouble()).toInt()
 
-        logger.debug("Total Ball size in Events: ${nextBall.size}")
+        logger.debug("Total Ball size in Events: {}", nextBall.size)
         if (ballsToSend > 1) {
             relaySplitted(nextBall, ballsToSend, kView)
         } else {
@@ -50,7 +50,7 @@ class Gossip(val core: Core, val K: Int = 15) {
     }
 
     private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
-        logger.debug("Relay Ball size in Events: ${nextBall.size}")
+        logger.debug("Relay Ball size in Events: {}", nextBall.size)
         val byteOut = ByteArrayOutputStream()
         val out = Application.conf.getObjectOutput(byteOut)
         try {
@@ -63,7 +63,7 @@ class Gossip(val core: Core, val K: Int = 15) {
             out.close()
         }
 
-        logger.debug("Ball size in Bytes: ${byteOut.size()}")
+        logger.debug("Ball size in Bytes: {}", byteOut.size())
         if (byteOut.size() > maxSize) {
             logger.warn("Ball size is too big !")
         }
@@ -79,7 +79,7 @@ class Gossip(val core: Core, val K: Int = 15) {
         var i = 0
 
         while (ballsNumber > 0) {
-            logger.debug("ballsToSend: $ballsNumber")
+            logger.debug("ballsToSend: {}", ballsNumber)
             if (ballsNumber > 1) {
                 sendRelay(values.subList(i, i + maxEvents), kView)
             } else {
@@ -94,8 +94,6 @@ class Gossip(val core: Core, val K: Int = 15) {
         val tmpList = ArrayList<PeerInfo>(core.pss.view)
         Collections.shuffle(tmpList)
         tmpList.removeIf { tmpList.indexOf(it) > (K - 1) }
-        logger.debug("KList size: ${tmpList.size}")
-        logger.debug("KList: $tmpList")
         return tmpList
     }
 

@@ -23,7 +23,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents
     @Synchronized override fun deliver(event: Event) {
         expectedEvents--
         logger.info("Delivered: ${event.id}")
-        logger.debug("Expected events: ${expectedEvents}")
+        logger.debug("Expected events: {}", expectedEvents)
         if (expectedEvents <= 0) {
             logger.info("All events delivered !")
         }

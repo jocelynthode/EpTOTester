@@ -67,9 +67,9 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      */
     fun start() {
         Thread(passiveThread).start()
-        //Run the PSS 3 times
+        //Run the PSS 4 times
         for (i in 1..4) {
-            logger.debug("Running init PSS-$i")
+            logger.debug("Running init PSS-{}", i)
             activeThread.run()
         }
         activeThreadFuture = scheduler.scheduleAtFixedRate(activeThread, 0, gossipInterval.toLong(),
@@ -144,7 +144,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } finally {
             out.close()
         }
-        logger.debug("toSendView size in Bytes: ${byteOut.toByteArray().size}")
+        logger.debug("toSendView size in Bytes: {}", byteOut.toByteArray().size)
         return byteOut.toByteArray()
     }
 
@@ -178,7 +178,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             view.removeAt(rand.nextInt(view.size))
         }
         if (!isPush) view.forEach { it.age++ }
-        logger.debug("View after selectToKeep: $view")
+        logger.debug("View after selectToKeep: {}", view)
     }
 
     /**

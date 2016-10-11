@@ -33,7 +33,8 @@ object Utilities {
             logger.warn("Time given was smaller than current time, running EpTO immediately, but some events might get lost")
             return 0
         } else {
-            logger.debug("EpTo will start at ${LocalDateTime.ofEpochSecond((date / 1000), 0, ZoneOffset.ofHours(2))} UTC+2")
+            logger.debug("EpTo will start at {} UTC+2",
+                    LocalDateTime.ofEpochSecond((date / 1000), 0, ZoneOffset.ofHours(2)))
             return (date - System.currentTimeMillis())
         }
     }

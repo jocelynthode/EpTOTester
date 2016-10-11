@@ -42,7 +42,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
             synchronized(nextBallLock) {
-                logger.debug("nextBall size: ${nextBall.size}")
+                logger.debug("nextBall size: {}", nextBall.size)
                 nextBall.forEach { it.value.incrementTtl() }
                 if (!nextBall.isEmpty()) {
                     val events = nextBall.values.toList()
@@ -79,8 +79,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
-        logger.debug("Receiving a new ball of size: ${ball.size}")
-        logger.debug("Ball will relay ${ball.filter { it.value.ttl < oracle.TTL }.size} events")
+        logger.debug("Receiving a new ball of size: {}", ball.size)
+        logger.debug("Ball will relay {} events", ball.filter { it.value.ttl < oracle.TTL }.size)
         ball.forEach { eventId, event ->
             if (event.ttl < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {

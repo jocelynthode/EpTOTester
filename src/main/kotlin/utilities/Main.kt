@@ -105,7 +105,7 @@ class Main {
 
             val runEpto = Runnable {
                 val randomDelay = Random().nextInt(15) * 1000L
-                logger.debug("Sleeping for ${randomDelay}ms before sending events")
+                logger.debug("Sleeping for {}ms before sending events", randomDelay)
                 Thread.sleep(randomDelay)
                 var eventsSent = 0
                 while (eventsSent != eventsToSend) {
@@ -115,7 +115,7 @@ class Main {
                 }
                 var i = 0
                 while (i < 30) {
-                    logger.debug("Events not yet delivered: ${application.peer.orderingComponent.received.size}")
+                    logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++
                 }

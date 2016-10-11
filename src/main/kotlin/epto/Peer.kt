@@ -65,7 +65,7 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
                     val inputStream = FSTObjectInput(byteIn)
                     var len = inputStream.readInt()
                     val receivedBall = HashMap<UUID, Event>()
-                    logger.debug("ReceivedBall size: $len")
+                    logger.debug("ReceivedBall size: {}", len)
                     while (len > 0) {
                         val event = Event.unserialize(inputStream)
                         receivedBall[event.id] = event
