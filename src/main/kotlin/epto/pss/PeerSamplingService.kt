@@ -27,13 +27,15 @@ import java.util.concurrent.TimeUnit
  * @property view the current view
  * @property passiveThread the thread in charge of receiving messages
  *
+ * @throws PSSInitializationException If (h + s) > exch
+ *
  * @see Core
  * @see PassiveThread
  */
-class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 30, val exch: Int = 14,
-                          val s: Int = 8, val h: Int = 3) {
+class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 20, val exch: Int = 10,
+                          val s: Int = 5, val h: Int = 2) {
 
-    val logger by logger()
+    private val logger by logger()
 
     val view = ArrayList<PeerInfo>()
     private val pssLock = Any()
@@ -50,12 +52,15 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
 
             val partner = selectPartner()
             view.remove(partner)
-            val toSend = selectToSend(false)
+            val toSend = selectToSend(true)
             core.sendPss(toSend, partner.address)
-            view.forEach { it.age++ }
         }
     }
     private var activeThreadFuture: ScheduledFuture<*>? = null
+
+    init {
+        if (h + s > exch) throw PSSInitializationException("(H + S) must not be higher than exch !")
+    }
 
     /**
      * Start the Peer Sampling Service
@@ -63,7 +68,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     fun start() {
         Thread(passiveThread).start()
         //Run the PSS 3 times
-        for (i in 1..3) {
+        for (i in 1..4) {
             logger.debug("Running init PSS-$i")
             activeThread.run()
         }
@@ -83,13 +88,12 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     /**
      * Selects a sublist of the view to send to the partner
      *
-     * @param isPull If the view was solicited by a peer
+     * @param isPush If the view is sent unsolicited
      *
      * @return subview
      */
-    fun selectToSend(isPull: Boolean = false): ByteArray {
+    fun selectToSend(isPush: Boolean = true): ByteArray {
         val toSend = ArrayList<PeerInfo>()
-        toSend.add(PeerInfo(core.myIp))
 
         Collections.shuffle(view)
 
@@ -108,7 +112,8 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
                 toSend.add(peer)
             }
         }
-        return asByteArray(isPull, toSend)
+        toSend.add(PeerInfo(core.myIp))
+        return asByteArray(isPush, toSend)
     }
 
     /**
@@ -125,12 +130,12 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      *
      * Source : http://stackoverflow.com/questions/900697/how-to-find-the-largest-udp-packet-i-can-send-without-fragmenting
      */
-    private fun asByteArray(isPull: Boolean, toSend: ArrayList<PeerInfo>): ByteArray {
+    private fun asByteArray(isPush: Boolean, toSend: ArrayList<PeerInfo>): ByteArray {
         val byteOut = ByteArrayOutputStream()
         val out = Application.conf.getObjectOutput(byteOut)
 
         try {
-            out.writeBoolean(isPull)
+            out.writeBoolean(isPush)
             out.writeInt(toSend.size)
             toSend.forEach { it.serialize(out) }
             out.flush()
@@ -148,7 +153,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      *
      * @param receivedView  the received view
      */
-    fun selectToKeep(receivedView: ArrayList<PeerInfo>) {
+    fun selectToKeep(receivedView: ArrayList<PeerInfo>,  isPush: Boolean) {
         //merge view and received
         view.addAll(receivedView)
         //remove duplicates from view
@@ -172,19 +177,30 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         while (view.size > c) {
             view.removeAt(rand.nextInt(view.size))
         }
+        if (!isPush) view.forEach { it.age++ }
+        logger.debug("View after selectToKeep: $view")
     }
 
+    /**
+     * We need to remove in this way to make sure we keep the same order, as when we remove nodes
+     * we don't want to remove the node that sent us a message otherwise they would slowly kill all their indegrees
+     */
     private fun removeDuplicates() {
-        val set = HashMap<InetAddress, PeerInfo>()
-        view.forEach {
-            if (!set.contains(it.address)) {
-                set[it.address] = it
-            } else if (set[it.address]!!.age > it.age) {
-                set[it.address]!!.age = it.age
+        var i = 0
+        while (i < view.size - 1) {
+            for (j in (i + 1)..(view.size - 1)) {
+                if (view[i].address == view[j].address) {
+                    if (view[i].age >= view[j].age) {
+                        view.remove(view[i])
+                    } else {
+                        view.remove(view[j])
+                    }
+                    i-- // if there are more than one duplicate
+                    break
+                }
             }
+            i++
         }
-        view.clear()
-        view.addAll(set.values)
     }
 
     /**
@@ -227,6 +243,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             out.writeInt(age)
         }
     }
+    private class PSSInitializationException(s: String) : Throwable(s) {}
 }
 
 
