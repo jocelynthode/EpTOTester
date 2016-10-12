@@ -36,11 +36,11 @@ docker pull swarm-m:5000/tracker:latest
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
-docker network create -d overlay --subnet=172.105.0.0/16 eptonetwork || exit)
+docker network create -d overlay --subnet=172.102.0.0/16 epto_network || exit)
 
 for i in {1..10}
 do
-    docker service create --name epto-tracker --network eptonetwork --replicas 1 --limit-memory 300m \
+    docker service create --name epto-tracker --network epto_network --replicas 1 --limit-memory 300m \
      --constraint 'node.role == manager' swarm-m:5000/tracker
 
     until docker service ls | grep "1/1"
@@ -48,9 +48,9 @@ do
         sleep 2s
     done
     TIME=$(( $(date +%s%3N) + $TIME_ADD ))
-    docker service create --name epto-service --network eptonetwork --replicas ${PEER_NUMBER} \
+    docker service create --name epto-service --network epto_network --replicas ${PEER_NUMBER} \
     --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
-    --limit-memory 250m --log-driver=journald --restart-condition=on-failure \
+    --limit-memory 250m --log-driver=journald --restart-condition=none \
     --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto
 
     # wait for service to start
