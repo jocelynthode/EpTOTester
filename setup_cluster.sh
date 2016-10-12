@@ -12,10 +12,10 @@ ssh_pid=$!
 
 sleep 5s
 
-docker tag epto:latest localhost:5000/epto:latest
-docker tag tracker:latest localhost:5000/tracker:latest
-docker push localhost:5000/epto:latest
-docker push localhost:5000/tracker:latest
+docker tag epto:latest localhost:5000/epto:wireshark
+docker tag tracker:latest localhost:5000/tracker:wireshark
+docker push localhost:5000/epto:wireshark
+docker push localhost:5000/tracker:wireshark
 
 
 kill ${ssh_pid}
