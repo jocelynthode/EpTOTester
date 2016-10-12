@@ -72,8 +72,9 @@ do
     sleep 30s
 
     while read ip; do
-        rsync --remove-source-files -av "${ip}:~/data/*.txt" "../data/test-$i/"
+        rsync --remove-source-files -av "${ip}:~/data/" "../data/test-$i/"
     done <hosts
     mv ../data/*.txt "../data/test-$i"
+    mv ../date/capture/* "../data/test-$i"
 done
 

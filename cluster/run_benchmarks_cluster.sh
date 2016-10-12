@@ -26,7 +26,7 @@ fi
 
 function getlogs {
     while read ip; do
-        rsync --remove-source-files -av "${ip}:~/data/*.txt" ../data/
+        rsync --remove-source-files -av "${ip}:~/data/" ../data/
     done <hosts
 }
 
