@@ -12,7 +12,7 @@ import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 available_peers = {}
-K = 25
+K = 20
 
 
 def florida_string(ip):

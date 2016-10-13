@@ -27,36 +27,9 @@ abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, va
 
     internal val logger by logger()
 
-    internal val peer = Peer(this, ttl, k, delta, myIp, gossipPort, pssPort)
+    internal val peer = Peer(this, ttl, k, delta, myIp, gossipPort, pssPort, trackerURL)
 
     init {
-        var result: String?
-        var tmp_view: MutableList<String> = ArrayList()
-        FuelManager.instance.basePath = trackerURL
-        var retry = 0
-        do {
-            try {
-                Thread.sleep(5000)
-                result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
-                tmp_view = result.split('|').toMutableList()
-                logger.debug(result)
-            } catch (e: Exception) {
-                logger.error("Error while trying to get a view from the tracker", e)
-                retry++
-                if (retry > 25) {
-                    logger.error("Too many retries, Aborting...")
-                    System.exit(1)
-                }
-            }
-        } while (tmp_view.size < k)
-
-        if (tmp_view.contains(myIp.hostAddress)) {
-            logger.warn("View contained ourselves")
-            tmp_view.remove(myIp.hostAddress)
-        }
-        //Add seeds to the PSS view
-        peer.core.pss.view.addAll(tmp_view.distinct().map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
-        //Start after we have a view
         peer.core.startPss()
     }
 
