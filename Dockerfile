@@ -14,5 +14,6 @@ RUN chmod +x /opt/epto/*.sh
 
 WORKDIR /opt/epto
 
-ENTRYPOINT ["/opt/epto/container-start-capture.sh"]
+# Uncomment if you want wireshark to log the packets sent/received by EpTO on each peer
+# ENTRYPOINT ["/opt/epto/container-start-capture.sh"]
 CMD ["/opt/epto/container-start-script.sh"]
