@@ -35,8 +35,8 @@ import java.util.concurrent.TimeUnit
  * @see Core
  * @see PassiveThread
  */
-class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 25, val exch: Int = 12,
-                          val s: Int = 10, val h: Int = 2, trackerURL: String) {
+class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 20, val exch: Int = 10,
+                          val s: Int = 8, val h: Int = 2, trackerURL: String) {
 
     private val logger by logger()
 
@@ -81,7 +81,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
                     System.exit(1)
                 }
             }
-        } while (tmp_view.size < exch || tmp_view.size < core.gossip.K)
+        } while (tmp_view.size < c)
 
         //Add seeds to the PSS view
         view.addAll(tmp_view.distinct().map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
@@ -96,6 +96,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         for (i in 1..4) {
             logger.debug("Running init PSS-{}", i)
             activeThread.run()
+            Thread.sleep(1000)
         }
         activeThreadFuture = scheduler.scheduleAtFixedRate(activeThread, 0, gossipInterval.toLong(),
                 TimeUnit.MILLISECONDS)
@@ -169,7 +170,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         } finally {
             out.close()
         }
-        logger.debug("toSendView size in Bytes: {}", byteOut.toByteArray().size)
+        //logger.debug("toSendView size in Bytes: {}", byteOut.toByteArray().size)
         return byteOut.toByteArray()
     }
 

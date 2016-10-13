@@ -11,20 +11,13 @@ import java.nio.channels.DatagramChannel
  * Represent the core of the UDP protocols in EpTO/PSS
  *
  * @property myIp The IP on which the main channel will be bound
- *
- * @property k the gossip fanout parameter
- *
+ * @param k the gossip fanout parameter
  * @property gossipPort the port used for the main channel
- *
  * @property pssPort the port used for the PSS
- *
  * @property gossipChannel the channel on which EpTO gossips
- *
  * @property pssChannel the channel on which the PSS gossips
- *
- * @property pss the PSS
- *
  * @property gossip the Gossip
+ * @property pss the PSS
  *
  * @see PeerSamplingService
  * @see Gossip

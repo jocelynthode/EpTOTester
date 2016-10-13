@@ -114,7 +114,7 @@ class Main {
                     Thread.sleep(1000)
                 }
                 var i = 0
-                while (i < 30) {
+                while (i < 60) {
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++
