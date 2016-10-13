@@ -40,7 +40,7 @@ docker pull swarm-m:5000/tracker:wireshark
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
-docker network create -d overlay --subnet=172.102.0.0/16 epto_network || exit)
+docker network create -d overlay --subnet=172.112.0.0/16 epto_network || exit)
 
 
 docker service create --name epto-tracker --network epto_network --replicas 1 --limit-memory 300m \
