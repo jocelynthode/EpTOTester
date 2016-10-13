@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
+        <File name="File" fileName="/data/${sys:logfile.name}.txt">
             <PatternLayout pattern="%r [%t] %-5level %logger{36} - %msg%n"/>
-        </Console>
-        <Console name="ConsoleSimple" target="SYSTEM_OUT">
+        </File>
+        <File name="FileSimple" fileName="/data/${sys:logfile.name}.txt">
             <PatternLayout pattern="%r - %msg%n"/>
-        </Console>
+        </File>
     </Appenders>
     <Loggers>
         <Logger name="utilities.TesterApplication" level="info" additivity="false">
-            <AppenderRef ref="ConsoleSimple"/>
+            <AppenderRef ref="FileSimple"/>
         </Logger>
         <Logger name="utilities.Main$Companion" level="debug" additivity="false">
-            <AppenderRef ref="ConsoleSimple"/>
+            <AppenderRef ref="FileSimple"/>
         </Logger>
         <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
-            <AppenderRef ref="ConsoleSimple"/>
+            <AppenderRef ref="FileSimple"/>
         </Logger>
         <Logger name="epto.udp.Gossip" level="info"/>
         <Logger name="epto.DisseminationComponent" level="info"/>
@@ -24,7 +24,7 @@
         <Logger name="epto.pss.PassiveThread" level="info"/>
         <Logger name="epto.libs.Utilities" level="debug"/>
         <Root level="info">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
         </Root>
     </Loggers>
 </Configuration>
