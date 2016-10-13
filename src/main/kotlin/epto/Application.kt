@@ -22,6 +22,8 @@ import java.util.*
  * @property peer the peer used to gossip
  *
  * @see Peer
+ *
+ * @author Jocelyn Thode
  */
 abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, val myIp: InetAddress, gossipPort: Int, pssPort: Int) {
 

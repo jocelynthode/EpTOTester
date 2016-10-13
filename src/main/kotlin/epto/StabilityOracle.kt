@@ -2,6 +2,8 @@ package epto
 
 /**
  * Implementation of the stability oracle. This class implements the logical clock.
+ *
+ * @author Jocelyn Thode
  */
 class StabilityOracle(val TTL: Int) {
     internal var logicalClock: Int = 0

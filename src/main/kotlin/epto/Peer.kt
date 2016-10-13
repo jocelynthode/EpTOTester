@@ -34,6 +34,7 @@ import java.util.*
  * @see OrderingComponent
  * @see DisseminationComponent
  *
+ *@author Jocelyn Thode
  */
 class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAddress,
            gossipPort: Int = 10353, pssPort: Int = 10453, trackerURL: String) : Runnable {

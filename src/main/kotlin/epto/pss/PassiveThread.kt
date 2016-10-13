@@ -18,6 +18,8 @@ import java.util.*
  * @property pss The Peer Sampling Service on which this passive thread depends
  *
  * @see PeerSamplingService
+ *
+ * @author Jocelyn Thode
  */
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 

@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit
  *
  * @see Core
  * @see PassiveThread
+ *
+ * @author Jocelyn Thode
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 20, val exch: Int = 10,
                           val s: Int = 8, val h: Int = 2, trackerURL: String) {

@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit
  * @see Peer
  * @see Gossip
  * @see OrderingComponent
+ *
+ * @author Jocelyn Thode
  */
 class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
                              orderingComponent: OrderingComponent, val K: Int, val delta: Long) {

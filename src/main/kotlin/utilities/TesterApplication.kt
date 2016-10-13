@@ -10,6 +10,8 @@ import java.net.InetAddress
  *
  * @property expectedEvents the number of events we expect to deliver
  * @see Application
+ *
+ * @author Jocelyn Thode
  */
 class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents: Int = -1, val peerNumber: Int,
                         delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) :

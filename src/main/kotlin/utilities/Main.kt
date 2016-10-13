@@ -11,7 +11,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * Created by jocelyn on 19.09.16.
+ * Main class used to start the benchmarks
+ *
+ * @author Jocelyn Thode
  */
 class Main {
 

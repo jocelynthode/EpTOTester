@@ -19,6 +19,7 @@ import java.util.*
  * @see StabilityOracle
  * @see Application
  *
+ * @author Jocelyn Thode
  */
 class OrderingComponent(private val oracle: StabilityOracle, internal var application: Application) {
 
