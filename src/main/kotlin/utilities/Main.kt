@@ -111,9 +111,9 @@ class Main {
                 Thread.sleep(randomDelay)
                 var eventsSent = 0
                 while (eventsSent != eventsToSend) {
+                    Thread.sleep(1000)
                     application.broadcast()
                     eventsSent++
-                    Thread.sleep(1000)
                 }
                 var i = 0
                 while (i < 60) {
