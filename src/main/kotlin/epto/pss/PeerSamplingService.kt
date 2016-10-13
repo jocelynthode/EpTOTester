@@ -1,5 +1,7 @@
 package epto.pss
 
+import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.httpGet
 import epto.Application
 import epto.Event
 import epto.libs.Utilities.logger
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit
  * @property h the healing parameter
  * @property view the current view
  * @property passiveThread the thread in charge of receiving messages
+ * @property trackerURL the base URL of the tracker
  *
  * @throws PSSInitializationException If (h + s) > exch
  *
@@ -33,7 +36,7 @@ import java.util.concurrent.TimeUnit
  * @see PassiveThread
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 25, val exch: Int = 12,
-                          val s: Int = 7, val h: Int = 2) {
+                          val s: Int = 10, val h: Int = 2, trackerURL: String) {
 
     private val logger by logger()
 
@@ -60,6 +63,28 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
 
     init {
         if (h + s > exch) throw PSSInitializationException("(H + S) must not be higher than exch !")
+        var result: String?
+        var tmp_view: MutableList<String> = ArrayList()
+        FuelManager.instance.basePath = trackerURL
+        var retry = 0
+        do {
+            try {
+                Thread.sleep(5000)
+                result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
+                tmp_view = result.split('|').toMutableList()
+                logger.debug(result)
+            } catch (e: Exception) {
+                logger.error("Error while trying to get a view from the tracker", e)
+                retry++
+                if (retry > 25) {
+                    logger.error("Too many retries, Aborting...")
+                    System.exit(1)
+                }
+            }
+        } while (tmp_view.size < exch || tmp_view.size < core.gossip.K)
+
+        //Add seeds to the PSS view
+        view.addAll(tmp_view.distinct().map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
     }
 
     /**
@@ -178,7 +203,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             view.removeAt(rand.nextInt(view.size))
         }
         if (!isPush) view.forEach { it.age++ }
-        logger.debug("View after selectToKeep: {}", view)
+        //logger.debug("View after selectToKeep: {}", view)
     }
 
     /**
