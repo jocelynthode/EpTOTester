@@ -34,8 +34,8 @@ echo "START..."
 
 trap 'getlogs && exit' TERM INT
 
-docker pull swarm-m:5000/epto:wireshark
-docker pull swarm-m:5000/tracker:wireshark
+docker pull swarm-m:5000/epto:latest
+docker pull swarm-m:5000/tracker:latest
 
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
@@ -44,7 +44,7 @@ docker network create -d overlay --subnet=172.112.0.0/16 epto_network || exit)
 
 
 docker service create --name epto-tracker --network epto_network --replicas 1 --limit-memory 300m \
- --constraint 'node.role == manager' swarm-m:5000/tracker:wireshark
+ --constraint 'node.role == manager' swarm-m:5000/tracker:latest
 
 until docker service ls | grep "1/1"
 do
@@ -54,7 +54,7 @@ TIME=$(( $(date +%s%3N) + $TIME_ADD ))
 docker service create --name epto-service --network epto_network --replicas ${PEER_NUMBER} \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
 --limit-memory 250m --log-driver=journald --restart-condition=none \
---mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto:wireshark
+--mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto:latest
 
 # wait for service to start
 while docker service ls | grep " 0/$PEER_NUMBER"
