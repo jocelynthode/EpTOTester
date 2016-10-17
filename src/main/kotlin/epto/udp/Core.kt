@@ -31,8 +31,11 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
     val pss = PeerSamplingService(50000, this, trackerURL = trackerURL)
     val gossip = Gossip(this, k)
-    internal var pssMessages = 0
-    internal var gossipMessages = 0
+
+    internal var gossipMessagesSent = 0
+    internal var gossipMessagesReceived = 0
+    internal var pssMessagesSent = 0
+    internal var pssMessagesReceived = 0
 
     init {
         gossipChannel.configureBlocking(true)
@@ -47,8 +50,12 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun send(message: ByteArray, target: InetAddress) {
-        gossipChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, gossipPort))
-        gossipMessages++
+        val bytesSent = gossipChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, gossipPort))
+        if (bytesSent == 0) {
+            logger.error("Message could not be sent due to insufficient space in the underlying buffer")
+            return
+        }
+        gossipMessagesSent++
     }
 
     /**
@@ -59,8 +66,12 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun sendPss(message: ByteArray, target: InetAddress) {
-        pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
-        pssMessages++
+        val bytesSent = pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
+        if (bytesSent == 0) {
+            logger.error("Message could not be sent due to insufficient space in the underlying buffer")
+            return
+        }
+        pssMessagesSent++
     }
 
     /**

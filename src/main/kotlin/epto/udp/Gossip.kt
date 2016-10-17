@@ -25,7 +25,7 @@ class Gossip(val core: Core, val K: Int = 15) {
     //Ethernet MTU: 1500Bytes - 60Bytes for the max IP header - 8Bytes for the UDP header = 1432
     //An other acceptable size would be 508 (576Bytes - 68Bytes)
     // 576 comes from the minimum maximum reassembly buffer size
-    private val maxSize = 1432
+    internal val maxSize = 1432
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
     //We substract 4Bytes for the ball length
     private val maxEvents = (maxSize - 4) / 40

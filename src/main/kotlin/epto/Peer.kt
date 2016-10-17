@@ -47,8 +47,6 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
     val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, k, delta)
     private var isRunning = false
-    var messagesReceived = 0
-        private set
 
     /**
      * The peer main function
@@ -59,11 +57,12 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
         isRunning = true
         while (isRunning) {
             try {
-                val buf = ByteArray(core.gossipChannel.socket().receiveBufferSize)
+                val buf = ByteArray(core.gossip.maxSize)
                 val bb = ByteBuffer.wrap(buf)
                 if (core.gossipChannel.receive(bb) != null) {
                     val byteIn = ByteArrayInputStream(bb.array())
                     val inputStream = FSTObjectInput(byteIn)
+
                     var len = inputStream.readInt()
                     val receivedBall = HashMap<UUID, Event>()
                     logger.debug("ReceivedBall size: {}", len)
@@ -74,7 +73,7 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
                     }
                     inputStream.close()
                     disseminationComponent.receive(receivedBall)
-                    messagesReceived++
+                    core.gossipMessagesReceived++
                 }
             } catch (e: IOException) {
                 isRunning = false

@@ -24,8 +24,6 @@ import java.util.*
 class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     private val logger by logger()
-    internal var messagesReceived = 0
-        private set
     private var isRunning = false
 
 
@@ -33,7 +31,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
         isRunning = true
         while (isRunning) {
             try {
-                val buf = ByteArray(pss.core.pssChannel.socket().receiveBufferSize)
+                val buf: ByteArray = ByteArray(pss.core.gossip.maxSize)
                 val bb = ByteBuffer.wrap(buf)
                 val address = pss.core.pssChannel.receive(bb)
                 if (address != null) {
@@ -50,7 +48,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                             logger.debug("sender Address : {}", (address as InetSocketAddress).address.hostAddress)
                             pss.selectToKeep(receivedView, isPush)
                         }
-                        messagesReceived++
+                        pss.core.pssMessagesReceived++
                     } catch (e: IOException) {
                         logger.error("Error unserializing view", e)
                     }

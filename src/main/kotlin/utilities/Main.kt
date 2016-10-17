@@ -96,10 +96,10 @@ class Main {
             /*
             Runtime.getRuntime().addShutdownHook(Thread {
                 println("Quitting EpTO tester")
-                println("EpTO messages sent: ${application.peer.core.gossipMessages}")
-                println("EpTO messages received: ${application.peer.messagesReceived}")
-                println("PSS messages sent: ${application.peer.core.pssMessages}")
-                println("PSS messages received: ${application.peer.core.pss.passiveThread.messagesReceived}")
+                println("EpTO messages sent: ${application.peer.core.gossipMessagesSent}")
+                println("EpTO messages received: ${application.peer.core.gossipMessagesReceived}")
+                println("PSS messages sent: ${application.peer.core.pssMessagesSent}")
+                println("PSS messages received: ${application.peer.core.gossipMessagesReceived}")
                 application.stop()
             })
             */
@@ -116,7 +116,7 @@ class Main {
                     eventsSent++
                 }
                 var i = 0
-                while (i < 60) {
+                while (i < 30) {
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++
