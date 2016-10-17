@@ -65,7 +65,7 @@ class Main {
             val eventsToSend = namespace.getInt("events")
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
-            val time = namespace.getLong("scheduleAt")
+            val startTime = namespace.getLong("scheduleAt")
             val n = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
             val gossipPort = namespace.getInt("gossip_port")
@@ -110,6 +110,7 @@ class Main {
                 logger.debug("Sleeping for {}ms before sending events", randomDelay)
                 Thread.sleep(randomDelay)
                 var eventsSent = 0
+                logger.info("Sending: $eventsToSend events (rate: 1 per second)")
                 while (eventsSent != eventsToSend) {
                     Thread.sleep(1000)
                     application.broadcast()
@@ -124,7 +125,7 @@ class Main {
                 application.stop()
                 System.exit(0)
             }
-            scheduler.schedule(runEpto, Utilities.scheduleAt(time), TimeUnit.MILLISECONDS)
+            scheduler.schedule(runEpto, Utilities.scheduleAt(startTime), TimeUnit.MILLISECONDS)
         }
     }
 }
