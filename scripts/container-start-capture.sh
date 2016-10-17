@@ -9,6 +9,6 @@ trap 'kill $(jobs -p)' EXIT
 filename="/data/capture/eptocapture_$(date +%s)_${MY_IP_ADDR[0]}.pcapng"
 /opt/epto/container-start-script.sh &
 epto_pid=$!
-dumpcap -gq -f "udp port 10353" -i any -w ${filename} &
+dumpcap -gq -B 10 -f "udp port 10353" -i eth0 -w ${filename} &
 echo "Capturing packets..."
 wait ${epto_pid}
