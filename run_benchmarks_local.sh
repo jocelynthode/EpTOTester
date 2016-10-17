@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=172.16.2.98
 PEER_NUMBER=$1
 DELTA=$2
 TIME_ADD=$3

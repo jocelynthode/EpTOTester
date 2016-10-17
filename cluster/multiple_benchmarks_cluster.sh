@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
-MANAGER_IP=172.16.2.98
+MANAGER_IP=172.16.2.119
 PEER_NUMBER=$1
 DELTA=$2
 TIME_ADD=$3
@@ -36,7 +36,7 @@ docker pull swarm-m:5000/tracker:latest
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
-docker network create -d overlay --subnet=172.112.0.0/16 epto_network || exit)
+docker network create -d overlay --subnet=172.103.0.0/16 epto_network || exit)
 
 for i in {1..10}
 do
