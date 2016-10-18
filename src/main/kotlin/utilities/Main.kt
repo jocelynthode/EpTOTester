@@ -107,8 +107,8 @@ class Main {
             val scheduler = Executors.newScheduledThreadPool(1)
 
             val runEpto = Runnable {
-                val randomDelay = Random().nextInt(15) * 1000L
-                logger.debug("Sleeping for {}ms before sending events", randomDelay)
+                val randomDelay = Random().nextInt(10) * 1000L
+                logger.info("Sleeping for {}ms before sending events", randomDelay)
                 Thread.sleep(randomDelay)
                 var eventsSent = 0
                 logger.info("Sending: $eventsToSend events (rate: 1 per second)")

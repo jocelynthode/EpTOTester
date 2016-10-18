@@ -3,7 +3,7 @@ FROM debian:jessie
 RUN echo 'deb http://mirror.switch.ch/ftp/mirror/debian/ jessie-backports main' >> /etc/apt/sources.list && \
     apt-get -yqq update && \
     apt-get -yqq dist-upgrade && \
-    apt-get -yqq install --no-install-recommends openjdk-8-jre-headless dnsutils wireshark-common ntp && \
+    apt-get -yqq install --no-install-recommends openjdk-8-jre-headless dnsutils dstat ntp && \
     apt-get -yqq clean
 
 RUN mkdir -p /data/capture
@@ -14,6 +14,4 @@ RUN chmod +x /opt/epto/*.sh
 
 WORKDIR /opt/epto
 
-# Uncomment if you want wireshark to log the packets sent/received by EpTO on each peer
-# ENTRYPOINT ["/opt/epto/container-start-capture.sh"]
 CMD ["/opt/epto/container-start-script.sh"]
