@@ -10,8 +10,8 @@ Stats = namedtuple('Stats', ['start_at', 'end_at', 'duration', 'msg_sent', 'msg_
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('peer_number', metavar='PEER_NUMBER', type=int,
                     help='the number of peer for an experiment')
-parser.add_argument('-g', '--glob-string', type=str, default='**/*.txt',
-                    help='The glob string to search for log files')
+parser.add_argument('files', metavar='FILE', nargs='+', type=argparse.FileType('r'),
+                    help='the files to parse')
 args = parser.parse_args()
 PEER_NUMBER = args.peer_number
 
@@ -38,9 +38,8 @@ def extract_stats(lines):
 
 
 def all_stats():
-    for fpath in Path().glob(args.glob_string):
-        with fpath.open() as f:
-            yield extract_stats(f)
+    for file in args.files:
+        yield extract_stats(file)
 
 
 def global_time(experiment_nb, stats):
