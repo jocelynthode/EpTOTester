@@ -5,6 +5,7 @@ import epto.libs.Utilities.logger
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
+import java.io.File
 import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.Executors
@@ -118,6 +119,10 @@ class Main {
                 }
                 var i = 0
                 while (i < 30) {
+                    if (application.expectedEvents <= 0) {
+                        Thread.sleep(60000)
+                        break
+                    }
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++
