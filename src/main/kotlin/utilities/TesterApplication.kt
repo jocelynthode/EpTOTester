@@ -17,6 +17,8 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents
                         delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) :
         Application(ttl, k, trackerURL, delta, myIp, gossipPort, pssPort) {
 
+    val totalEvents = expectedEvents
+
     /**
      * Delivers the event to STDOUT
      *
@@ -57,8 +59,9 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents
     override fun stop() {
         peer.stop()
         logger.info("Quitting EpTO tester")
-        logger.info("EpTO messages sent: ${peer.core.gossipMessagesSent}")
-        logger.info("EpTO messages received: ${peer.core.gossipMessagesReceived}")
+        logger.info("Messages sent: ${peer.core.gossipMessagesSent}")
+        logger.info("Messages received: ${peer.core.gossipMessagesReceived}")
+        logger.info("Ratio of events delivered: ${(totalEvents - expectedEvents) / totalEvents.toDouble()}")
         logger.info("PSS messages sent: ${peer.core.pssMessagesSent}")
         logger.info("PSS messages received: ${peer.core.pssMessagesReceived}")
     }

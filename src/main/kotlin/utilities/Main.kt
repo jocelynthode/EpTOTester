@@ -38,13 +38,16 @@ class Main {
             parser.addArgument("-e", "--events").help("Number of events to send")
                     .type(Integer.TYPE)
                     .setDefault(12)
+            parser.addArgument("-r", "--rate").help("Time between each event broadcast in ms")
+                    .type(Long::class.java)
+                    .setDefault(1000L)
             parser.addArgument("-k", "--fanout").help("Number of peers to gossip")
                     .type(Integer.TYPE)
             parser.addArgument("-t", "--ttl").help("Number of rounds before considering an event mature")
                     .type(Integer.TYPE)
             parser.addArgument("-d", "--delta").help("EpTO dissemination period in milliseconds")
                     .type(Long::class.java)
-                    .setDefault(6000)
+                    .setDefault(6000L)
             parser.addArgument("-g", "--gossip-port").help("Port on which the gossip channel will listen")
                     .type(Integer.TYPE)
                     .setDefault(10353)
@@ -64,6 +67,7 @@ class Main {
         @JvmStatic private fun startProgram(namespace: Namespace) {
 
             val eventsToSend = namespace.getInt("events")
+            val rate = namespace.getLong("rate")
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
             val startTime = namespace.getLong("scheduleAt")
@@ -107,20 +111,22 @@ class Main {
             val scheduler = Executors.newScheduledThreadPool(1)
 
             val runEpto = Runnable {
+                /*
                 val randomDelay = Random().nextInt(10) * 1000L
                 logger.info("Sleeping for {}ms before sending events", randomDelay)
                 Thread.sleep(randomDelay)
+                */
                 var eventsSent = 0
-                logger.info("Sending: $eventsToSend events (rate: 1 per second)")
+                logger.info("Sending: $eventsToSend events (rate: 1 every ${rate}ms)")
                 while (eventsSent != eventsToSend) {
-                    Thread.sleep(1000)
+                    Thread.sleep(rate)
                     application.broadcast()
                     eventsSent++
                 }
                 var i = 0
-                while (i < 30) {
+                while (i < 120) {
                     if (application.expectedEvents <= 0) {
-                        Thread.sleep(60000)
+                        Thread.sleep(2*(ttl * delta))
                         break
                     }
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
