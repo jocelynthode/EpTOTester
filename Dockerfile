@@ -6,6 +6,7 @@ RUN echo 'deb http://mirror.switch.ch/ftp/mirror/debian/ jessie-backports main' 
     apt-get -yqq install --no-install-recommends openjdk-8-jre-headless dnsutils dstat ntp && \
     apt-get -yqq clean
 
+RUN mkdir -p /opt/epto
 RUN mkdir -p /data/capture
 
 COPY *-all.jar /opt/epto/
