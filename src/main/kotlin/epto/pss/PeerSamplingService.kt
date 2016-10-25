@@ -71,7 +71,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         var retry = 0
         do {
             try {
-                Thread.sleep(5000)
+                Thread.sleep(10000)
                 result = "/REST/v1/admin/get_view".httpGet().timeout(20000).timeoutRead(60000).responseString().third.get()
                 tmp_view = result.split('|').toMutableList()
                 logger.debug(result)
