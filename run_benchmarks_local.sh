@@ -57,7 +57,3 @@ done
 
 docker service rm epto-tracker
 docker service rm epto-service
-
-
-
-

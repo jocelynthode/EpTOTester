@@ -5,17 +5,18 @@ MANAGER_IP=172.16.2.119
 PEER_NUMBER=$1
 DELTA=$2
 TIME_ADD=$3
-
+EVENTS_TO_SEND=$4
+RATE=$5
 
 if [ -z "$PEER_NUMBER" ]
   then
-    echo "you have to indicate number of peers"
+    echo "You have to indicate number of peers"
     exit
 fi
 
 if [ -z "$DELTA" ]
   then
-    echo "you have to indicate the EpTO delta"
+    echo "You have to indicate the EpTO delta"
     exit
 fi
 
@@ -25,10 +26,22 @@ if [ -z "$TIME_ADD" ]
     exit
 fi
 
+if [ -z "$EVENTS_TO_SEND" ]
+  then
+    echo "You have to indicate how many events you want to send in total per peers"
+    exit
+fi
+
+if [ -z "$RATE" ]
+  then
+    echo "You have to indicate at which rate you want to send events on each peers in ms"
+    exit
+fi
+
 
 echo "START..."
 
-trap 'exit' TERM INT
+trap 'docker service rm epto-tracker; docker service rm epto-service; getlogs; exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
 docker pull swarm-m:5000/tracker:latest
@@ -49,8 +62,8 @@ do
     done
     TIME=$(( $(date +%s%3N) + $TIME_ADD ))
     docker service create --name epto-service --network epto_network --replicas ${PEER_NUMBER} \
-    --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" \
-    --limit-memory 250m --log-driver=journald --restart-condition=none \
+    --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
+    --env "RATE=$RATE" --limit-memory 250m --log-driver=journald --restart-condition=none \
     --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto:latest
 
     # wait for service to start
@@ -58,7 +71,7 @@ do
     do
         sleep 1s
     done
-    echo "Running EpTO tester..."
+    echo "Running EpTO tester -> Experiment: $i"
     # wait for service to end
     until docker service ls | grep -q " 0/$PEER_NUMBER"
     do
@@ -69,7 +82,7 @@ do
     docker service rm epto-service
 
     echo "Services removed"
-    sleep 30s
+    sleep 1m
 
     parallel-ssh -t 0 -h hosts "mkdir -p data/test-$i/capture &&  mv data/*.txt data/test-$i \
     && mv data/capture/*.csv data/test-$i/capture"
