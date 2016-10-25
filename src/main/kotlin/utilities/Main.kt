@@ -126,7 +126,7 @@ class Main {
                 var i = 0
                 while (i < 120) {
                     if (application.expectedEvents <= 0) {
-                        Thread.sleep(2*(ttl * delta))
+                        Thread.sleep((ttl * delta))
                         break
                     }
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
