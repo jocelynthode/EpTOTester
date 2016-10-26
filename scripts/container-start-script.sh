@@ -10,7 +10,7 @@ echo "${PEER_NUMBER}"
 echo "$DELTA"
 echo "$TIME"
 echo "${EVENTS_TO_SEND}"
-ehco "$RATE"
+echo "$RATE"
 
 dstat -n -N eth0 --output "/data/capture/${MY_IP_ADDR[0]}.csv" &
 dstat_pid=$!
