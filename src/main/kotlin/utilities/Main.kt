@@ -21,7 +21,8 @@ class Main {
     companion object {
 
         private val logger by logger()
-        private var expectedEvents = 0
+        var eventsSent = 0
+            private set
 
         @JvmStatic fun main(args: Array<String>) {
 
@@ -54,6 +55,10 @@ class Main {
             parser.addArgument("-p", "--pss-port").help("Port on which the pss channel will listen")
                     .type(Integer.TYPE)
                     .setDefault(10453)
+            parser.addArgument("-u", "--fixed-rate")
+                    .help("If this option is set a probability will be calculated to ensure the overall event broadcast rate is at the value fixed (events/s")
+                    .type(Integer.TYPE)
+                    .setDefault(-1)
 
 
             try {
@@ -71,20 +76,21 @@ class Main {
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
             val startTime = namespace.getLong("scheduleAt")
-            val n = namespace.getInt("peerNumber").toDouble()
+            val peerNumber = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
             val gossipPort = namespace.getInt("gossip_port")
             val pssPort = namespace.getInt("pss_port")
+            val fixedRate = namespace.getInt("fixed_rate")
 
             //c = 4 for 99.9875% =>  c+1 = 5
-            val log2N = Math.log(n) / Math.log(2.0)
+            val log2N = Math.log(peerNumber) / Math.log(2.0)
             val ttl = if (namespace.getInt("ttl") == null) {
                 (2 * Math.ceil(5 * log2N) + 1).toInt()
             } else {
                 namespace.getInt("ttl")
             }
             val k = if (namespace.getInt("fanout") == null) {
-                Math.ceil(2.0 * Math.E * Math.log(n) / Math.log(Math.log(n))).toInt()
+                Math.ceil(2.0 * Math.E * Math.log(peerNumber) / Math.log(Math.log(peerNumber))).toInt()
             } else {
                 namespace.getInt("fanout")
             }
@@ -92,9 +98,8 @@ class Main {
             if (InetAddress.getByName(localIp).isLoopbackAddress)
                 logger.warn("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
 
-            expectedEvents = eventsToSend * n.toInt()
 
-            val application = TesterApplication(ttl, k, tracker, expectedEvents, n.toInt(), delta, InetAddress.getByName(localIp),
+            val application = TesterApplication(ttl, k, tracker, peerNumber.toInt(), delta, InetAddress.getByName(localIp),
                     gossipPort, pssPort)
             application.start()
 
@@ -110,25 +115,22 @@ class Main {
             */
             val scheduler = Executors.newScheduledThreadPool(1)
 
+
+            val probability: Double = if (fixedRate == -1) 1.0 else (fixedRate / peerNumber)
             val runEpto = Runnable {
-                /*
-                val randomDelay = Random().nextInt(10) * 1000L
-                logger.info("Sleeping for {}ms before sending events", randomDelay)
-                Thread.sleep(randomDelay)
-                */
-                var eventsSent = 0
-                logger.info("Sending: $eventsToSend events (rate: 1 every ${rate}ms)")
-                while (eventsSent != eventsToSend) {
-                    Thread.sleep(rate)
-                    application.broadcast()
-                    eventsSent++
-                }
+
+                logger.info("Sending: $eventsToSend events (rate: 1 every ${rate}ms) with a probability of $probability")
                 var i = 0
-                while (i < 40) {
-                    if (application.expectedEvents <= 0) {
-                        Thread.sleep(120000)
-                        break
+                while (i < eventsToSend) {
+                    Thread.sleep(rate)
+                    if (Math.random() < probability) {
+                        application.broadcast()
+                        eventsSent++
                     }
+                    i++
+                }
+                i = 0
+                while (i < 30) {
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++

@@ -13,24 +13,20 @@ import java.net.InetAddress
  *
  * @author Jocelyn Thode
  */
-class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents: Int = -1, val peerNumber: Int,
+class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: Int,
                         delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) :
         Application(ttl, k, trackerURL, delta, myIp, gossipPort, pssPort) {
 
-    val totalEvents = expectedEvents
+    var deliveredEvents = 0
 
     /**
      * Delivers the event to STDOUT
      *
      * {@inheritDoc}
      */
-    @Synchronized override fun deliver(event: Event) {
-        expectedEvents--
+    override fun deliver(event: Event) {
+        deliveredEvents++
         logger.info("Delivered: ${event.id}")
-        logger.debug("Expected events: {}", expectedEvents)
-        if (expectedEvents <= 0) {
-            logger.info("All events delivered !")
-        }
     }
 
     /**
@@ -61,8 +57,9 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, var expectedEvents
         logger.info("Quitting EpTO tester")
         logger.info("Messages sent: ${peer.core.gossipMessagesSent}")
         logger.info("Messages received: ${peer.core.gossipMessagesReceived}")
-        logger.info("Ratio of events delivered: ${(totalEvents - expectedEvents) / totalEvents.toDouble()}")
         logger.info("PSS messages sent: ${peer.core.pssMessagesSent}")
         logger.info("PSS messages received: ${peer.core.pssMessagesReceived}")
+        logger.info("Events sent: ${Main.Companion.eventsSent}")
+        logger.info("Events delivered: $deliveredEvents")
     }
 }
