@@ -9,21 +9,21 @@
         </File>
     </Appenders>
     <Loggers>
-        <Logger name="utilities.TesterApplication" level="info" additivity="false">
+        <Logger name="utilities.TesterApplication" level="debug" additivity="false">
             <AppenderRef ref="FileSimple"/>
         </Logger>
-        <Logger name="utilities.Main$Companion" level="info" additivity="false">
+        <Logger name="utilities.Main$Companion" level="debug" additivity="false">
             <AppenderRef ref="FileSimple"/>
         </Logger>
-        <Logger name="epto.pss.PeerSamplingService" level="info" additivity="false">
+        <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
             <AppenderRef ref="FileSimple"/>
         </Logger>
-        <Logger name="epto.udp.Gossip" level="info"/>
-        <Logger name="epto.DisseminationComponent" level="info"/>
-        <Logger name="epto.OrderingComponent" level="info"/>
-        <Logger name="epto.pss.PassiveThread" level="info"/>
-        <Logger name="epto.libs.Utilities" level="info"/>
-        <Root level="info">
+        <Logger name="epto.udp.Gossip" level="debug"/>
+        <Logger name="epto.DisseminationComponent" level="debug"/>
+        <Logger name="epto.OrderingComponent" level="debug"/>
+        <Logger name="epto.pss.PassiveThread" level="debug"/>
+        <Logger name="epto.libs.Utilities" level="debug"/>
+        <Root level="debug">
             <AppenderRef ref="File"/>
         </Root>
     </Loggers>
