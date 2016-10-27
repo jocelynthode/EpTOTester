@@ -55,8 +55,8 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
     override fun stop() {
         peer.stop()
         logger.info("Quitting EpTO tester")
-        logger.info("Messages sent: ${peer.core.gossipMessagesSent}")
-        logger.info("Messages received: ${peer.core.gossipMessagesReceived}")
+        logger.info("Balls sent: ${peer.core.gossipMessagesSent}")
+        logger.info("Balls received: ${peer.core.gossipMessagesReceived}")
         logger.info("PSS messages sent: ${peer.core.pssMessagesSent}")
         logger.info("PSS messages received: ${peer.core.pssMessagesReceived}")
         logger.info("Events sent: ${Main.Companion.eventsSent}")
