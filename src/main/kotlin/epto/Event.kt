@@ -5,6 +5,7 @@ import org.nustaq.serialization.FSTObjectOutput
 import java.io.IOException
 import java.io.Serializable
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Implementation of the events. This class implements the structure of an event as described in EpTO.
@@ -18,7 +19,7 @@ import java.util.*
 data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializable {
 
     var timestamp: Int = 0
-    var ttl: Int = 0
+    var ttl: AtomicInteger = AtomicInteger(0)
     var sourceId: UUID? = null
 
     /**
@@ -31,15 +32,15 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      */
     constructor(id: UUID, timeStamp: Int, ttl: Int, sourceId: UUID) : this(id) {
         this.timestamp = timeStamp
-        this.ttl = ttl
+        this.ttl.set(ttl)
         this.sourceId = sourceId
     }
 
     /**
      * Increments the event's ttl
      */
-    @Synchronized fun incrementTtl() {
-        this.ttl++
+    fun incrementTtl() {
+        this.ttl.incrementAndGet()
     }
 
     /**
@@ -68,7 +69,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
         out.writeLong(this.id.mostSignificantBits)
         out.writeLong(this.id.leastSignificantBits)
         out.writeInt(this.timestamp)
-        out.writeInt(this.ttl)
+        out.writeInt(this.ttl.get())
         out.writeLong(this.sourceId!!.mostSignificantBits)
         out.writeLong(this.sourceId!!.leastSignificantBits)
     }
