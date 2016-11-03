@@ -55,7 +55,7 @@ docker pull swarm-m:5000/tracker:latest
 docker swarm init && \
 (TOKEN=$(docker swarm join-token -q worker) && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
-docker network create -d overlay --subnet=172.103.0.0/16 epto_network || exit)
+docker network create -d overlay --subnet=172.113.0.0/16 epto_network || exit)
 
 for i in {1..10}
 do
