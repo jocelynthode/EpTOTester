@@ -56,7 +56,7 @@ done
 TIME=$(( $(date +%s%3N) + $TIME_ADD ))
 docker service create --name epto-service --network epto-network --replicas ${PEER_NUMBER} \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
---env "RATE=$RATE" --limit-memory 250m --log-driver=journald --restart-condition=none \
+--env "RATE=$RATE" --limit-memory 300m --restart-condition=none \
 --mount type=bind,source=/home/jocelyn/tmp/data,target=/data epto:latest
 
 # wait for service to start
