@@ -1,12 +1,14 @@
 package epto
 
+import java.util.concurrent.atomic.AtomicInteger
+
 /**
  * Implementation of the stability oracle. This class implements the logical clock.
  *
  * @author Jocelyn Thode
  */
 class StabilityOracle(val TTL: Int) {
-    internal var logicalClock: Int = 0
+    internal var logicalClock: AtomicInteger = AtomicInteger(0)
 
     /**
      * This function tells us if the event is ready to be delivered or not according to the TTL.
@@ -16,7 +18,7 @@ class StabilityOracle(val TTL: Int) {
      * @return wether the event is deliverable or not
      */
     fun isDeliverable(event: Event): Boolean {
-        return event.ttl > TTL
+        return event.ttl.get() > TTL
     }
 
     /**
@@ -24,9 +26,8 @@ class StabilityOracle(val TTL: Int) {
 
      * @return the incremented clock
      */
-    @Synchronized fun incrementAndGetClock(): Int {
-        logicalClock++
-        return logicalClock
+    fun incrementAndGetClock(): Int {
+        return logicalClock.incrementAndGet()
     }
 
     /**
@@ -34,8 +35,7 @@ class StabilityOracle(val TTL: Int) {
 
      * @param ts the new clock value
      */
-    @Synchronized fun updateClock(ts: Int) {
-        if (ts > logicalClock)
-            logicalClock = ts
+    fun updateClock(ts: Int) {
+        if (ts > logicalClock.get()) logicalClock.getAndSet(ts)
     }
 }

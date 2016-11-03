@@ -44,8 +44,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                 .forEach { event ->
                     val receivedEvent = received[event.id]
                     if (receivedEvent != null) {
-                        if (receivedEvent.ttl < event.ttl) {
-                            receivedEvent.ttl = event.ttl
+                        if (receivedEvent.ttl.get() < event.ttl.get()) {
+                            receivedEvent.ttl.set(event.ttl.get())
                         }
                     } else {
                         received.put(event.id, event)
@@ -53,8 +53,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                 }
         logger.debug("Received size: {}", received.size)
         logger.debug("Min TTL: {}, Max TTL: {}",
-                received.values.minBy { it.ttl }?.ttl,
-                received.values.maxBy { it.ttl }?.ttl)
+                received.values.minBy { it.ttl.get() }?.ttl?.get(),
+                received.values.maxBy { it.ttl.get() }?.ttl?.get())
     }
 
     /**

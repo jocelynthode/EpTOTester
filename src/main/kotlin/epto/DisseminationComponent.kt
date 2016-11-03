@@ -7,6 +7,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Implementation of the Dissemination Component  of EpTO. This class is in charge of
@@ -67,7 +68,6 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      */
     fun broadcast(event: Event) {
         event.timestamp = oracle.incrementAndGetClock()
-        event.ttl = 0
         event.sourceId = peer.uuid
         synchronized(nextBallLock) {
             nextBall.put(event.id, event)
@@ -82,14 +82,14 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      */
     internal fun receive(ball: HashMap<UUID, Event>) {
         logger.debug("Receiving a new ball of size: {}", ball.size)
-        logger.debug("Ball will relay {} events", ball.filter { it.value.ttl < oracle.TTL }.size)
+        logger.debug("Ball will relay {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
         ball.forEach { eventId, event ->
-            if (event.ttl < oracle.TTL) {
+            if (event.ttl.get() < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {
                     val nextBallEvent = nextBall[eventId]
                     if (nextBallEvent != null) {
-                        if (nextBallEvent.ttl < event.ttl) {
-                            nextBallEvent.ttl = event.ttl
+                        if (nextBallEvent.ttl.get() < event.ttl.get()) {
+                            nextBallEvent.ttl.set(event.ttl.get())
                         }
                     } else {
                         nextBall.put(eventId, event)
