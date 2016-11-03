@@ -94,10 +94,9 @@ class Gossip(val core: Core, val K: Int = 15) {
     }
 
     private fun selectKFromView(): ArrayList<PeerInfo> {
-        val tmpList = ArrayList<PeerInfo>(core.pss.view)
+        val tmpList = ArrayList(core.pss.view)
         Collections.shuffle(tmpList)
-        tmpList.removeIf { tmpList.indexOf(it) > (K - 1) }
-        return tmpList
+        return ArrayList(tmpList.subList(0, K))
     }
 
     internal class ViewSizeException(s: String) : Throwable(s) {}
