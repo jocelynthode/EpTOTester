@@ -61,5 +61,6 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
         logger.info("PSS messages received: ${peer.core.pssMessagesReceived}")
         logger.info("Events sent: ${Main.Companion.eventsSent}")
         logger.info("Events received: $deliveredEvents")
+        logger.info("Events received but not delivered: ${peer.orderingComponent.received.size}")
     }
 }
