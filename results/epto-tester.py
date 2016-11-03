@@ -18,7 +18,7 @@ parser.add_argument('-c', metavar='CONSTANT', type=int, default=2,
 args = parser.parse_args()
 PEER_NUMBER = args.peer_number
 expected_ratio = 1 - (1 / (PEER_NUMBER**args.c))
-
+k = ttl = delta = 0
 
 # We must create our own iter because iter disables the tell function
 def textiter(file):
@@ -29,7 +29,15 @@ def textiter(file):
 
 
 def extract_stats(file):
+    global k, ttl, delta
     it = textiter(file)  # Force re-use of same iterator
+
+    for line in it:
+        match = re.match(r'\d+ - TTL: (\d+), K: (\d+)', line)
+        if match:
+            ttl = int(match.group(1))
+            k = int(match.group(2))
+            break
 
     def match_line(regexp_str):
         result = 0
@@ -40,6 +48,7 @@ def extract_stats(file):
                 break
         return result
 
+    delta = match_line(r'\d+ - Delta: (\d+)')
     start_at = match_line(r'(\d+) - Sending:')
 
     # We want the last occurrence in the file
@@ -91,11 +100,13 @@ average = statistics.mean(durations)
 global_average = statistics.mean(global_times)
 
 print("EpTO run with %d peers across %d experiments" % (PEER_NUMBER, experiments_nb))
-print("------------------------")
+print("K=%d / TTL=%d / Delta=%dms" % (k, ttl, delta))
+print("-------------------------------------------")
 print("Least time to deliver in total : %d ms" % mininum)
 print("Most time to deliver in total : %d ms" % maximum)
 print("Average time to deliver per peer in total: %d ms" % average)
-
+print("Average global time to deliver on all peers per experiment: %d ms" % global_average)
+print("-------------------------------------------")
 messages_sent = [stat.msg_sent for stat in stats]
 messages_received = [stat.msg_received for stat in stats]
 balls_sent = [stat.balls_sent for stat in stats]
@@ -106,23 +117,23 @@ received_sum = sum(messages_received)
 ratios = [(msg_received / sent_sum) for msg_received in messages_received]
 print("Total events sent: %d" % sent_sum)
 print("Total events received on average: %d" % (received_sum / PEER_NUMBER))
-print("Best ratio events received/sent: %f" % max(ratios))
-print("Worst ratio events received/sent: %f" % min(ratios))
-print("Total ratio events received/sent on average per peer : %f" % ((received_sum / PEER_NUMBER) / sent_sum))
+print("-------------------------------------------")
+print("Best ratio events received/sent: %.10g" % max(ratios))
+print("Worst ratio events received/sent: %.10g" % min(ratios))
+print("Total ratio events received/sent on average per peer : %.10g" % (statistics.mean(ratios)))
+print("-------------------------------------------")
 if min(ratios) >= expected_ratio:
-    print("All ratios satisfy the expected ratio of %f" % expected_ratio)
+    print("All ratios satisfy the expected ratio of %.10g" % expected_ratio)
 else:
     not_satisfying = 0
     for ratio in ratios:
         if ratio < expected_ratio:
             not_satisfying += 1
-    print("%d peers didn't satisfy the expected ratio of %f" % (not_satisfying, expected_ratio))
-
+    print("%d peers didn't satisfy the expected ratio of %.10g" % (not_satisfying, expected_ratio))
+print("-------------------------------------------")
 balls_sent_sum = sum(balls_sent)
 balls_received_sum = sum(balls_received)
 print("Total balls sent across all peers: %d" % balls_sent_sum)
 print("Total balls received across all peers: %d" % balls_received_sum)
 print("Total ratio balls received/sent: %f" % (balls_received_sum / balls_sent_sum))
 
-print("------------")
-print("Average global time to deliver on all peers per experiment: %d ms" % global_average)
