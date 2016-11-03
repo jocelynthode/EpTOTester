@@ -6,15 +6,18 @@ import statistics
 import argparse
 
 Stats = namedtuple('Stats', ['start_at', 'end_at', 'duration', 'msg_sent', 'msg_received',
-                             'balls_received', 'balls_sent'])
+                             'balls_sent', 'balls_received'])
 
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('peer_number', metavar='PEER_NUMBER', type=int,
                     help='the number of peer for an experiment')
-parser.add_argument('files', metavar='FILE', nargs='+', type=argparse.FileType('r'),
+parser.add_argument('files', metavar='FILE', nargs='+', type=str,
                     help='the files to parse')
+parser.add_argument('-c', metavar='CONSTANT', type=int, default=2,
+                    help='the constant to find the minimum ratio we must have')
 args = parser.parse_args()
 PEER_NUMBER = args.peer_number
+expected_ratio = 1 - (1 / (PEER_NUMBER**args.c))
 
 
 # We must create our own iter because iter disables the tell function
@@ -63,7 +66,9 @@ def extract_stats(file):
 
 def all_stats():
     for file in args.files:
-        yield extract_stats(file)
+        with open(file, 'r') as f:
+            file_stats = extract_stats(f)
+        yield file_stats
 
 
 def global_time(experiment_nb, stats):
@@ -98,10 +103,20 @@ balls_received = [stat.balls_received for stat in stats]
 
 sent_sum = sum(messages_sent)
 received_sum = sum(messages_received)
+ratios = [(msg_received / sent_sum) for msg_received in messages_received]
 print("Total events sent: %d" % sent_sum)
-print("Total events received on a single peer: %d" % messages_received[0])
-print("Total events received across all peers: %d" % received_sum)
-print("Total ratio events received/sent on a single peer: %f" % (messages_received[0] / sent_sum))
+print("Total events received on average: %d" % (received_sum / PEER_NUMBER))
+print("Best ratio events received/sent: %f" % max(ratios))
+print("Worst ratio events received/sent: %f" % min(ratios))
+print("Total ratio events received/sent on average per peer : %f" % ((received_sum / PEER_NUMBER) / sent_sum))
+if min(ratios) >= expected_ratio:
+    print("All ratios satisfy the expected ratio of %f" % expected_ratio)
+else:
+    not_satisfying = 0
+    for ratio in ratios:
+        if ratio < expected_ratio:
+            not_satisfying += 1
+    print("%d peers didn't satisfy the expected ratio of %f" % (not_satisfying, expected_ratio))
 
 balls_sent_sum = sum(balls_sent)
 balls_received_sum = sum(balls_received)
