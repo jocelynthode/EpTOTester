@@ -46,7 +46,7 @@ def find_holes(blocks, stats):
     old_size = blocks[0].size
 
     # Last element returned by get_matching_blocks() isn't important
-    for idx, match in enumerate(blocks[1:-1]):
+    for match in blocks[1:-1]:
         step_a = (old_a + old_size)
         step_b = (old_b + old_size)
         # If we find a discrepancy check if it's only a hole
