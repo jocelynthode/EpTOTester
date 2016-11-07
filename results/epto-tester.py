@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.5
 import re
-from pathlib import Path
 from collections import namedtuple
 import statistics
 import argparse
@@ -9,14 +8,12 @@ Stats = namedtuple('Stats', ['start_at', 'end_at', 'duration', 'msg_sent', 'msg_
                              'balls_sent', 'balls_received'])
 
 parser = argparse.ArgumentParser(description='Process EpTO logs')
-parser.add_argument('peer_number', metavar='PEER_NUMBER', type=int,
-                    help='the number of peer for an experiment')
 parser.add_argument('files', metavar='FILE', nargs='+', type=str,
                     help='the files to parse')
 parser.add_argument('-c', metavar='CONSTANT', type=int, default=2,
                     help='the constant to find the minimum ratio we must have')
 args = parser.parse_args()
-PEER_NUMBER = args.peer_number
+PEER_NUMBER = len(args.files)
 expected_ratio = 1 - (1 / (PEER_NUMBER**args.c))
 k = ttl = delta = 0
 
