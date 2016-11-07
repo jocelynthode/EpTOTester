@@ -38,7 +38,7 @@ class StabilityOracle(val TTL: Int) {
     fun updateClock(ts: Int) {
         var currentClock = logicalClock.get()
         while (ts > currentClock) {
-            if (logicalClock.compareAndSet(currentClock, ts))  {
+            if (logicalClock.compareAndSet(currentClock, ts)) {
                 return
             }
             currentClock = logicalClock.get()

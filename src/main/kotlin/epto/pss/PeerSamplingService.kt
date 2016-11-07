@@ -3,9 +3,8 @@ package epto.pss
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import epto.Application
-import epto.Event
 import epto.libs.Utilities.logger
-import epto.pss.PeerSamplingService.PeerInfo
+import epto.pss.PeerSamplingService.PSSInitializationException
 import epto.udp.Core
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.ByteArrayOutputStream
@@ -87,6 +86,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
 
         //Add seeds to the PSS view
         view.addAll(tmp_view.distinct().map { PeerSamplingService.PeerInfo(InetAddress.getByName(it)) })
+        logger.info("View size: ${view.size}")
     }
 
     /**
@@ -110,7 +110,6 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     fun stop() {
         passiveThread.stop()
         activeThreadFuture?.cancel(true)
-
     }
 
     /**
@@ -181,7 +180,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      *
      * @param receivedView  the received view
      */
-    fun selectToKeep(receivedView: ArrayList<PeerInfo>,  isPush: Boolean) {
+    fun selectToKeep(receivedView: ArrayList<PeerInfo>, isPush: Boolean) {
         //merge view and received
         view.addAll(receivedView)
         //remove duplicates from view
@@ -271,7 +270,8 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             out.writeInt(age)
         }
     }
-    private class PSSInitializationException(s: String) : Throwable(s) {}
+
+    internal class PSSInitializationException(s: String) : Throwable(s) {}
 }
 
 
