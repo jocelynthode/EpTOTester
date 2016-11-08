@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import argparse
-import glob
 import logging
 import random
-import re
 import subprocess
 import time
 
 from nodes_trace import NodesTrace
+
+
+LOCAL_DATA_FILES = '/home/jocelyn/tmp/data/*.txt'
 
 
 def churn_tuple(s):
@@ -28,12 +29,10 @@ class Churn:
     periods = 0
 
     def __init__(self, hosts_filename=None):
+        self.hosts = ['localhost']
         if hosts_filename is not None:
-            self.hosts = ['localhost']
             with open(hosts_filename, 'r') as file:
                 self.hosts += list(line.rstrip() for line in file)
-        else:
-            self.hosts = ['localhost']
         self.cluster_size = 0
 
     def suspend_processes(self, to_suspend_nb):
@@ -42,7 +41,7 @@ class Churn:
         if to_suspend_nb == 0:
             return
         for i in range(to_suspend_nb):
-            command_suspend = ["docker", "kill", '--signal=SIGSTOP']
+            command_suspend = ["docker", "kill", '--signal=SIGTERM']
 
             choice = random.choice(self.hosts)
             if choice not in self.containers:
