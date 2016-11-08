@@ -7,6 +7,9 @@
         <File name="FileSimple" fileName="/data/${sys:logfile.name}.txt">
             <PatternLayout pattern="%r - %msg%n"/>
         </File>
+        <File name="FileTime" fileName="/data/${sys:logfile.name}.txt">
+            <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
+        </File>
     </Appenders>
     <Loggers>
         <Logger name="utilities.TesterApplication" level="debug" additivity="false">
@@ -16,7 +19,7 @@
             <AppenderRef ref="FileSimple"/>
         </Logger>
         <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
-            <AppenderRef ref="FileSimple"/>
+            <AppenderRef ref="FileTime"/>
         </Logger>
         <Logger name="epto.udp.Gossip" level="debug"/>
         <Logger name="epto.DisseminationComponent" level="debug"/>

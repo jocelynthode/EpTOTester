@@ -1,12 +1,8 @@
 package epto
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.httpGet
 import epto.libs.Utilities.logger
-import epto.pss.PeerSamplingService
 import org.nustaq.serialization.FSTConfiguration
 import java.net.InetAddress
-import java.util.*
 
 /**
  * Abstract class implementing the API needed to work with EpTO

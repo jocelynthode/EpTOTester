@@ -26,7 +26,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
      */
     override fun deliver(event: Event) {
         deliveredEvents++
-        logger.info("Delivered: ${event.id}")
+        logger.info("Delivered: [${event.sourceId}, ${event.timestamp}]")
     }
 
     /**
