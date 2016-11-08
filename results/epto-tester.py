@@ -10,12 +10,17 @@ Stats = namedtuple('Stats', ['start_at', 'end_at', 'duration', 'msg_sent', 'msg_
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('files', metavar='FILE', nargs='+', type=str,
                     help='the files to parse')
-parser.add_argument('-c', metavar='CONSTANT', type=int, default=2,
+parser.add_argument('-c', '--constant', metavar='CONSTANT', type=int, default=2,
                     help='the constant to find the minimum ratio we must have')
+parser.add_argument('-e', '--experiments-nb',  metavar='EXPERIMENT_NB', type=int, default=1,
+                    help='How many experiments were run')
 args = parser.parse_args()
-PEER_NUMBER = len(args.files)
-expected_ratio = 1 - (1 / (PEER_NUMBER**args.c))
+experiments_nb = args.experiments_nb
+PEER_NUMBER = len(args.files) // experiments_nb
+
+expected_ratio = 1 - (1 / (PEER_NUMBER**args.constant))
 k = ttl = delta = 0
+
 
 # We must create our own iter because iter disables the tell function
 def textiter(file):
@@ -88,7 +93,6 @@ def global_time(experiment_nb, stats):
 
 
 stats = list(all_stats())
-experiments_nb = len(stats) // PEER_NUMBER
 global_times = list(global_time(experiments_nb, stats))
 durations = [stat.duration for stat in stats]
 mininum = min(durations)
@@ -113,7 +117,7 @@ sent_sum = sum(messages_sent)
 received_sum = sum(messages_received)
 ratios = [(msg_received / sent_sum) for msg_received in messages_received]
 print("Total events sent: %d" % sent_sum)
-print("Total events received on average: %d" % (received_sum / PEER_NUMBER))
+print("Total events received on average: %f" % (received_sum / PEER_NUMBER))
 print("-------------------------------------------")
 print("Best ratio events received/sent: %.10g" % max(ratios))
 print("Worst ratio events received/sent: %.10g" % min(ratios))

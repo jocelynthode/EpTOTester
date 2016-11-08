@@ -6,6 +6,7 @@ import difflib
 import logging
 
 Stats = namedtuple('Stats', ['events'])
+is_out_of_order = False
 
 
 class OutOfOrderException(Exception):
@@ -80,13 +81,14 @@ for name, stats in events.items():
             continue
         sm = difflib.SequenceMatcher(None, complete_list, stats, False)
         blocks = list(sm.get_matching_blocks())
-        logging.info(blocks)
+        logging.debug(blocks)
         find_holes(blocks, stats)
 
     except OutOfOrderException:
+        is_out_of_order = True
         logging.error('File {:s} and File {:s} are not ordered'.format(least_holes_file[0], name))
         for diff in difflib.unified_diff(complete_list, stats):
             logging.error(diff)
-        exit(1)
 
-logging.info('All files have the same order discarding holes!')
+if not is_out_of_order:
+    logging.info('All files have the same order discarding holes!')
