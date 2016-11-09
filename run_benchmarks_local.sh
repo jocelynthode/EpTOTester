@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # This scripts runs the benchmarks on a remote cluster
 
+LOG_STORAGE=/home/jocelyn/tmp/data/
 PEER_NUMBER=$1
 DELTA=$2
 TIME_ADD=$3
@@ -42,28 +43,24 @@ echo "START..."
 ./gradlew docker
 
 # Clean everything at Ctrl+C
-trap 'docker service rm epto-service-removal; docker service rm epto-service-creation; docker service rm epto-tracker; exit' TERM INT
+trap 'docker service rm epto-service; docker service rm epto-tracker; exit' TERM INT
 
 docker swarm init && \
-docker network create -d overlay --subnet=10.0.93.0/24 epto-network
+docker network create -d overlay --subnet=10.0.93.0/24 epto_network
 
-docker service create --name epto-tracker --network epto-network --replicas 1 --limit-memory 300m \
+docker service create --name epto-tracker --network epto_network --replicas 1 --limit-memory 300m \
  --constraint 'node.role == manager' tracker:latest
 
 until docker service ls | grep "1/1"
 do
     sleep 2s
 done
-TIME=$(( $(date +%s%3N) + $TIME_ADD ))
-docker service create --name epto-service-removal --network epto-network --replicas ${PEER_NUMBER} \
---env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
---env "RATE=$RATE" --limit-memory 250m --log-driver=journald --restart-condition=none \
---mount type=bind,source=/home/jocelyn/tmp/data,target=/data epto:latest
 
-docker service create --name epto-service-creation --network epto-network --replicas 0 \
+TIME=$(( $(date +%s%3N) + $TIME_ADD ))
+docker service create --name epto-service--network epto_network --replicas 0 \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
 --env "RATE=$RATE" --limit-memory 300m --restart-condition=none \
---mount type=bind,source=/home/jocelyn/tmp/data,target=/data epto:latest
+--mount type=bind,source=${LOG_STORAGE},target=/data epto:latest
 
 # wait for service to start
 while docker service ls | grep " 0/$PEER_NUMBER"
@@ -88,7 +85,7 @@ then
         sleep 5s
     done
 else
-    docker service scale jgroups-service=${PEER_NUMBER}
+    docker service scale epto-service=${PEER_NUMBER}
     while docker service ls | grep -q " 0/$PEER_NUMBER"
     do
         sleep 5s
@@ -102,5 +99,6 @@ else
 fi
 
 docker service rm epto-tracker
-docker service rm epto-service-removal
-docker service rm epto-service-creation
+docker service rm epto-service
+
+echo "Services removed"

@@ -2,6 +2,7 @@
 # This scripts runs the benchmarks on a remote cluster
 
 MANAGER_IP=172.16.2.119
+LOG_STORAGE=/home/debian/data
 PEER_NUMBER=$1
 DELTA=$2
 TIME_ADD=$3
@@ -68,10 +69,10 @@ do
         sleep 2s
     done
     TIME=$(( $(date +%s%3N) + $TIME_ADD ))
-    docker service create --name epto-service --network epto_network --replicas ${PEER_NUMBER} \
+    docker service create --name epto-service --network epto_network --replicas 0 \
     --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
     --env "RATE=$RATE" --limit-memory 300m --restart-condition=none \
-    --mount type=bind,source=/home/debian/data,target=/data swarm-m:5000/epto:latest
+    --mount type=bind,source=${LOG_STORAGE},target=/data swarm-m:5000/epto:latest
 
     # wait for service to start
     while docker service ls | grep " 0/$PEER_NUMBER"
@@ -96,6 +97,11 @@ do
             sleep 5s
         done
     else
+        docker service scale epto-service=${PEER_NUMBER}
+        while docker service ls | grep -q " 0/$PEER_NUMBER"
+        do
+            sleep 5s
+        done
         echo "Running without churn"
         # wait for service to end
         until docker service ls | grep -q " 0/$PEER_NUMBER"
