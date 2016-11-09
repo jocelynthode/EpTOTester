@@ -16,6 +16,6 @@ trap 'echo KILLED; while :; do sleep 1m; done' TERM INT
 dstat -n -N eth0 --output "/data/capture/${MY_IP_ADDR[0]}.csv" &
 dstat_pid=$!
 java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar -Dlogfile.name="${MY_IP_ADDR[0]}" utilities.Main --delta "$DELTA" \
---events "${EVENTS_TO_SEND}" --rate "$RATE" --fixed-rate 50 \
+--events "${EVENTS_TO_SEND}" --rate "$RATE" -c 4 --fixed-rate 50 \
 "${MY_IP_ADDR[0]}" "http://epto-tracker:4321" "${PEER_NUMBER}" "$TIME"
 kill ${dstat_pid}

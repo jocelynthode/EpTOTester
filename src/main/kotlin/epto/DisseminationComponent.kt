@@ -43,9 +43,9 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
+            logger.debug("nextBall size: {}", nextBall.size)
             synchronized(nextBallLock) {
-                logger.debug("nextBall size: {}", nextBall.size)
-                nextBall.forEach { it.value.incrementTtl() }
+                nextBall.values.forEach(Event::incrementTtl)
                 if (!nextBall.isEmpty()) {
                     val events = nextBall.values.toList()
                     try {

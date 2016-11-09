@@ -37,6 +37,9 @@ class Main {
             parser.addArgument("-e", "--events").help("Number of events to send")
                     .type(Integer.TYPE)
                     .setDefault(12)
+            parser.addArgument("-c", "--constant").help("Constant to have a K and TTL meeting an expected delivery ratio")
+                    .type(Integer.TYPE)
+                    .setDefault(2)
             parser.addArgument("-r", "--rate").help("Time between each event broadcast in ms")
                     .type(Long::class.java)
                     .setDefault(1000L)
@@ -79,11 +82,12 @@ class Main {
             val gossipPort = namespace.getInt("gossip_port")
             val pssPort = namespace.getInt("pss_port")
             val fixedRate = namespace.getInt("fixed_rate")
+            val c = namespace.getInt("constant")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val log2N = Math.log(peerNumber) / Math.log(2.0)
             val ttl = if (namespace.getInt("ttl") == null) {
-                (2 * Math.ceil(5 * log2N) + 1).toInt()
+                (2 * Math.ceil((c + 1) * log2N) + 1).toInt()
             } else {
                 namespace.getInt("ttl")
             }
