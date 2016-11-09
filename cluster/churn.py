@@ -5,6 +5,7 @@ import random
 import subprocess
 import time
 
+from datetime import datetime
 from nodes_trace import NodesTrace
 
 
@@ -91,8 +92,8 @@ if __name__ == '__main__':
                         help='Run the synthetic churn only on local node')
     parser.add_argument('--synthetic', '-s', metavar='N', type=churn_tuple, nargs='+',
                         help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
-    parser.add_argument('--delay', '-d', type=int, default=180,
-                        help='After how much time should the churn start')
+    parser.add_argument('--delay', '-d', type=int,
+                        help='At which time should the churn start (UTC)')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Switch DEBUG logging on')
     args = parser.parse_args()
@@ -122,12 +123,21 @@ if __name__ == '__main__':
     churn.add_processes(nodes_trace.initial_size())
     nodes_trace.next()
 
-    logging.info("Sleeping for {:d} seconds".format(args.delay))
-    time.sleep(args.delay)
+    if args.delay:
+        delay = (datetime.utcfromtimestamp(args.delay // 1000) - datetime.utcnow()).seconds
+        if delay < 0:
+            delay = 0
+    else:
+        delay = 0
+
+    logging.info("Starting churn at {:s} UTC"
+                 .format(datetime.utcfromtimestamp(args.delay // 1000).isoformat()))
+    time.sleep(delay)
     logging.info("Starting churn")
 
     for _, to_kill, to_create in nodes_trace:
-        logging.debug("curr_size: {:d}, to_kill: {:d}, to_create {:d}".format(_, len(to_kill), len(to_create)))
+        logging.debug("curr_size: {:d}, to_kill: {:d}, to_create {:d}"
+                      .format(_, len(to_kill), len(to_create)))
         churn.add_suspend_processes(len(to_kill), len(to_create))
         time.sleep(delta)
 
