@@ -48,7 +48,7 @@ function getlogs {
 
 echo "START..."
 
-trap 'docker service rm epto-tracker; docker service rm epto-service;sleep 15s; getlogs; exit' TERM INT
+trap 'docker service rm epto-tracker; docker service rm epto-service;kill ${churn_pid};sleep 15s; getlogs; exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
 docker pull swarm-m:5000/tracker:latest
@@ -82,7 +82,7 @@ echo "Running EpTO tester..."
 if [ -n "$CHURN" ]
 then
     echo "Running churn"
-    ./churn.py 60 -v --delay $(($TIME + 60000)) --kill-coordinator 5 \
+    ./churn.py 60 -v --delay $(($TIME + 60000)) \
     --synthetic 0,${PEER_NUMBER} 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 &
     export churn_pid=$!
 

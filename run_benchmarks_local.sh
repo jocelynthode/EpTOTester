@@ -43,7 +43,7 @@ echo "START..."
 ./gradlew docker
 
 # Clean everything at Ctrl+C
-trap 'docker service rm epto-service; docker service rm epto-tracker; exit' TERM INT
+trap 'docker service rm epto-service; docker service rm epto-tracker;kill ${churn_pid}; exit' TERM INT
 
 docker swarm init && \
 docker network create -d overlay --subnet=10.0.93.0/24 epto_network
@@ -57,7 +57,7 @@ do
 done
 
 TIME=$(( $(date +%s%3N) + $TIME_ADD ))
-docker service create --name epto-service--network epto_network --replicas 0 \
+docker service create --name epto-service --network epto_network --replicas 0 \
 --env "PEER_NUMBER=${PEER_NUMBER}" --env "DELTA=$DELTA" --env "TIME=$TIME" --env "EVENTS_TO_SEND=${EVENTS_TO_SEND}" \
 --env "RATE=$RATE" --limit-memory 300m --restart-condition=none \
 --mount type=bind,source=${LOG_STORAGE},target=/data epto:latest
@@ -72,7 +72,7 @@ echo "Running EpTO tester..."
 if [ -n "$CHURN" ]
 then
     echo "Running churn"
-    ./cluster/churn.py 5 -v --local --delay $(($TIME + 10000)) --kill-coordinator 5 \
+    ./cluster/churn.py 5 -v --local --delay $(($TIME + 10000)) \
     --synthetic 0,${PEER_NUMBER} 1,1 1,1 1,1 1,1 1,1 1,1 1,1 1,1 1,1 1,1 &
     export churn_pid=$!
 
