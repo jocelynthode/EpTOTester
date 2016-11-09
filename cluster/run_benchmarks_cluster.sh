@@ -46,7 +46,7 @@ function getlogs {
 
 echo "START..."
 
-trap 'docker service rm epto-tracker; docker service rm epto-service; getlogs; exit' TERM INT
+trap 'docker service rm epto-tracker; docker service rm epto-service;sleep 15s; getlogs; exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
 docker pull swarm-m:5000/tracker:latest
