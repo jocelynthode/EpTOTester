@@ -7,6 +7,7 @@ DELTA=$2
 TIME_ADD=$3
 EVENTS_TO_SEND=$4
 RATE=$5
+CHURN=$6
 
 if [ -z "$PEER_NUMBER" ]
   then
@@ -78,11 +79,30 @@ do
         sleep 1s
     done
     echo "Running EpTO tester -> Experiment: $i"
-    # wait for service to end
-    until docker service ls | grep -q " 0/$PEER_NUMBER"
-    do
-        sleep 5s
-    done
+
+    if [ -n "$CHURN" ]
+    then
+        echo "Running churn"
+        ./churn.py 60 -v --delay $(($TIME + 60000)) --kill-coordinator 5 \
+        --synthetic 0,${PEER_NUMBER} 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 1,0 &
+        export churn_pid=$!
+
+        # wait for service to be bigger than the limit below
+        sleep 3m
+
+        # wait for service to end
+        until docker service ls | grep -q " 10/$(($PEER_NUMBER + 0))"
+        do
+            sleep 5s
+        done
+    else
+        echo "Running without churn"
+        # wait for service to end
+        until docker service ls | grep -q " 0/$PEER_NUMBER"
+        do
+            sleep 5s
+        done
+    fi
 
     docker service rm epto-tracker
     docker service rm epto-service
