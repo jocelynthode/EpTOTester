@@ -112,7 +112,7 @@ if __name__ == '__main__':
         nodes_trace = NodesTrace(database='database.db')
 
     if args.local:
-        hosts_fname = args.local
+        hosts_fname = None
     else:
         hosts_fname = 'hosts'
 
