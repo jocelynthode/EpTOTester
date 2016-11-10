@@ -47,7 +47,7 @@ function getlogs {
 
 echo "START..."
 
-trap 'docker service rm epto-tracker; docker service rm epto-service; getlogs; exit' TERM INT
+trap 'docker service rm epto-tracker; docker service rm epto-service;sleep 15s; getlogs; exit' TERM INT
 
 docker pull swarm-m:5000/epto:latest
 docker pull swarm-m:5000/tracker:latest
@@ -57,7 +57,7 @@ docker swarm init && \
 parallel-ssh -t 0 -h hosts "docker swarm join --token ${TOKEN} ${MANAGER_IP}:2377" && \
 docker network create -d overlay --subnet=172.113.0.0/16 epto_network || exit)
 
-for i in {1..10}
+for i in {1..20}
 do
     docker service create --name epto-tracker --network epto_network --replicas 1 --limit-memory 300m \
      --constraint 'node.role == manager' swarm-m:5000/tracker:latest
