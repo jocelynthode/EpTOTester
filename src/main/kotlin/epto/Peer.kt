@@ -77,6 +77,7 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
                 }
             } catch (e: IOException) {
                 isRunning = false
+                logger.error(e)
             } catch (e: Event.EventUnserializeException) {
                 logger.error(e)
             }

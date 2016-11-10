@@ -114,8 +114,7 @@ messages_received = [stat.msg_received for stat in stats]
 balls_sent = [stat.balls_sent for stat in stats]
 balls_received = [stat.balls_received for stat in stats]
 
-sent_sum = sum(messages_sent)
-received_sum = sum(messages_received)
+sent_sum = sum(messages_sent) // experiments_nb
 ratios = [(msg_received / sent_sum) for msg_received in messages_received]
 print("Best ratio events received/sent: %.10g" % max(ratios))
 print("Worst ratio events received/sent: %.10g" % min(ratios))
@@ -136,6 +135,12 @@ balls_received_sum = sum(balls_received)
 print("Total balls sent across all peers: %d" % balls_sent_sum)
 print("Total balls received across all peers: %d" % balls_received_sum)
 print("Total ratio balls received/sent: %f" % (balls_received_sum / balls_sent_sum))
+print("--------")
+average_balls_sent = balls_sent_sum / experiments_nb
+average_balls_received = balls_received_sum / experiments_nb
+print("Average balls sent per experiment: %f" % average_balls_sent)
+print("Average balls received per experiment: %f" % average_balls_received)
+print("Average ratio balls received/sent per experiment: %f" % (average_balls_received / average_balls_sent))
 print("-------------------------------------------")
 for i in range(experiments_nb):
     start_index = i * PEER_NUMBER
@@ -144,5 +149,10 @@ for i in range(experiments_nb):
     print("Total events sent: %d" % (sum(messages_sent[start_index:end_index])))
     print("Total events received on average: %f"
           % (sum(messages_received[start_index:end_index]) / PEER_NUMBER))
+    balls_sent_exp = sum(balls_sent[start_index:end_index])
+    balls_received_exp = sum(balls_received[start_index:end_index])
+    print("Total balls sent: %d" % balls_sent_exp)
+    print("Total balls received: %d" % balls_received_exp)
+    print("Total ratio balls received/sent: %f" % (balls_received_exp / balls_sent_exp))
     print("--------")
 

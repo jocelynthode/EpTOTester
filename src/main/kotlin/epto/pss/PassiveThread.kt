@@ -55,6 +55,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 }
             } catch (e: IOException) {
                 isRunning = false
+                logger.error(e)
             }
         }
     }
