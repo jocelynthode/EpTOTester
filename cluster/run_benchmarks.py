@@ -21,11 +21,13 @@ from nodes_trace import NodesTrace
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
 MANAGER_IP = '172.16.2.119'
-LOG_STORAGE = '/home/debian/data'
+LOCAL_DATA = '/home/jocelyn/tmp/data'
+CLUSTER_DATA = '/home/debian/data'
 REPOSITORY = 'swarm-m:5000/'
 SERVICE_NAME = 'epto'
 TRACKER_NAME = 'epto-tracker'
 NETWORK_NAME = 'epto_network'
+SUBNET = '172.130.0.0/16'
 
 
 def create_service(service_name, image, env=None, mounts=None, placement=None, replicas=1):
@@ -53,7 +55,7 @@ def run_churn(time_to_start):
     else:
         hosts_fname = 'hosts'
 
-    delta = args.delta
+    delta = args.period
     churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME)
     churn.set_logger_level(log_level)
 
@@ -61,7 +63,7 @@ def run_churn(time_to_start):
     logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
     churn.add_processes(nodes_trace.initial_size())
     nodes_trace.next()
-    delay = (time_to_start - (time.time() * 1000)) // 1000
+    delay = int((time_to_start - (time.time() * 1000)) / 1000)
     logger.debug('Delay: {:d}'.format(delay))
     logger.info('Starting churn at {:s} UTC'
                 .format(datetime.utcfromtimestamp(time_to_start // 1000).isoformat()))
@@ -109,6 +111,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run benchmarks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('peer_number', type=int, help='With how many peer should it be ran')
+    parser.add_argument('delta', type=int, help='Period for an EpTO round in ms')
     parser.add_argument('time_add', type=int, help='Delay experiments start in ms')
     parser.add_argument('events_to_send', type=int, help='How many events each peer should send')
     parser.add_argument('rate', type=int, help='At which frequency should a peer send an event in ms')
@@ -117,15 +120,14 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--local', action='store_true',
                         help='Run locally')
     parser.add_argument('-n', '--runs', type=int, default=1, help='How many experiments should be ran')
+    parser.add_argument('-c', '--constant', type=int, default=4, help='EpTO constant to determine K and TTL')
     parser.add_argument('--verbose', '-v', action='store_true', help='Switch DEBUG logging on')
 
     subparsers = parser.add_subparsers(dest='churn', help='Specify churn and its arguments')
 
     churn_parser = subparsers.add_parser('churn', help='Activate churn')
-    churn_parser.add_argument('delta', type=int, default=60,
+    churn_parser.add_argument('period', type=int,
                               help='The interval between killing/adding new containers in s')
-    churn_parser.add_argument('--kill-coordinator', '-k', type=int, nargs='+',
-                              help='Kill the coordinator at the specified periods')
     churn_parser.add_argument('--synthetic', '-s', metavar='N', type=churn_tuple, nargs='+',
                               help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
     churn_parser.add_argument('--delay', '-d', type=int, default=0,
@@ -147,6 +149,7 @@ if __name__ == '__main__':
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
         try:
+            # TODO when one of the service wasn't created still remove the other
             cli.remove_service(SERVICE_NAME)
             cli.remove_service(TRACKER_NAME)
             if not args.local:
@@ -155,10 +158,10 @@ if __name__ == '__main__':
                     for host in file.read().splitlines():
                         subprocess.call('rsync --remove-source-files '
                                         '-av {:s}:{:s}/*.txt ../data'
-                                        .format(host, LOG_STORAGE), shell=True)
+                                        .format(host, CLUSTER_DATA), shell=True)
                         subprocess.call('rsync --remove-source-files '
                                         '-av {:s}:{:s}/capture/*.csv ../data/capture'
-                                        .format(host, LOG_STORAGE), shell=True)
+                                        .format(host, CLUSTER_DATA), shell=True)
         except errors.NotFound:
             pass
         exit(0)
@@ -186,7 +189,7 @@ if __name__ == '__main__':
             token = cli.inspect_swarm()['JoinTokens']['Worker']
             subprocess.call(['parallel-ssh', '-t', '0', '-h', 'hosts', 'docker', 'swarm',
                              'join', '--token', token, '{:s}:2377'.format(MANAGER_IP)])
-        ipam_pool = utils.create_ipam_pool(subnet='172.111.0.0/16')
+        ipam_pool = utils.create_ipam_pool(subnet=SUBNET)
         ipam_config = utils.create_ipam_config(pool_configs=[ipam_pool])
         cli.create_network(NETWORK_NAME, 'overlay', ipam=ipam_config)
     except errors.APIError:
@@ -200,24 +203,26 @@ if __name__ == '__main__':
         wait_on_service(TRACKER_NAME, 1)
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
-        environment_vars = {'PEER_NUMBER': args.peer_number, 'TIME': time_to_start,
-                            'EVENTS_TO_SEND': args.events_to_send, 'RATE': args.rate,
-                            'FIXED_RATE': args.fixed_rate}
+        environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
+                            'TIME': time_to_start, 'EVENTS_TO_SEND': args.events_to_send,
+                            'RATE': args.rate, 'FIXED_RATE': args.fixed_rate,
+                            'CONSTANT': args.constant}
         environment_vars = ['{:s}={:d}'.format(k, v) for k, v in environment_vars.items()]
         logger.debug(environment_vars)
 
         service_replicas = 0 if args.churn else args.peer_number
+        log_storage = LOCAL_DATA if args.local else CLUSTER_DATA
         create_service(SERVICE_NAME, service_image, env=environment_vars,
-                       mounts=[types.Mount(target='/data', source=LOG_STORAGE, type='bind')], replicas=service_replicas)
+                       mounts=[types.Mount(target='/data', source=log_storage, type='bind')], replicas=service_replicas)
 
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
-        wait_on_service(SERVICE_NAME, 0, inverse=True)
         if args.churn:
-            logger.info('Running with churn')
             threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
+            logger.info('Running with churn')
             # TODO find a way to stop at the right moment
             wait_on_service(SERVICE_NAME, 10)
         else:
+            wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running without churn')
             wait_on_service(SERVICE_NAME, 0)
 
@@ -231,14 +236,14 @@ if __name__ == '__main__':
             subprocess.call('parallel-ssh -t 0 -h hosts "mkdir -p {path}/test-{nb}/capture &&'
                             ' mv {path}/*.txt {path}/test-{nb}/ &&'
                             ' mv {path}/capture/*.csv {path}/test-{nb}/capture/"'
-                            .format(path=LOG_STORAGE, nb=run_nb), shell=True)
+                            .format(path=CLUSTER_DATA, nb=run_nb), shell=True)
 
-            subprocess.call('mkdir -p {path}/test-{nb}/capture'.format(path=LOG_STORAGE, nb=run_nb),
-                            shell=True)
-            subprocess.call('mv {path}/*.txt {path}/test-{nb}/'.format(path=LOG_STORAGE, nb=run_nb),
-                            shell=True)
-            subprocess.call('mv {path}/capture/*.csv {path}/test-{nb}/capture/'.format(path=LOG_STORAGE, nb=run_nb),
-                            shell=True)
+        subprocess.call('mkdir -p {path}/test-{nb}/capture'.format(path=log_storage, nb=run_nb),
+                        shell=True)
+        subprocess.call('mv {path}/*.txt {path}/test-{nb}/'.format(path=log_storage, nb=run_nb),
+                        shell=True)
+        subprocess.call('mv {path}/capture/*.csv {path}/test-{nb}/capture/'.format(path=log_storage, nb=run_nb),
+                        shell=True)
 
     logger.info('Benchmark done!')
 

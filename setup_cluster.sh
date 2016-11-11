@@ -5,6 +5,8 @@
 
 MANAGER_IP=172.16.2.119
 
+trap "kill ${ssh_pid}" TERM INT
+
 ./gradlew docker
 
 ssh -N -L 5000:localhost:5000 debian@${MANAGER_IP} &
@@ -13,9 +15,9 @@ ssh_pid=$!
 sleep 5s
 
 docker tag epto:latest localhost:5000/epto:latest
-docker tag tracker:latest localhost:5000/tracker:latest
+docker tag tracker:latest localhost:5000/epto-tracker:latest
 docker push localhost:5000/epto:latest
-docker push localhost:5000/tracker:latest
+docker push localhost:5000/epto-tracker:latest
 
 
 kill ${ssh_pid}

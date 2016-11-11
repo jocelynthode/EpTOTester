@@ -4,6 +4,6 @@ group 'ch.unibnf.epto'
 version '1.0-SNAPSHOT'
 
 docker {
-    name 'tracker'
+    name 'epto-tracker'
     files 'tracker.py'
 }
