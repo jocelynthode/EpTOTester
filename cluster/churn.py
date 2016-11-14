@@ -64,7 +64,7 @@ class Churn:
 
             command_suspend += [container]
             subprocess.call(command_suspend, stdout=subprocess.DEVNULL)
-            self.logger.info('Container {} on host {} was suspended'
+            self.logger.info('Container {} on host {} was terminated'
                              .format(container, choice))
 
     def add_processes(self, to_create_nb):

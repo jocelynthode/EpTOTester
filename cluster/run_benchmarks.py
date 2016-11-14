@@ -70,9 +70,6 @@ def run_churn(time_to_start):
     time.sleep(delay)
     logger.info('Starting churn')
 
-    logger.debug(churn.peer_list)
-    churn.coordinator = churn.peer_list.pop(0)
-
     for _, to_kill, to_create in nodes_trace:
         logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
                      .format(_, len(to_kill), len(to_create)))
@@ -82,24 +79,31 @@ def run_churn(time_to_start):
     logger.info('Churn finished')
 
 
-def wait_on_service(service_name, containers_nb, inverse=False):
+def wait_on_service(service_name, containers_nb, total_nb=None, inverse=False):
     def get_nb():
         output = subprocess.check_output(['docker', 'service', 'ls', '-f', 'name={:s}'.format(service_name)],
                                          universal_newlines=True).splitlines()[1]
-        return int(re.match(r'.+ (\d+)/\d+', output).group(1))
+        match = re.match(r'.+ (\d+)/(\d+)', output)
+        return int(match.group(1)), int(match.group(2))
 
     if inverse:  # Wait while current nb is equal to containers_nb
         current_nb = containers_nb
         while current_nb == containers_nb:
             logger.debug('current_nb={:d}, containers_nb={:d}'.format(current_nb, containers_nb))
             time.sleep(1)
-            current_nb = get_nb()
+            current_nb = get_nb()[0]
     else:
         current_nb = -1
-        while current_nb != containers_nb:
+        current_total_nb = -1
+        while current_nb > containers_nb or current_total_nb != total_nb:
             logger.debug('current_nb={:d}, containers_nb={:d}'.format(current_nb, containers_nb))
+            logger.debug('current_total_nb={:d}'.format(current_total_nb))
             time.sleep(5)
-            current_nb = get_nb()
+            current_nb, current_total_nb = get_nb()
+            if not total_nb:
+                total_nb = current_total_nb
+            else:
+                logger.debug('current_total_nb={:d}, total_nb={:d}'.format(current_total_nb, total_nb))
 
 
 def create_logger():
@@ -112,8 +116,8 @@ if __name__ == '__main__':
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('peer_number', type=int, help='With how many peer should it be ran')
     parser.add_argument('delta', type=int, help='Period for an EpTO round in ms')
-    parser.add_argument('time_add', type=int, help='Delay experiments start in ms')
-    parser.add_argument('events_to_send', type=int, help='How many events each peer should send')
+    parser.add_argument('time_add', type=int, help='Delay experiments start in seconds')
+    parser.add_argument('time_to_run', type=int, help='For how long should the experiment run in seconds')
     parser.add_argument('rate', type=int, help='At which frequency should a peer send an event in ms')
     parser.add_argument('-x', '--fixed-rate', type=int, default=None,
                         help='Fix the rate at which a peer will send events')
@@ -145,13 +149,14 @@ if __name__ == '__main__':
     logger.setLevel(log_level)
 
     logger.info('START')
+    args.time_add *= 1000
+    args.time_to_run *= 1000
 
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
         try:
-            # TODO when one of the service wasn't created still remove the other
-            cli.remove_service(SERVICE_NAME)
             cli.remove_service(TRACKER_NAME)
+            cli.remove_service(SERVICE_NAME)
             if not args.local:
                 time.sleep(15)
                 with open('hosts', 'r') as file:
@@ -204,7 +209,7 @@ if __name__ == '__main__':
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
         environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
-                            'TIME': time_to_start, 'EVENTS_TO_SEND': args.events_to_send,
+                            'TIME': time_to_start, 'TIME_TO_RUN': args.time_to_run,
                             'RATE': args.rate, 'FIXED_RATE': args.fixed_rate,
                             'CONSTANT': args.constant}
         environment_vars = ['{:s}={:d}'.format(k, v) for k, v in environment_vars.items()]
@@ -218,9 +223,11 @@ if __name__ == '__main__':
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
             threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
+            wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
             # TODO find a way to stop at the right moment
-            wait_on_service(SERVICE_NAME, 10)
+            churn_nb = sum(a+b for a, b in args.synthetic[1:])
+            wait_on_service(SERVICE_NAME, churn_nb, total_nb=sum(b for _, b in args.synthetic))
         else:
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running without churn')
