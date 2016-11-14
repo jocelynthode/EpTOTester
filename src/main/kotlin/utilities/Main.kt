@@ -121,7 +121,7 @@ class Main {
             val probability: Double = if (fixedRate == -1) 1.0 else (fixedRate / peerNumber)
             val runEpto = Runnable {
                 val endTime = startTime + timeToRun
-                logger.info("JGroups will end at {} UTC",
+                logger.info("EpTO will end at {} UTC",
                         LocalDateTime.ofEpochSecond((endTime / 1000), 0, ZoneOffset.ofHours(0)))
                 logger.info("Sending 1 event every ${rate}ms) with a probability of $probability")
                 while (System.currentTimeMillis() < endTime) {
