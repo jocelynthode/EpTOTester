@@ -6,6 +6,8 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.net.InetAddress
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -31,12 +33,10 @@ class Main {
                     setDefault("http://localhost:4321")
             parser.addArgument("peerNumber").help("Peer number")
                     .type(Integer.TYPE)
-                    .setDefault(35)
             parser.addArgument("scheduleAt").help("Schedule EpTO to start at a specific time in milliseconds")
                     .type(Long::class.java)
-            parser.addArgument("-e", "--events").help("Number of events to send")
+            parser.addArgument("timeToRun").help("Delay after which to stop from scheduleAt (in ms)")
                     .type(Integer.TYPE)
-                    .setDefault(12)
             parser.addArgument("-c", "--constant").help("Constant to have a K and TTL meeting an expected delivery ratio")
                     .type(Integer.TYPE)
                     .setDefault(2)
@@ -72,11 +72,11 @@ class Main {
 
         @JvmStatic private fun startProgram(namespace: Namespace) {
 
-            val eventsToSend = namespace.getInt("events")
             val rate = namespace.getLong("rate")
             val localIp = namespace.getString("localIp")
             val tracker = namespace.getString("tracker")
             val startTime = namespace.getLong("scheduleAt")
+            val timeToRun = namespace.getInt("timeToRun")
             val peerNumber = namespace.getInt("peerNumber").toDouble()
             val delta = namespace.getLong("delta")
             val gossipPort = namespace.getInt("gossip_port")
@@ -120,18 +120,18 @@ class Main {
 
             val probability: Double = if (fixedRate == -1) 1.0 else (fixedRate / peerNumber)
             val runEpto = Runnable {
-
-                logger.info("Sending: $eventsToSend events (rate: 1 every ${rate}ms) with a probability of $probability")
-                var i = 0
-                while (i < eventsToSend) {
+                val endTime = startTime + timeToRun
+                logger.info("JGroups will end at {} UTC",
+                        LocalDateTime.ofEpochSecond((endTime / 1000), 0, ZoneOffset.ofHours(0)))
+                logger.info("Sending 1 event every ${rate}ms) with a probability of $probability")
+                while (System.currentTimeMillis() < endTime) {
                     Thread.sleep(rate)
                     if (Math.random() < probability) {
                         application.broadcast()
                         eventsSent++
                     }
-                    i++
                 }
-                i = 0
+                var i = 0
                 while (i < 30) {
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)

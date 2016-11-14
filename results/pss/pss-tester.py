@@ -60,6 +60,7 @@ U = G.to_undirected()
 
 print("Average shortest path: %f" % nx.average_shortest_path_length(G))
 print("Average clustering: %f" % nx.average_clustering(U))
+print('Diameter of the graph: %d' % nx.diameter(G))
 print("Is graph strongly connected: %s" % nx.is_strongly_connected(G))
 indeg = G.in_degree()
 print(indeg)
