@@ -23,7 +23,7 @@ cli = docker.Client(base_url='unix://var/run/docker.sock')
 MANAGER_IP = '172.16.2.119'
 LOCAL_DATA = '/home/jocelyn/tmp/data'
 CLUSTER_DATA = '/home/debian/data'
-REPOSITORY = 'swarm-m:5000/'
+DISTANT_REPOSITORY = 'swarm-m:5000/'
 SERVICE_NAME = 'epto'
 TRACKER_NAME = 'epto-tracker'
 NETWORK_NAME = 'epto_network'
@@ -52,11 +52,13 @@ def run_churn(time_to_start):
 
     if args.local:
         hosts_fname = None
+        repository = ''
     else:
         hosts_fname = 'hosts'
+        repository = DISTANT_REPOSITORY
 
     delta = args.period
-    churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME)
+    churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME, repository=repository)
     churn.set_logger_level(log_level)
 
     # Add initial cluster
@@ -181,8 +183,8 @@ if __name__ == '__main__':
             for line in p.stdout:
                 print(line, end='')
     else:
-        service_image = REPOSITORY + SERVICE_NAME
-        tracker_image = REPOSITORY + TRACKER_NAME
+        service_image = DISTANT_REPOSITORY + SERVICE_NAME
+        tracker_image = DISTANT_REPOSITORY + TRACKER_NAME
         for line in cli.pull(service_image, stream=True, decode=True):
             print(line)
         for line in cli.pull(tracker_image, stream=True):
@@ -226,6 +228,8 @@ if __name__ == '__main__':
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
+                # Wait for some peers to at least start
+                time.sleep(120)
                 total = [sum(x) for x in zip(*args.synthetic)]
                 # Wait until only stopped containers are still alive
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])

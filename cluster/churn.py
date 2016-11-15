@@ -26,9 +26,9 @@ class Churn:
     periods = 0
     logger = logging.getLogger('churn')
 
-    def __init__(self, hosts_filename=None, service_name='epto'):
-
+    def __init__(self, hosts_filename=None, service_name='epto', repository=''):
         self.service_name = service_name
+        self.repository = repository
         self.hosts = ['localhost']
         if hosts_filename is not None:
             with open(hosts_filename, 'r') as file:
@@ -49,7 +49,9 @@ class Churn:
                 try:
                     choice = random.choice(self.hosts)
                     if choice not in self.containers:
-                        command_ps = ["docker", "ps", "-aqf", "name={:s}".format(self.service_name), "-f", "status=running"]
+                        command_ps = ["docker", "ps", "-aqf",
+                                      "name={service},status=running,ancestor={repo}{service}".format(
+                                          service=self.service_name, repo=self.repository)]
                         if choice != 'localhost':
                             command_ps = ["ssh", choice] + command_ps
 
