@@ -43,24 +43,37 @@ class Churn:
         for i in range(to_suspend_nb):
             command_suspend = ["docker", "kill", '--signal=SIGTERM']
 
-            choice = random.choice(self.hosts)
-            if choice not in self.containers:
-                command_ps = ["docker", "ps", "-aqf", "name={:s}".format(self.service_name), "-f", "status=running"]
-                if choice != 'localhost':
-                    command_ps = ["ssh", choice] + command_ps
+            # Retry until we find a working choice
+            count = 0
+            while count < 3:
+                try:
+                    choice = random.choice(self.hosts)
+                    if choice not in self.containers:
+                        command_ps = ["docker", "ps", "-aqf", "name={:s}".format(self.service_name), "-f", "status=running"]
+                        if choice != 'localhost':
+                            command_ps = ["ssh", choice] + command_ps
 
-                self.containers[choice] = subprocess.check_output(command_ps,
-                                                                  universal_newlines=True).splitlines()
+                        self.containers[choice] = subprocess.check_output(command_ps,
+                                                                          universal_newlines=True).splitlines()
 
-            if choice != 'localhost':
-                command_suspend = ["ssh", choice] + command_suspend
+                    if choice != 'localhost':
+                        command_suspend = ["ssh", choice] + command_suspend
 
-            try:
-                container = random.choice(self.containers[choice])
-                self.containers[choice].remove(container)
-            except ValueError or IndexError:
-                self.logger.error('No container available')
-                return
+                    container = random.choice(self.containers[choice])
+                    self.logger.debug('container: {:s}, coordinator: {:s}'.format(container, self.coordinator))
+                    while container == self.coordinator:
+                        container = random.choice(self.containers[choice])
+                    self.containers[choice].remove(container)
+                except (ValueError, IndexError):
+                    if not self.containers[choice]:
+                        self.hosts.remove(choice)
+                    self.logger.error('Error when trying to pick a container')
+                    if count == 3:
+                        self.logger.error('Stopping churn because no container was found')
+                        raise
+                    count += 1
+                    continue
+                break
 
             command_suspend += [container]
             subprocess.call(command_suspend, stdout=subprocess.DEVNULL)

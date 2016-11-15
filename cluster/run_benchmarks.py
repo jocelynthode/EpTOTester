@@ -225,16 +225,19 @@ if __name__ == '__main__':
             threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
-            # TODO find a way to stop at the right moment
-            churn_nb = sum(a+b for a, b in args.synthetic[1:])
-            wait_on_service(SERVICE_NAME, churn_nb, total_nb=sum(b for _, b in args.synthetic))
+            if args.synthetic:
+                total = [sum(x) for x in zip(*args.synthetic)]
+                # Wait until only stopped containers are still alive
+                wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
+            else:
+                raise NotImplementedError
         else:
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running without churn')
             wait_on_service(SERVICE_NAME, 0)
 
-        cli.remove_service(SERVICE_NAME)
         cli.remove_service(TRACKER_NAME)
+        cli.remove_service(SERVICE_NAME)
 
         logger.info('Services removed')
         time.sleep(30)
