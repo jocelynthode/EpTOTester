@@ -25,6 +25,7 @@ else:
     log_level = logging.INFO
 logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
 
+
 def all_events():
     for file in args.files:
         with open(file, 'r') as f:
