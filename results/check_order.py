@@ -93,3 +93,12 @@ for name, stats in events.items():
 
 if not is_out_of_order:
     logging.info('All files have the same order discarding holes!')
+
+has_duplicate = False
+for name, a_list in events.items():
+    if len(set(a_list)) != len(a_list):
+        has_duplicate = True
+        logging.info('File {:s} has duplicates!'.format(name))
+
+if not has_duplicate:
+    logging.info('No files has any duplicate!')
