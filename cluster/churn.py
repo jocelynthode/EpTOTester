@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-import glob
 import logging
 import random
-import re
 import subprocess
 
 
@@ -40,6 +38,20 @@ class Churn:
             raise ArithmeticError('Suspend number must be greater or equal to 0')
         if to_suspend_nb == 0:
             return
+
+        # Retrieve all containers id
+        if not self.containers:
+            for host in self.hosts:
+                command_ps = ["docker", "ps", "-aqf",
+                              "name={service},status=running,ancestor={repo}{service}".format(
+                                  service=self.service_name, repo=self.repository)]
+                if host != 'localhost':
+                    command_ps = ["ssh", host] + command_ps
+
+                self.containers[host] = subprocess.check_output(command_ps,
+                                                                universal_newlines=True).splitlines()
+            self.logger.debug(self.containers)
+
         for i in range(to_suspend_nb):
             command_suspend = ["docker", "kill", '--signal=SIGTERM']
 
@@ -48,15 +60,6 @@ class Churn:
             while count < 3:
                 try:
                     choice = random.choice(self.hosts)
-                    if choice not in self.containers:
-                        command_ps = ["docker", "ps", "-aqf",
-                                      "name={service},status=running,ancestor={repo}{service}".format(
-                                          service=self.service_name, repo=self.repository)]
-                        if choice != 'localhost':
-                            command_ps = ["ssh", choice] + command_ps
-
-                        self.containers[choice] = subprocess.check_output(command_ps,
-                                                                          universal_newlines=True).splitlines()
 
                     if choice != 'localhost':
                         command_suspend = ["ssh", choice] + command_suspend
