@@ -20,13 +20,13 @@ class Churn:
 
     A class in charge of adding/suspending nodes to create churn in a EpTO cluster
     """
-    containers = {}
-    coordinator = None
-    peer_list = []
-    periods = 0
-    logger = logging.getLogger('churn')
 
     def __init__(self, hosts_filename=None, service_name='epto', repository=''):
+        self.containers = {}
+        self.peer_list = []
+        self.periods = 0
+        self.logger = logging.getLogger('churn')
+
         self.service_name = service_name
         self.repository = repository
         self.hosts = ['localhost']
@@ -62,9 +62,6 @@ class Churn:
                         command_suspend = ["ssh", choice] + command_suspend
 
                     container = random.choice(self.containers[choice])
-                    self.logger.debug('container: {:s}, coordinator: {:s}'.format(container, self.coordinator))
-                    while container == self.coordinator:
-                        container = random.choice(self.containers[choice])
                     self.containers[choice].remove(container)
                 except (ValueError, IndexError):
                     if not self.containers[choice]:

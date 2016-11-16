@@ -19,15 +19,17 @@ class NodesTrace:
 
     Changelog:
      * Synthetic: Can now take a list of tuples of the form [(to_kill, to_create), ...]
+     * Change static properties to instance properties
     """
-    synthetic_sizes = None
-    sql = None
-    last_time = -1000
-    begin_time = None
-    current_size = 0
 
     def __init__(self, time_factor=1, database=None, synthetic=None, min_time=None, max_time=None):
         assert database is not None or synthetic is not None
+
+        self.synthetic_sizes = None
+        self.sql = None
+        self.last_time = -1000
+        self.begin_time = None
+        self.current_size = 0
 
         self.time_factor = time_factor
 

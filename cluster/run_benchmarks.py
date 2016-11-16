@@ -173,6 +173,7 @@ if __name__ == '__main__':
             pass
         exit(0)
     signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     if args.local:
         service_image = SERVICE_NAME
