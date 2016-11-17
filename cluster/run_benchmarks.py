@@ -48,7 +48,8 @@ def run_churn(time_to_start):
         logger.info(args.synthetic)
         nodes_trace = NodesTrace(synthetic=args.synthetic)
     else:
-        nodes_trace = NodesTrace(database='database.db')
+        # TODO specify min and max time
+        nodes_trace = NodesTrace(database='websites02.db')
 
     if args.local:
         hosts_fname = None
@@ -236,6 +237,8 @@ if __name__ == '__main__':
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
             else:
                 raise NotImplementedError
+                # TODO find how much time the trace we want use is going for and the sleep this duration
+                # TODO Then stop
         else:
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running without churn')
