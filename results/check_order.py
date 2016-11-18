@@ -119,7 +119,7 @@ if len(complete_list) == sent_events:
 churn_problem = False
 if not no_problem:
     for event in sent_events:
-        if not any([True for event_list in events.values() if event in event_list]):
+        if not any(True for event_list in events.values() if event in event_list):
             churn_problem = True
             logging.info('Event {:s} was never sent due to churn'.format(event))
 if no_problem or not churn_problem:
