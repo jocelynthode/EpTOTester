@@ -2,10 +2,10 @@
 <Configuration status="WARN">
     <Appenders>
         <File name="File" fileName="/data/${sys:logfile.name}.txt">
-            <PatternLayout pattern="%r [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{UNIX_MILLIS} [%t] %-5level %logger{36} - %msg%n"/>
         </File>
         <File name="FileSimple" fileName="/data/${sys:logfile.name}.txt">
-            <PatternLayout pattern="%r - %msg%n"/>
+            <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
         </File>
         <File name="FileTime" fileName="/data/${sys:logfile.name}.txt">
             <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
