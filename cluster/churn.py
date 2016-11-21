@@ -53,7 +53,7 @@ class Churn:
             self.logger.debug(self.containers)
 
         for i in range(to_suspend_nb):
-            command_suspend = ["docker", "kill", '--signal=SIGTERM']
+            command_suspend = ["docker", "kill", '--signal=SIGSTOP']
 
             # Retry until we find a working choice
             count = 0
@@ -88,9 +88,9 @@ class Churn:
         if to_create_nb == 0:
             return
         self.cluster_size += to_create_nb
-        subprocess.call(["docker", "service", "scale",
-                         "{:s}={:d}".format(self.service_name, self.cluster_size)],
-                        stdout=subprocess.DEVNULL)
+        subprocess.check_call(["docker", "service", "scale",
+                               "{:s}={:d}".format(self.service_name, self.cluster_size)],
+                              stdout=subprocess.DEVNULL)
         self.logger.info('Service scaled up to {:d}'.format(self.cluster_size))
 
     def add_suspend_processes(self, to_suspend_nb, to_create_nb):
