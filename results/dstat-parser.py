@@ -1,33 +1,69 @@
 #!/usr/bin/env python3.5
 import argparse
-import csv
-from itertools import islice
-from itertools import zip_longest
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
+from bitmath import best_prefix, SI
 
 parser = argparse.ArgumentParser(description='Process Bytes logs')
-parser.add_argument('files', metavar='FILE', nargs='+', type=argparse.FileType('r'),
+parser.add_argument('files', metavar='FILE', nargs='+', type=str,
                     help='the files to parse')
+parser.add_argument('-e', '--experiments', type=int, help='the number of experiments',
+                    default=1)
 parser.add_argument('-n', '--name', type=str, help='the name of the file to write the result to',
-                    default='total-bytes.csv')
+                    default='plot')
 args = parser.parse_args()
 
-
 def open_files():
-    for file in args.files:
-            yield csv.DictReader(islice(file, 6, None))
+    dfs = []
+    for idx, file in enumerate(args.files):
+        match = re.match('.*test-(\d+)/', file)
+        if match:
+            experiment_nb = int(match.group(1))
+        else:
+            experiment_nb = -1
+        df = pd.read_csv(file, skiprows=6)
+        df['time'] = range(len(df))
+        df['file'] = idx
+        df['experiment_nb'] = experiment_nb
+        dfs.append(df)
+    return dfs
+
+plt.figure()
+dfs = open_files()
+all_df = pd.concat(dfs)
+mean = all_df.groupby('time').mean()[['recv', 'send']].plot()
+plt.savefig('{:s}-peer-mean.png'.format(args.name))
+plt.close()
+# TODO make color work
+plt.figure()
+sum_df = all_df.sum()[['recv', 'send']]
+
+ax = sum_df.plot.bar()
+for rect, value in zip(ax.patches, sum_df):
+    height = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width()/2, height + 5,
+            best_prefix(float(value), system=SI).format("{value:.3f} {unit}"), ha='center', va='bottom')
+plt.savefig('{:s}-peer-total.png'.format(args.name))
 
 
-def extract():
-    csv_readers = open_files()
-    reader = zip_longest(*csv_readers, fillvalue={'recv': '0.0', 'send': '0.0'})
-    for rows in reader:
-        yield {'recv': sum(float(row['recv']) for row in rows),
-               'send': sum(float(row['send']) for row in rows)}
+def create_cdf_plot(df, name):
+    # http://stackoverflow.com/a/26394108/2826574
+    plt.figure()
+    axes = df.plot.hist(cumulative=True, normed=1, bins=100, histtype='step')
+    # Remove right border of last bin
+    axes.patches[0].set_xy(axes.patches[0].get_xy()[:-1])
+    axes.set_xticklabels(axes.get_xticks())
+    axes.set_ylim(0, 1)
+    plt.savefig(name)
+
+time_df = pd.read_csv('local-time-stats.csv', squeeze=True)
+create_cdf_plot(time_df, '{:s}-local-time-cdf.png'.format(args.name))
+
+time_df = pd.read_csv('global-time-stats.csv', squeeze=True)
+create_cdf_plot(time_df, '{:s}-global-time-cdf.png'.format(args.name))
+
+delta_df = pd.read_csv('delta-stats.csv', squeeze=True)
+create_cdf_plot(delta_df, '{:s}-deltas-cdf.png'.format(args.name))
 
 
-with open(args.name, 'w') as csvfile:
-    fieldnames = ['recv', 'send']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-    writer.writeheader()
-    writer.writerows(extract())

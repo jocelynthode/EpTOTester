@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.5
 import argparse
+import csv
 import re
 import statistics
 from collections import namedtuple
@@ -28,7 +29,8 @@ CHURN_NUMBER = 17
 
 expected_ratio = 1 - (1 / (PEER_NUMBER ** args.constant))
 k = ttl = delta = 0
-
+events_sent = {}
+events_delivered = {}
 
 # We must create our own iter because iter disables the tell function
 def textiter(file):
@@ -66,20 +68,30 @@ def extract_stats(file):
     def find_end():
         result = None
         pos = None
-        events_sent = 0
+        events_sent_count = 0
         state = State.perfect
         for line in it:
-            match = re.match(r'(\d+) - Delivered', line)
+            match = re.match(r'(\d+) - Delivered: (\[.+\])', line)
             if match:
+                time = int(match.group(1))
+                event = match.group(2)
+                if event in events_delivered:
+                    events_delivered[event].append(time)
+                else:
+                    events_delivered[event] = [time]
                 result = int(match.group(1))
                 pos = file.tell()
-            elif re.match(r'\d+ - Sending:', line):
-                events_sent += 1
-            elif re.match(r'\d+ - Time given was smaller than current time', line):
+                continue
+            match = re.match(r'(\d+) - Sending: (\[.+\])', line)
+            if match:
+                events_sent[match.group(2)] = int(match.group(1))
+                events_sent_count += 1
+                continue
+            if re.match(r'\d+ - Time given was smaller than current time', line):
                 state = State.late
 
         file.seek(pos)
-        return textiter(file), result, events_sent, state
+        return textiter(file), result, events_sent_count, state
 
     it, end_at, evts_sent, state = find_end()
     balls_sent = match_line(r'\d+ - Balls sent: (\d+)')
@@ -145,7 +157,9 @@ print("-------------------------------------------")
 print("Least time to deliver in total : %d ms" % mininum)
 print("Most time to deliver in total : %d ms" % maximum)
 print("Average time to deliver per peer in total: %d ms" % average)
+print("Population std fo the time to deliver: %f ms" % statistics.pstdev(durations))
 print("Average global time to deliver on all peers per experiment: %d ms" % global_average)
+print("Population std fo the time to deliver: %f ms" % statistics.pstdev(global_times))
 print("-------------------------------------------")
 messages_sent = [stat.msg_sent for stat in stats if stat.msg_sent]
 messages_received = [stat.msg_received for stat in perfect_stats if stat.msg_received]
@@ -198,3 +212,25 @@ for i in range(experiments_nb):
     print("Total balls received: %d" % balls_received_exp)
     print("Total ratio balls received/sent: %f" % (balls_received_exp / balls_sent_exp))
     print("-------------------------------------------")
+
+with open('local-time-stats.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, ['local_time'])
+    writer.writeheader()
+    for duration in durations:
+        writer.writerow({'local_time': duration})
+
+with open('global-time-stats.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, ['global_time'])
+    writer.writeheader()
+    for duration in global_times:
+        writer.writerow({'global_time': duration})
+
+with open('delta-stats.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, ['delta'])
+    writer.writeheader()
+    for event, time in events_sent.items():
+        times = events_delivered[event]
+        deltas = [a_time - time for a_time in times]
+        for delta in deltas:
+            writer.writerow({'delta': delta})
+
