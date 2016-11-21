@@ -34,13 +34,9 @@ class Gossip(val core: Core, val K: Int = 15) {
     /**
      * Relay a ball of event to other EpTO peers
      *
-     * @throws ViewSizeException if the view is smaller than the required fanout K
-     *
      * @param nextBall the ball of events to send
      */
     fun relay(nextBall: List<Event>) {
-        if (core.pss.view.size < K) throw ViewSizeException("View is smaller than fanout K")
-
         val kView = selectKFromView()
         val ballsToSend = Math.ceil(nextBall.size / maxEvents.toDouble()).toInt()
 
@@ -96,10 +92,12 @@ class Gossip(val core: Core, val K: Int = 15) {
     private fun selectKFromView(): ArrayList<PeerInfo> {
         val tmpList = ArrayList(core.pss.view)
         Collections.shuffle(tmpList)
+        if (core.pss.view.size < K) {
+            logger.warn("View is smaller than size K ({})", core.pss.view.size)
+            return tmpList
+        }
         return ArrayList(tmpList.subList(0, K))
     }
-
-    internal class ViewSizeException(s: String) : Throwable(s) {}
 }
 
 

@@ -43,19 +43,19 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     init {
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
-            logger.debug("nextBall size: {}", nextBall.size)
-            synchronized(nextBallLock) {
-                nextBall.values.forEach(Event::incrementTtl)
-                if (!nextBall.isEmpty()) {
-                    val events = nextBall.values.toList()
-                    try {
+            try {
+                logger.debug("nextBall size: {}", nextBall.size)
+                synchronized(nextBallLock) {
+                    nextBall.values.forEach(Event::incrementTtl)
+                    if (!nextBall.isEmpty()) {
+                        val events = nextBall.values.toList()
                         gossip.relay(events)
-                    } catch (e: Gossip.ViewSizeException) {
-                        logger.error(e)
                     }
+                    orderingComponent.orderEvents(nextBall)
+                    nextBall.clear()
                 }
-                orderingComponent.orderEvents(nextBall)
-                nextBall.clear()
+            } catch (e: Exception) {
+                logger.error(e)
             }
         }
     }
