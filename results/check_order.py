@@ -121,6 +121,6 @@ if not no_problem:
     for event in sent_events:
         if not any(True for event_list in events.values() if event in event_list):
             churn_problem = True
-            logging.info('Event {:s} was never sent due to churn'.format(event))
+            logging.info('Event {:s} was never sent due to churn. Please remove it.'.format(event))
 if no_problem or not churn_problem:
     logging.info('All events claimed to be sent were sent')

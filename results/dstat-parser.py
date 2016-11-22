@@ -32,25 +32,30 @@ def open_files():
 plt.figure()
 dfs = open_files()
 all_df = pd.concat(dfs)
-mean = all_df.groupby('time').mean()[['recv', 'send']].plot()
+mean = all_df.groupby('time').mean()[['recv', 'send']].plot(colormap='coolwarm')
 plt.savefig('{:s}-peer-mean.png'.format(args.name))
 plt.close()
-# TODO make color work
-plt.figure()
-sum_df = all_df.sum()[['recv', 'send']]
 
-ax = sum_df.plot.bar()
-for rect, value in zip(ax.patches, sum_df):
+
+plt.figure()
+sum_df = all_df.groupby('experiment_nb').sum()[['recv', 'send']]
+means = sum_df.mean()
+std = sum_df.std()
+means_transformed = pd.DataFrame(data={'received': means.values[0], 'sent': means.values[1]}, index=['EpTO'])
+std_transformed = pd.DataFrame(data={'received': std.values[0], 'sent': std.values[1]}, index=['EpTO'])
+ax = means_transformed.plot.bar(yerr=std_transformed, colormap='coolwarm')
+for rect, value in zip(ax.patches, sum_df.mean()):
     height = rect.get_height()
     ax.text(rect.get_x() + rect.get_width()/2, height + 5,
             best_prefix(float(value), system=SI).format("{value:.3f} {unit}"), ha='center', va='bottom')
+
 plt.savefig('{:s}-peer-total.png'.format(args.name))
 
 
 def create_cdf_plot(df, name):
     # http://stackoverflow.com/a/26394108/2826574
     plt.figure()
-    axes = df.plot.hist(cumulative=True, normed=1, bins=100, histtype='step')
+    axes = df.plot.hist(cumulative=True, normed=1, bins=100, histtype='step', colormap='coolwarm')
     # Remove right border of last bin
     axes.patches[0].set_xy(axes.patches[0].get_xy()[:-1])
     axes.set_xticklabels(axes.get_xticks())

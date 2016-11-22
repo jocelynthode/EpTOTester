@@ -87,7 +87,7 @@ def extract_stats(file):
                 events_sent[match.group(2)] = int(match.group(1))
                 events_sent_count += 1
                 continue
-            if re.match(r'\d+ - Time given was smaller than current time', line):
+            if re.match(r'.+ - Time given was smaller than current time', line):
                 state = State.late
 
         file.seek(pos)
