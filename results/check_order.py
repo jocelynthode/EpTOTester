@@ -4,6 +4,7 @@ from collections import namedtuple
 import argparse
 import difflib
 import logging
+import progressbar
 
 Stats = namedtuple('Stats', ['events'])
 is_out_of_order = False
@@ -27,7 +28,9 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
 
 
 def all_events():
-    for file in args.files:
+    logging.info('Importing files...')
+    bar = progressbar.ProgressBar()
+    for file in bar(args.files):
         with open(file, 'r') as f:
             uuids = extract_events(f)
         yield f.name, uuids
