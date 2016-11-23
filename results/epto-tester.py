@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.5
 import argparse
 import csv
+import multiprocessing
+import numpy as np
 import progressbar
 import re
 import statistics
@@ -18,7 +20,7 @@ class State(Enum):
 
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('files', metavar='FILE', nargs='+', type=str,
-                    help='the files to parse')
+                    help='the files to parse (must be given by experiments)')
 parser.add_argument('-c', '--constant', metavar='CONSTANT', type=int, default=2,
                     help='the constant to find the minimum ratio we must have')
 parser.add_argument('-e', '--experiments-nb', metavar='EXPERIMENT_NB', type=int, default=1,
@@ -108,13 +110,14 @@ def extract_stats(file):
                  messages_received, balls_sent, balls_received)
 
 
-def all_stats():
+def all_stats(files):
     print('Importing files...')
     bar = progressbar.ProgressBar()
-    for file in bar(args.files):
+    file_stats = []
+    for file in bar(files):
         with open(file, 'r') as f:
-            file_stats = extract_stats(f)
-        yield file_stats
+            file_stats.append(extract_stats(f))
+    return file_stats
 
 
 def global_time(experiment_nb, stats):
@@ -127,7 +130,11 @@ def global_time(experiment_nb, stats):
         yield (maximum_end - mininum_start)
 
 
-stats = list(all_stats())
+stats = []
+with multiprocessing.Pool(processes=4) as pool:
+    for result in pool.map(all_stats, args.files, chunksize=(len(args.files)//4)):
+        stats += result
+
 perfect_stats = [stat for stat in stats if stat.state == State.perfect]
 late_stats = [stat for stat in stats if stat.state == State.late]
 dead_stats = [stat for stat in stats if stat.state == State.dead]
