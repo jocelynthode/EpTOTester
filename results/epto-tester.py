@@ -2,12 +2,13 @@
 import argparse
 import csv
 import multiprocessing
-import numpy as np
-import progressbar
 import re
 import statistics
 from collections import namedtuple
 from enum import Enum
+
+import numpy as np
+import progressbar
 
 Stats = namedtuple('Stats', ['state', 'start_at', 'end_at', 'duration', 'msg_sent', 'msg_received',
                              'balls_sent', 'balls_received'])
@@ -17,6 +18,7 @@ class State(Enum):
     perfect = 1
     late = 2
     dead = 3
+
 
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('files', metavar='FILE', nargs='+', type=str,
@@ -32,8 +34,10 @@ CHURN_NUMBER = 17
 
 expected_ratio = 1 - (1 / (PEER_NUMBER ** args.constant))
 k = ttl = delta = 0
+local_deltas = []
 events_sent = {}
 events_delivered = {}
+
 
 # We must create our own iter because iter disables the tell function
 def textiter(file):
@@ -66,6 +70,9 @@ def extract_stats(file):
     delta = match_line(r'\d+ - Delta: (\d+)')
     start_at = match_line(r'(\d+) - Sending:')
     file.seek(0)  # Start again
+    events_sent = {}
+    events_delivered = {}
+    local_deltas = []
 
     # We want the last occurrence in the file
     def find_end():
@@ -78,10 +85,10 @@ def extract_stats(file):
             if match:
                 time = int(match.group(1))
                 event = match.group(2)
-                if event in events_delivered:
-                    events_delivered[event].append(time)
-                else:
-                    events_delivered[event] = [time]
+                events_delivered[event] = time
+                # Compute local deltas
+                if event in events_sent:
+                    local_deltas.append(events_delivered[event] - events_sent[event])
                 result = int(match.group(1))
                 pos = file.tell()
                 continue
@@ -94,6 +101,9 @@ def extract_stats(file):
                 state = State.late
 
         file.seek(pos)
+        if events_sent_count != len(local_deltas):
+            print(file)
+            print(events_sent_count, len(local_deltas))
         return textiter(file), result, events_sent_count, state
 
     it, end_at, evts_sent, state = find_end()
@@ -101,23 +111,34 @@ def extract_stats(file):
     # Only count complete peers
     if not balls_sent:
         return Stats(State.dead, start_at, end_at, end_at - start_at, evts_sent,
-                     None, None, None)
+                     None, None, None), events_sent, events_delivered, local_deltas
     balls_received = match_line(r'\d+ - Balls received: (\d+)')
     messages_sent = match_line(r'\d+ - Events sent: (\d+)')
     messages_received = match_line(r'\d+ - Events received: (\d+)')
 
     return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
-                 messages_received, balls_sent, balls_received)
+                 messages_received, balls_sent, balls_received), events_sent, events_delivered, local_deltas
 
 
 def all_stats(files):
     print('Importing files...')
     bar = progressbar.ProgressBar()
     file_stats = []
+    local_deltas = []
+    events_sent = {}
+    events_delivered = {}
     for file in bar(files):
         with open(file, 'r') as f:
-            file_stats.append(extract_stats(f))
-    return file_stats
+            file_stat, events_sent_temp, events_delivered_temp, local_deltas_temp = extract_stats(f)
+            file_stats.append(file_stat)
+            events_sent.update(events_sent_temp)
+            for event, time in events_delivered_temp.items():
+                if event in events_delivered:
+                    events_delivered[event].append(time)
+                else:
+                    events_delivered[event] = [time]
+            local_deltas += local_deltas_temp
+    return file_stats, events_sent, events_delivered, local_deltas
 
 
 def global_time(experiment_nb, stats):
@@ -131,9 +152,18 @@ def global_time(experiment_nb, stats):
 
 
 stats = []
+chunk = list(map(lambda x: x.tolist(), np.array_split(np.array(args.files), 4)))
+
 with multiprocessing.Pool(processes=4) as pool:
-    for result in pool.map(all_stats, args.files, chunksize=(len(args.files)//4)):
+    for result, events_sent_stats, events_delivered_stats, local_deltas_stats in pool.map(all_stats, chunk):
         stats += result
+        local_deltas += local_deltas_stats
+        events_sent.update(events_sent_stats)
+        for event, times in events_delivered_stats.items():
+            if event in events_delivered:
+                events_delivered[event] += times
+            else:
+                events_delivered[event] = times
 
 perfect_stats = [stat for stat in stats if stat.state == State.perfect]
 late_stats = [stat for stat in stats if stat.state == State.late]
@@ -239,14 +269,21 @@ with open('global-time-stats.csv', 'w', newline='') as csvfile:
     for duration in bar(global_times):
         writer.writerow({'global_time': duration})
 
-with open('delta-stats.csv', 'w', newline='') as csvfile:
+with open('local-delta-stats.csv', 'w', newline='') as csvfile:
     writer = csv.DictWriter(csvfile, ['delta'])
     writer.writeheader()
-    print('Writing delta to csv file...')
+    print('Writing local deltas to csv file...')
+    bar = progressbar.ProgressBar()
+    for delta in bar(local_deltas):
+        writer.writerow({'delta': delta})
+
+with open('global-delta-stats.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, ['delta'])
+    writer.writeheader()
+    print('Writing global deltas to csv file...')
     bar = progressbar.ProgressBar()
     for event, time in bar(events_sent.items()):
         times = events_delivered[event]
         deltas = [a_time - time for a_time in times]
         for delta in deltas:
             writer.writerow({'delta': delta})
-

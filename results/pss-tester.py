@@ -1,11 +1,9 @@
 #!/usr/bin/env python3.5
-import re
-import sys
-from pathlib import Path
-
 import argparse
-import networkx as nx
+import re
 import statistics as stats
+
+import networkx as nx
 
 graph = []
 

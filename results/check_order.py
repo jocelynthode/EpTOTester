@@ -1,9 +1,10 @@
 #!/usr/bin/env python3.5
-import re
-from collections import namedtuple
 import argparse
 import difflib
 import logging
+import re
+from collections import namedtuple
+
 import progressbar
 
 Stats = namedtuple('Stats', ['events'])
@@ -13,6 +14,7 @@ is_out_of_order = False
 class OutOfOrderException(Exception):
     """Raised when events aren't in order"""
     pass
+
 
 parser = argparse.ArgumentParser(description='Process EpTO logs')
 parser.add_argument('files', metavar='FILE', nargs='+', type=str,
@@ -34,6 +36,7 @@ def all_events():
         with open(file, 'r') as f:
             uuids = extract_events(f)
         yield f.name, uuids
+
 
 sent_events = []
 
@@ -76,11 +79,12 @@ def verify_if_mismatch(base_list, mismatched, step, new_value):
         if event in mismatched:
             raise OutOfOrderException
 
+
 events = {}
 for name, stats in all_events():
     events[name] = stats.events
 
-least_holes_file = max(events.items(), key=lambda a_tuple:  len(a_tuple[1]))
+least_holes_file = max(events.items(), key=lambda a_tuple: len(a_tuple[1]))
 complete_list = least_holes_file[1]
 logging.debug('least_holes filename: {:s}'.format(least_holes_file[0]))
 
