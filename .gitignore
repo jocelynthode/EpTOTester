@@ -193,3 +193,4 @@ gradle-app.setting
 /results/pss/*.tar.gz
 **/*.csv
 **/__pycache__
+!/results/requirements.txt
