@@ -56,6 +56,7 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
             return
         }
         gossipMessagesSent++
+        logger.debug("Balls sent: {}", gossipMessagesReceived)
     }
 
     /**

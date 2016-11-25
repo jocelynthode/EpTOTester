@@ -74,6 +74,7 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
                     inputStream.close()
                     disseminationComponent.receive(receivedBall)
                     core.gossipMessagesReceived++
+                    logger.debug("Balls received: {}", core.gossipMessagesReceived)
                 }
             } catch (e: IOException) {
                 isRunning = false
