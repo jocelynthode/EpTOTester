@@ -197,9 +197,9 @@ print("-------------------------------------------")
 print("Least time to deliver in total : %d ms" % mininum)
 print("Most time to deliver in total : %d ms" % maximum)
 print("Average time to deliver per peer in total: %d ms" % average)
-print("Population std fo the time to deliver: %f ms" % statistics.pstdev(durations))
+print("Population std fo the time to deliver: %f ms" % statistics.pstdev(durations, average))
 print("Average global time to deliver on all peers per experiment: %d ms" % global_average)
-print("Population std fo the time to deliver: %f ms" % statistics.pstdev(global_times))
+print("Population std fo the time to deliver: %f ms" % statistics.pstdev(global_times, global_average))
 print("-------------------------------------------")
 messages_sent = [stat.msg_sent for stat in stats if stat.msg_sent]
 messages_received = [stat.msg_received for stat in perfect_stats if stat.msg_received]
@@ -218,6 +218,7 @@ print("Average balls sent per experiment (for peers alive at the end): %f" % ave
 print("Average balls received per experiment (for peers alive at the end): %f" % average_balls_received)
 print("Average ratio balls received/sent per experiment: %f" % (average_balls_received / average_balls_sent))
 print("-------------------------------------------")
+stats_events_sent = []
 for i in range(experiments_nb):
     start_index_sent = i * stats_length
     end_index_sent = start_index_sent + stats_length
@@ -225,6 +226,7 @@ for i in range(experiments_nb):
     end_index_received = start_index_received + perfect_length
     sent_sum = sum(messages_sent[start_index_sent:end_index_sent])
     messages_received_split = messages_received[start_index_received:end_index_received]
+    stats_events_sent.append(sent_sum)
     print("Experiment %d:" % (i + 1))
     print("Total events sent: %d" % sent_sum)
     print("Total events received on average: %f"
@@ -287,3 +289,11 @@ with open('global-delta-stats.csv', 'w', newline='') as csvfile:
         deltas = [a_time - time for a_time in times]
         for delta in deltas:
             writer.writerow({'delta': delta})
+
+with open('event-sent-stats.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, ['events-sent'])
+    writer.writeheader()
+    print('Writing events sent to csv file...')
+    bar = progressbar.ProgressBar()
+    for event_sent in stats_events_sent:
+        writer.writerows({'events-sent': event_sent})

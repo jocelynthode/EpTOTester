@@ -21,6 +21,8 @@ parser.add_argument('--local-delta-times', metavar='FILE', nargs='+', type=str,
                     help='the files to parse', required=False)
 # parser.add_argument('--global-delta-times', metavar='FILE', nargs='+', type=str,
 #                     help='the files to parse', required=False)
+parser.add_argument('--events-sent', metavar='FILE', nargs='+', type=str,
+                    help='the files to parse', required=False)
 parser.add_argument('-n', '--name', type=str, help='the name of the file to write the result to',
                     default='plot')
 args = parser.parse_args()
@@ -37,6 +39,8 @@ def open_files():
                 test = 'JGroups-{:s}'.format(match.group(2))
             elif 'epto' in match.group(1).casefold():
                 test = 'EpTO-{:s}'.format(match.group(2))
+            else:
+                raise EnvironmentError("Couldn't find a folder named after either EpTO or JGroups")
         else:
             experiment_nb = -1
             test = 'none'
@@ -87,6 +91,35 @@ means['recv-error'] = std['recv'].values
 means['send-error'] = std['send'].values
 means.to_csv('total-bytes-sent-recv.csv')
 
+
+def open_events(files):
+    dfs = []
+    bar = progressbar.ProgressBar()
+    for file in bar(files):
+        match = re.match('(.+)/results.*/(.+)/.*\.csv', file)
+        if match:
+            if 'jgroups' in match.group(1).casefold():
+                test = 'JGroups-{:s}'.format(match.group(2))
+            elif 'epto' in match.group(1).casefold():
+                test = 'EpTO-{:s}'.format(match.group(2))
+            else:
+                raise EnvironmentError("Couldn't find a folder named after either EpTO or JGroups")
+        else:
+            test = 'none'
+        df = pd.read_csv(file)
+        df['test'] = test
+        dfs.append(df)
+    return dfs
+
+
+plt.figure()
+event_sent_dfs = pd.concat(open_events(args.events_sent)).groupby('test')
+means = event_sent_dfs.mean()
+std = event_sent_dfs.std()
+ax = means.plot.bar(yerr=std, figsize=(20, 20), rot=30)
+means['recv-error'] = std['recv'].values
+means['send-error'] = std['send'].values
+means.to_csv('total-events-sent.csv')
 
 def open_times(files):
     dfs = []
@@ -152,3 +185,4 @@ create_cdf_plot(local_delta_dfs, '{:s}-local-deltas-cdf'.format(args.name), 'Loc
 
 # global_delta_dfs = open_times(args.global_delta_times)
 # create_cdf_plot(global_delta_dfs, '{:s}-global-deltas-cdf'.format(args.name), 'Global Deltas')
+
