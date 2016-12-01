@@ -153,6 +153,7 @@ gradle-app.setting
 *.acr
 *.alg
 *.aux
+*.auxlock
 *.bbl
 *.bcf
 *.blg
