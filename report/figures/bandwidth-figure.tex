@@ -1,0 +1,91 @@
+\begin{tikzpicture}
+\usetikzlibrary{plotmarks}
+\pgfplotsset{
+	height=4cm,
+	width=\linewidth / 2.6,
+	every axis plot post/.append style={
+		solid,
+		very thin,
+		mark=none
+	},
+	/pgfplots/area cycle list/.style={/pgfplots/cycle list={%
+			{black,fill=black,mark=none},%
+			{black,fill=white!25!black,mark=none},%
+			{black,fill=white!50!black,mark=none},%
+			{black,fill=white!75!black,mark=none},%
+			{black,fill=white,mark=none},%
+		}
+	},
+}
+\begin{groupplot}[
+ymajorgrids,
+group style={
+	group size=3 by 2,
+	vertical sep=8mm,
+	horizontal sep=6mm,
+	xlabels at=edge bottom,
+	ylabels at=edge left,
+	yticklabels at=edge left,
+},
+stack plots=y,area style, enlarge x limits=false, 
+ymin=0,
+xmin=0,
+ymax=4.5,
+ytick={0,1,2,3,4},
+yticklabels={0,1,2,3,4},
+ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
+xlabel={Time $\left[\si{\second}\right]$},
+legend columns=5,
+legend cell align=left,
+legend style={at={(1.9,1.5)},anchor=north, font=\small, draw=none},]
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},
+yticklabels={0,1,2,3,4},]
+\addplot table[x=time,y=EpTO-50-1sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-1sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-1sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-1sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-1sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\legend{0, 0.25, 0.5, 0.75, 1}
+%
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},]
+\addplot table[x=time,y=EpTO-50-2sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-2sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-2sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-2sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-50-2sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+%
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},]
+\addplot table[x=time,y=EpTO-100-1sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-100-1sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-100-1sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-100-1sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=EpTO-100-1sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+%
+\nextgroupplot[ymax=1.5,ytick={0,0.5,1,1.5},yticklabels={0,0.5,1,1.5},]
+\addplot table[x=time,y=JGroups-50-1sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-1sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-1sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-1sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-1sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+%
+\nextgroupplot[ymax=1.5,ytick={0,0.5,1,1.5},]
+\addplot table[x=time,y=JGroups-50-2sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-2sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-2sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-2sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-50-2sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+%
+\nextgroupplot[ymax=1.5,ytick={0,0.5,1,1.5},]
+\addplot table[x=time,y=JGroups-100-1sec-0.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-100-1sec-0.250000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-100-1sec-0.500000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-100-1sec-0.750000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\addplot table[x=time,y=JGroups-100-1sec-1.000000, col sep=comma]{csv-data/average-bytes-sent-recv.csv} \closedcycle;
+\end{groupplot}
+%
+\node[anchor=south] at (group c1r1.north) {50-1sec};
+\node[anchor=south] at (group c2r1.north) {50-2sec};
+\node[anchor=south] at (group c3r1.north) {100-1sec};
+\node[anchor=south, rotate=-90] at (group c3r1.east){EpTO};
+\node[anchor=south, rotate=-90] at (group c3r2.east){JGroups};
+\end{tikzpicture}

@@ -184,6 +184,8 @@ gradle-app.setting
 *.vrb
 *.xdy
 *.tdo
+*.csv#
+report/generated-figures/*
 
 /results/*.txt
 /results/pss/*.txt
@@ -191,6 +193,7 @@ gradle-app.setting
 /cluster/hosts
 /results/*.tar.gz
 /results/pss/*.tar.gz
-**/*.csv
+/results/**/*.csv
 **/__pycache__
 !/results/requirements.txt
+

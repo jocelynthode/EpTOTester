@@ -1,0 +1,83 @@
+\begin{tikzpicture}
+\usetikzlibrary{plotmarks}
+\pgfplotsset{width=\linewidth, height=4.7cm}
+\begin{groupplot}[
+group style={
+	group size=3 by 1,
+	vertical sep=0pt,
+	horizontal sep=2mm,
+	xlabels at=edge bottom,
+	ylabels at=edge left,
+	xticklabels at=edge bottom,
+	yticklabels at=edge left,
+},
+ymin=0,
+ymax=35,
+width=\linewidth / 2.5,
+enlarge x limits=0.3,
+ybar=0,
+/pgf/bar width=3mm,
+/pgfplots/area legend,
+nodes near coords,
+legend style={
+	anchor=north west,
+	at={(0.3,0.97)},
+	cells={anchor=west},
+	draw=none,
+},
+every node near coord/.append style={
+	rotate=90,
+	anchor=north,
+	font=\tiny,
+	xshift=3mm,
+	yshift=0.3mm,
+},
+ymajorgrids,
+xtick=data,
+xlabel=Protocol,
+ylabel={Total $\left[\si{\giga\byte}\right]$},
+symbolic x coords={EpTO, JGroups},
+]
+\nextgroupplot
+% 50-1sec
+\addplot+[mark=none, pattern=north east lines,pattern color=blue, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 10.8956669416) +- (0, 0.112678096321221)
+	(JGroups, 0.6420599937) +- (0, 0.0164341768113215)
+};
+\addplot+[mark=none, pattern=crosshatch dots,pattern color=red, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Send
+	(EpTO, 10.8952655703) +- (0, 0.112677849128705)
+	(JGroups, 0.628793349) +- (0, 0.0164560780074577)
+};
+\legend{receive, send}
+\nextgroupplot
+% 50-2sec
+\addplot+[mark=none, pattern=north east lines,pattern color=blue, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 22.1900560357) +- (0, 0.513548491076014)
+	(JGroups, 1.1888473068) +- (0, 0.0236261886904278)
+};
+\addplot+[mark=none, pattern=crosshatch dots,pattern color=red, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Send
+	(EpTO, 22.1896583376) +- (0, 0.513548672987696)
+	(JGroups, 1.1756330318) +- (0, 0.0236412207168411)
+};
+\nextgroupplot
+% 100-1sec
+\addplot+[mark=none, pattern=north east lines,pattern color=blue, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 25.9895900054) +- (0, 0.285368750128887)
+	(JGroups, 1.6842673321) +- (0, 0.014352534074787)
+};
+\addplot+[mark=none, pattern=crosshatch dots,pattern color=red, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Send
+	(EpTO, 25.9864516777) +- (0, 0.285365521649361)
+	(JGroups, 1.6291726389) +- (0, 0.0124299318567327)
+};
+\end{groupplot}
+%
+\node[anchor=south] at (group c1r1.north) {50-1sec};
+\node[anchor=south] at (group c2r1.north) {50-2sec};
+\node[anchor=south] at (group c3r1.north) {100-1sec};
+\end{tikzpicture}

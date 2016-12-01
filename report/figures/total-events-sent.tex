@@ -1,0 +1,69 @@
+\begin{tikzpicture}
+\usetikzlibrary{plotmarks}
+\pgfplotsset{width=\linewidth, height=4.7cm}
+\begin{groupplot}[
+group style={
+	group size=3 by 1,
+	vertical sep=0pt,
+	horizontal sep=2mm,
+	xlabels at=edge bottom,
+	ylabels at=edge left,
+	xticklabels at=edge bottom,
+	yticklabels at=edge left,
+},
+ymin=40000,
+ymax=155000,
+width=\linewidth / 2.5,
+enlarge x limits=0.3,
+ybar=0,
+/pgf/bar width=3mm,
+/pgfplots/area legend,
+nodes near coords,
+legend style={
+	anchor=north west,
+	at={(0.3,0.97)},
+	cells={anchor=west},
+	draw=none,
+},
+every node near coord/.append style={
+	rotate=90,
+	anchor=north,
+	font=\tiny,
+	xshift=5mm,
+	yshift=1mm,
+},
+ymajorgrids,
+xtick=data,
+xlabel=Protocol,
+ylabel={Events sent},
+scaled ticks=false, tick label style={/pgf/number format/fixed},
+symbolic x coords={EpTO, JGroups},
+]
+\nextgroupplot
+% 50-1sec
+\addplot[mark=none, pattern=north east lines, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 59994.9) +- (0, 2.76686746259348)
+	(JGroups, 59993) +- (0, 15.1217282962848)
+};
+%
+\nextgroupplot
+% 50-2sec
+\addplot[mark=none, pattern=north east lines, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 119908.5) +- (0, 8.04501225742594)
+	(JGroups, 119924.7) +- (0, 5.69697775628018)
+};
+\nextgroupplot
+% 100-1sec
+\addplot[mark=none, pattern=north east lines, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 59993) +- (0, 237.827201509368)
+	(JGroups, 59974.6) +- (0, 216.060279654648)
+};
+\end{groupplot}
+%
+\node[anchor=south] at (group c1r1.north) {50-1sec};
+\node[anchor=south] at (group c2r1.north) {50-2sec};
+\node[anchor=south] at (group c3r1.north) {100-1sec};
+\end{tikzpicture}
