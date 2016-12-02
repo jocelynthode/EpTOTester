@@ -236,9 +236,11 @@ if __name__ == '__main__':
                 # Wait until only stopped containers are still alive
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
             else:
-                raise NotImplementedError
-                # TODO find how much time the trace we want use is going for and the sleep this duration
-                # TODO Then stop
+                while threading.active_count() > 1:
+                    logging.debug('Thread count: {:d}'.format(threading.active_count()))
+                    time.sleep(5)
+                time.sleep(600)  # Wait 10 more minutes
+
         else:
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running without churn')
