@@ -12,9 +12,9 @@
 \end{figure}
 In \autoref{fig:bandwidth} we can see \epto has a worse baseline compared to \jgroups. It uses a median bandwidth of approximately \SI{1}{\mbps} for the smallest benchmark whereas \jgroups uses a median bandwidth of less than \SI{0.2}{\mbps}. However, in \jgroups most of the work is done solely by the coordinator. We can clearly see this as the 100th percentile is much higher than the rest and uses approximately \SI{.5}{\mbps}.
 
-Comparing \epto and \jgroups in terms of bandwidth when we increase the number of events sent per second, we can see the bandwidth doubling in both cases. In lower peers scenario such as the ones presented in \autoref{fig:bandwidth} \jgroups has the upper hand. Since \epto has a worse baseline we will reach the maximum bandwidth possible much quicker when increasing the event throughput.
+Comparing \epto and \jgroups in terms of bandwidth when we increase the number of events sent per second, we can see the bandwidth doubling in both cases.In lower peers scenario such as the ones presented in \autoref{fig:bandwidth} \jgroups is clearly at an advantage. Since \epto has a worse baseline we will reach the maximum bandwidth possible much quicker when increasing the event throughput.
 
-Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto is performing better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it by 50\% or less. \jt{logarithmic I think as per the formula}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum bandwidth.
+Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto is performing better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it by 50\% or less. \jt{logarithmic I think as was expected}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum bandwidth.
 
 \begin{figure}
 	\centering
@@ -46,7 +46,7 @@ Even when not killing the coordinator, \jgroups suffers from the churn. We can s
 	\vspace{-2mm} 
 	\label{fig:total-bandwidth}
 \end{figure}
-In \autoref{fig:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c*n*\log_2 n$ messages per events and \jgroups sends at minimum $n$ messages per event so we should have at least $c*\log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
+In \autoref{fig:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c*n*\log_2 n$ messages per events and \jgroups sends at least $n$ messages per event so we should have at least $c*\log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
 
 \begin{figure}[h]
 	\centering
@@ -58,7 +58,7 @@ In \autoref{fig:total-bandwidth}, \epto has a worse baseline than \jgroups. This
 \end{figure}
 In \autoref{fig:total-bandwidth-churn} we can see that \jgroups total bandwidth usage doesn't increase significantly compared to \epto with churn. An explanation for this phenomenon is that \jgroups takes more than a minute to find out the coordinator is effectively dead. During this time the bandwidth is practically not used. The big spike when the new coordinator is chosen compensates for this hole thus making the total bandwidth used appear as to not have changed.
 
-The fact that killing the coordinator or not is of no effect on the total bandwidth used tends to show the hypothesis to be correct.
+The fact that killing the coordinator or not has no effect on the total bandwidth used tends to show the hypothesis to be correct.
 \subsection{Local Times}
 \label{sub:local-times}
 \jt{Having a table for each percentile figure might be a good idea to put numbers for key percentiles (min,50th,max) for example}
@@ -99,7 +99,7 @@ In \autoref{fig:local-times}, \jgroups delivers all events quicker than \epto in
 	\vspace{-2mm} 
 	\label{fig:global-times-churn} 
 \end{figure}
-We computed global times as well. They are represented in \autoref{fig:global-times} and \autoref{fig:global-times-churn}. These global times are of less interest than their local counterpart as they differences in clocks between hosts can skew this measurement.
+We computed global times as well. They are represented in \autoref{fig:global-times} and \autoref{fig:global-times-churn}. These global times are of less interest than their local counterpart as the differences in clocks between hosts can skew this measurement.
 
 Nonetheless, here too we can see that \epto is consistently slower than \jgroups for the same reason as stated in \autoref{sub:local-times}.
 \newpage
@@ -151,6 +151,6 @@ In \autoref{fig:total-events} we can see that both \epto and \jgroups deliver th
 
 In \autoref{fig:total-events-churn} When only killing nodes, \epto and \jgroups again deliver the same amount of events.
 
-However when killing and adding nodes, we notice that \jgroups delivers more than 2000 less events than \epto, even when the coordinator is not killed.
+However when killing and adding nodes \epto is clearly superior, delivering more than 2000 more events than \jgroups, even when \jgroups coordinator is not killed.
 
 We are not sure why this is happening, but one hypothesis is that \jgroups peers take a longer time to join the cluster and thus start sending events later. Since the benchmarks start and stop at a given time, they send less events in total.
