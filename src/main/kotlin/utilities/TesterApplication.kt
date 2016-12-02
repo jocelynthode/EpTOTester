@@ -4,6 +4,8 @@ package utilities
 import epto.Application
 import epto.Event
 import java.net.InetAddress
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Implementation of an Application to test EpTO
@@ -18,6 +20,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
         Application(ttl, k, trackerURL, delta, myIp, gossipPort, pssPort) {
 
     var deliveredEvents = 0
+    private val sendTimes = ConcurrentHashMap<UUID, Long>()
 
     /**
      * Delivers the event to STDOUT
@@ -26,7 +29,13 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
      */
     override fun deliver(event: Event) {
         deliveredEvents++
-        logger.info("Delivered: [${event.sourceId}, ${event.timestamp}]")
+        if(sendTimes.containsKey(event.id)) {
+            val sendTime = sendTimes[event.id] as Long
+            val delta = System.nanoTime() - sendTime
+            logger.info("Delivered: [${event.sourceId}, ${event.timestamp}] -- Local Delta: $delta")
+        } else {
+            logger.info("Delivered: [${event.sourceId}, ${event.timestamp}]")
+        }
     }
 
     /**
@@ -35,6 +44,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
     override fun broadcast(event: Event) {
         super.broadcast(event)
         logger.info("Sending: [${event.sourceId}, ${event.timestamp}]")
+        sendTimes[event.id] = System.nanoTime()
     }
 
     /**
