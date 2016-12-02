@@ -125,7 +125,9 @@ if len(complete_list) == sent_events:
 # There might be a problem
 churn_problem = False
 if not no_problem:
-    for event in sent_events:
+    logging.info('Checking for possible churn problem...')
+    bar = progressbar.ProgressBar()
+    for event in bar(sent_events):
         if not any(True for event_list in events.values() if event in event_list):
             churn_problem = True
             logging.info('Event {:s} was never sent due to churn. Please remove it.'.format(event))

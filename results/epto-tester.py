@@ -296,4 +296,4 @@ with open('event-sent-stats.csv', 'w', newline='') as csvfile:
     print('Writing events sent to csv file...')
     bar = progressbar.ProgressBar()
     for event_sent in stats_events_sent:
-        writer.writerows({'events-sent': event_sent})
+        writer.writerow({'events-sent': event_sent})
