@@ -35,7 +35,7 @@ CHURN_NUMBER = 17
 expected_ratio = 1 - (1 / (PEER_NUMBER ** args.constant))
 k = ttl = delta = 0
 local_deltas = []
-events_sent = {}
+# events_sent = {}
 events_delivered = {}
 
 
@@ -70,7 +70,7 @@ def extract_stats(file):
     delta = match_line(r'\d+ - Delta: (\d+)')
     start_at = match_line(r'(\d+) - Sending:')
     file.seek(0)  # Start again
-    events_sent = {}
+    # events_sent = {}
     events_delivered = {}
     local_deltas = []
 
@@ -86,15 +86,16 @@ def extract_stats(file):
                 time = int(match.group(1))
                 event = match.group(2)
                 events_delivered[event] = time
-                # Compute local deltas
-                if event in events_sent:
-                    local_deltas.append(events_delivered[event] - events_sent[event])
+                local_match = re.match(r'\d+ - Delivered: .+ -- Local Delta: (\d+)', line)
+                if local_match:
+                    delta = int(local_match.group(1)) / (10**6)
+                    local_deltas.append(delta)
                 result = int(match.group(1))
                 pos = file.tell()
                 continue
             match = re.match(r'(\d+) - Sending: (\[.+\])', line)
             if match:
-                events_sent[match.group(2)] = int(match.group(1))
+                # events_sent[match.group(2)] = int(match.group(1))
                 events_sent_count += 1
                 continue
             if re.match(r'.+ - Time given was smaller than current time', line):
@@ -111,13 +112,13 @@ def extract_stats(file):
     # Only count complete peers
     if not balls_sent:
         return Stats(State.dead, start_at, end_at, end_at - start_at, evts_sent,
-                     None, None, None), events_sent, events_delivered, local_deltas
+                     None, None, None), events_delivered, local_deltas
     balls_received = match_line(r'\d+ - Balls received: (\d+)')
     messages_sent = match_line(r'\d+ - Events sent: (\d+)')
     messages_received = match_line(r'\d+ - Events received: (\d+)')
 
     return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
-                 messages_received, balls_sent, balls_received), events_sent, events_delivered, local_deltas
+                 messages_received, balls_sent, balls_received), events_delivered, local_deltas
 
 
 def all_stats(files):
@@ -125,20 +126,20 @@ def all_stats(files):
     bar = progressbar.ProgressBar()
     file_stats = []
     local_deltas = []
-    events_sent = {}
+    # events_sent = {}
     events_delivered = {}
     for file in bar(files):
         with open(file, 'r') as f:
-            file_stat, events_sent_temp, events_delivered_temp, local_deltas_temp = extract_stats(f)
+            file_stat, events_delivered_temp, local_deltas_temp = extract_stats(f)
             file_stats.append(file_stat)
-            events_sent.update(events_sent_temp)
+            # events_sent.update(events_sent_temp)
             for event, time in events_delivered_temp.items():
                 if event in events_delivered:
                     events_delivered[event].append(time)
                 else:
                     events_delivered[event] = [time]
             local_deltas += local_deltas_temp
-    return file_stats, events_sent, events_delivered, local_deltas
+    return file_stats, events_delivered, local_deltas
 
 
 def global_time(experiment_nb, stats):
@@ -155,10 +156,10 @@ stats = []
 chunk = list(map(lambda x: x.tolist(), np.array_split(np.array(args.files), 4)))
 
 with multiprocessing.Pool(processes=4) as pool:
-    for result, events_sent_stats, events_delivered_stats, local_deltas_stats in pool.map(all_stats, chunk):
+    for result, events_delivered_stats, local_deltas_stats in pool.map(all_stats, chunk):
         stats += result
         local_deltas += local_deltas_stats
-        events_sent.update(events_sent_stats)
+        # events_sent.update(events_sent_stats)
         for event, times in events_delivered_stats.items():
             if event in events_delivered:
                 events_delivered[event] += times
@@ -279,16 +280,16 @@ with open('local-delta-stats.csv', 'w', newline='') as csvfile:
     for delta in bar(local_deltas):
         writer.writerow({'delta': delta})
 
-with open('global-delta-stats.csv', 'w', newline='') as csvfile:
-    writer = csv.DictWriter(csvfile, ['delta'])
-    writer.writeheader()
-    print('Writing global deltas to csv file...')
-    bar = progressbar.ProgressBar()
-    for event, time in bar(events_sent.items()):
-        times = events_delivered[event]
-        deltas = [a_time - time for a_time in times]
-        for delta in deltas:
-            writer.writerow({'delta': delta})
+# with open('global-delta-stats.csv', 'w', newline='') as csvfile:
+#     writer = csv.DictWriter(csvfile, ['delta'])
+#     writer.writeheader()
+#     print('Writing global deltas to csv file...')
+#     bar = progressbar.ProgressBar()
+#     for event, time in bar(events_sent.items()):
+#         times = events_delivered[event]
+#         deltas = [a_time - time for a_time in times]
+#         for delta in deltas:
+#             writer.writerow({'delta': delta})
 
 with open('event-sent-stats.csv', 'w', newline='') as csvfile:
     writer = csv.DictWriter(csvfile, ['events-sent'])
