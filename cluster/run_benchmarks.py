@@ -48,8 +48,10 @@ def run_churn(time_to_start):
         logger.info(args.synthetic)
         nodes_trace = NodesTrace(synthetic=args.synthetic)
     else:
-        # TODO specify min and max time
-        nodes_trace = NodesTrace(database='websites02.db')
+        # Website02.db epoch starts 1st January 201. Exact formula obtained from Sebastien Vaucher
+        websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
+        nodes_trace = NodesTrace(database='websites02.db', min_time=websites_epoch + 22200,
+                                 max_time=websites_epoch + 22200 + 10800, time_factor=3)
 
     if args.local:
         hosts_fname = None
@@ -65,17 +67,16 @@ def run_churn(time_to_start):
     # Add initial cluster
     logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
     churn.add_processes(nodes_trace.initial_size())
-    nodes_trace.next()
     delay = int((time_to_start - (time.time() * 1000)) / 1000)
     logger.debug('Delay: {:d}'.format(delay))
     logger.info('Starting churn at {:s} UTC'
                 .format(datetime.utcfromtimestamp(time_to_start // 1000).isoformat()))
     time.sleep(delay)
     logger.info('Starting churn')
-
-    for _, to_kill, to_create in nodes_trace:
+    nodes_trace.next()
+    for size, to_kill, to_create in nodes_trace:
         logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
-                     .format(_, len(to_kill), len(to_create)))
+                     .format(size, len(to_kill), len(to_create)))
         churn.add_suspend_processes(len(to_kill), len(to_create))
         time.sleep(delta)
 
@@ -237,7 +238,7 @@ if __name__ == '__main__':
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
             else:
                 while threading.active_count() > 1:
-                    logging.debug('Thread count: {:d}'.format(threading.active_count()))
+                    logger.debug('Thread count: {:d}'.format(threading.active_count()))
                     time.sleep(5)
                 time.sleep(600)  # Wait 10 more minutes
 
