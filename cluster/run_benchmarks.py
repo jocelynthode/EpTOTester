@@ -115,6 +115,15 @@ def create_logger():
         conf = yaml.load(f)
         logging.config.dictConfig(conf)
 
+
+def normalized_double(s):
+    n = float(s)
+    if n < 0.0 or n > 1.0:
+        raise argparse.ArgumentTypeError("Message loss must be in the interval [0,1]")
+
+    return n
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run benchmarks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -140,8 +149,17 @@ if __name__ == '__main__':
                               help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
     churn_parser.add_argument('--delay', '-d', type=int, default=0,
                               help='With how much delay compared to the tester should the tester start in ms')
+    churn_parser.add_argument('--churn-rate', '-r', type=int, default=0,
+                              help='Specifies the upper bound of peers removed/added per round')
+    churn_parser.add_argument('--message-loss', '-m', type=normalized_double, default=0.0,
+                              help='Specifies the message loss of the network as a float value between 0 and 1')
 
     args = parser.parse_args()
+
+    if not args.churn:
+        args.churn_rate = 0
+        args.message_loss = 0.0
+
     if not args.fixed_rate:
         args.fixed_rate = args.peer_number
     if args.verbose:
@@ -216,8 +234,9 @@ if __name__ == '__main__':
         environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
                             'TIME': time_to_start, 'TIME_TO_RUN': args.time_to_run,
                             'RATE': args.rate, 'FIXED_RATE': args.fixed_rate,
-                            'CONSTANT': args.constant}
-        environment_vars = ['{:s}={:d}'.format(k, v) for k, v in environment_vars.items()]
+                            'CONSTANT': args.constant, 'CHURN_RATE': args.churn_rate,
+                            'MESSAGE_LOSS': args.message_loss}
+        environment_vars = ['{:s}={}'.format(k, v) for k, v in environment_vars.items()]
         logger.debug(environment_vars)
 
         service_replicas = 0 if args.churn else args.peer_number
@@ -227,7 +246,8 @@ if __name__ == '__main__':
 
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
-            thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
+            thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
+            thread.start()
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
