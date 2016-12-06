@@ -26,7 +26,7 @@ if args.verbose:
     log_level = logging.DEBUG
 else:
     log_level = logging.INFO
-logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level, filename='order.log')
 
 
 def all_events():
@@ -77,6 +77,7 @@ def verify_if_mismatch(base_list, mismatched, step, new_value):
     logging.debug(base_list[step:new_value])
     for event in base_list[step:new_value]:
         if event in mismatched:
+            logging.error("{:s} is mismatched".format(event))
             raise OutOfOrderException
 
 
@@ -130,6 +131,6 @@ if not no_problem:
     for event in bar(sent_events):
         if not any(True for event_list in events.values() if event in event_list):
             churn_problem = True
-            logging.info('Event {:s} was never sent due to churn. Please remove it.'.format(event))
+            logging.info('TO IGNORE: {:s}'.format(event))
 if no_problem or not churn_problem:
     logging.info('All events claimed to be sent were sent')
