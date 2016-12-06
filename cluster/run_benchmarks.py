@@ -78,7 +78,7 @@ def run_churn(time_to_start):
         logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
                      .format(size, len(to_kill), len(to_create)))
         churn.add_suspend_processes(len(to_kill), len(to_create))
-        time.sleep(delta)
+        time.sleep(delta / 1000)
 
     logger.info('Churn finished')
 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
     churn_parser = subparsers.add_parser('churn', help='Activate churn')
     churn_parser.add_argument('period', type=int,
-                              help='The interval between killing/adding new containers in s')
+                              help='The interval between killing/adding new containers in ms')
     churn_parser.add_argument('--synthetic', '-s', metavar='N', type=churn_tuple, nargs='+',
                               help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
     churn_parser.add_argument('--delay', '-d', type=int, default=0,
@@ -227,7 +227,7 @@ if __name__ == '__main__':
 
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
-            threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
+            thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
@@ -237,9 +237,7 @@ if __name__ == '__main__':
                 # Wait until only stopped containers are still alive
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
             else:
-                while threading.active_count() > 1:
-                    logger.debug('Thread count: {:d}'.format(threading.active_count()))
-                    time.sleep(5)
+                thread.join()  # Wait for churn to finish
                 time.sleep(600)  # Wait 10 more minutes
 
         else:
