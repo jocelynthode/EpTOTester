@@ -55,8 +55,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             }
 
             val partner = selectPartner()
-            view.remove(partner)
-            val toSend = selectToSend(true)
+            val toSend = selectToSend(true, partner)
             core.sendPss(toSend, partner.address)
         }
     }
@@ -119,7 +118,8 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      *
      * @return subview
      */
-    fun selectToSend(isPush: Boolean = true): ByteArray {
+    fun selectToSend(isPush: Boolean = true, partner: PeerInfo?): ByteArray {
+        if(partner != null) view.remove(partner)
         val toSend = ArrayList<PeerInfo>()
 
         Collections.shuffle(view)
@@ -140,6 +140,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
             }
         }
         toSend.add(PeerInfo(core.myIp))
+        if (partner != null) view.add(partner)
         return asByteArray(isPush, toSend)
     }
 
