@@ -2,6 +2,7 @@
 import argparse
 import csv
 import multiprocessing
+import logging
 import re
 import statistics
 from collections import namedtuple
@@ -30,6 +31,7 @@ parser.add_argument('-e', '--experiments-nb', metavar='EXPERIMENT_NB', type=int,
 parser.add_argument('-i', '--ignore-events', metavar='FILE', type=argparse.FileType('r'),
                     help='File containing unsent events due to churn (Given by check_order.py)')
 args = parser.parse_args()
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 experiments_nb = args.experiments_nb
 PEER_NUMBER = len(args.files) // experiments_nb
 ignored_events = []
@@ -61,7 +63,7 @@ def extract_stats(file):
     it = textiter(file)  # Force re-use of same iterator
 
     def match_line(regexp_str):
-        result = 0
+        result = None
         for line in it:
             match = re.match(regexp_str, line)
             if match:
@@ -78,11 +80,11 @@ def extract_stats(file):
     # We want the last occurrence in the file
     def find_end():
         result = None
-        pos = None
+        pos = file.tell()
         events_sent_count = 0
         state = State.perfect
-        balls_sent = None
-        balls_received = None
+        bls_sent = None
+        bls_received = None
         for line in it:
             match = re.match(r'(\d+) - Delivered: (\[.+\])|(\d+) - Sending: (\[.+\])|'
                              r'.+ - Balls sent: (\d+)|.+ - Balls received: (\d+)|'
@@ -109,29 +111,37 @@ def extract_stats(file):
                     print(match.group(4))
                 continue
             elif match.group(5):
-                balls_sent = int(match.group(5))
+                bls_sent = int(match.group(5))
                 continue
             elif match.group(6):
-                balls_received = int(match.group(6))
+                bls_received = int(match.group(6))
                 continue
             else:
                 state = State.late
 
         file.seek(pos)
-        return textiter(file), result, events_sent_count, balls_sent, balls_received, state
+        return textiter(file), result, events_sent_count, bls_sent, bls_received, state
 
     it, end_at, evts_sent, tmp_balls_sent, tmp_balls_received, state = find_end()
+
     balls_sent = match_line(r'\d+ - Total Balls sent: (\d+)')
     # Only count complete peers
-    if not balls_sent:
-        return Stats(State.dead, start_at, end_at, end_at - start_at, evts_sent,
+    if balls_sent is None:
+        return Stats(State.dead, None, None, None, evts_sent,
                      None, tmp_balls_sent, tmp_balls_received), events_sent, events_delivered, local_deltas
     balls_received = match_line(r'\d+ - Total Balls received: (\d+)')
     messages_sent = match_line(r'\d+ - Events sent: (\d+)')
     messages_received = match_line(r'\d+ - Events received: (\d+)')
-
-    return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
-                 messages_received, balls_sent, balls_received), events_sent, events_delivered, local_deltas
+    if state == State.late:
+        return Stats(state, None, None, None, messages_sent,
+                     None, balls_sent, balls_received), events_sent, events_delivered, local_deltas
+    else:
+        print(state)
+        print(messages_received)
+        print(len(events_delivered))
+        print(file)
+        return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
+                     messages_received, balls_sent, balls_received), events_sent, events_delivered, local_deltas
 
 
 def all_stats(files):
@@ -198,6 +208,8 @@ perfect_stats = [stat for stat in stats if stat.state == State.perfect]
 late_stats = [stat for stat in stats if stat.state == State.late]
 dead_stats = [stat for stat in stats if stat.state == State.dead]
 
+print([stat.msg_received for stat in perfect_stats])
+
 stats_length = len(stats) / experiments_nb
 perfect_length = len(perfect_stats) / experiments_nb
 late_length = len(late_stats) / experiments_nb
@@ -234,8 +246,9 @@ print("Population std fo the time to deliver: %f ms" % statistics.pstdev(global_
 print("-------------------------------------------")
 messages_sent = [stat.msg_sent for stat in stats]
 messages_received = [stat.msg_received for stat in perfect_stats]
-balls_sent = [stat.balls_sent for stat in stats if stat.balls_sent]
-balls_received = [stat.balls_received for stat in stats if stat.balls_received]
+balls_sent = [stat.balls_sent for stat in stats]
+balls_received = [stat.balls_received for stat in stats]
+print(len(stats))
 print(len(balls_sent))
 print(len(balls_received))
 print("-----------")
