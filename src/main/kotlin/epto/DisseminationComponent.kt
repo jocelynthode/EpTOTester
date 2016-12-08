@@ -34,7 +34,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     private val logger by logger()
 
     private val scheduler: ScheduledExecutorService
-    private val nextBall = HashMap<UUID, Event>()
+    private val nextBall = HashMap<String, Event>()
     private val nextBallLock = Any()
     private val periodicDissemination: Runnable
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
@@ -69,7 +69,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         event.timestamp = oracle.incrementAndGetClock()
         event.sourceId = peer.uuid
         synchronized(nextBallLock) {
-            nextBall.put(event.id, event)
+            nextBall.put(event.toIdentifier(), event)
         }
     }
 
@@ -79,19 +79,19 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      *
      * @param ball The received ball
      */
-    internal fun receive(ball: HashMap<UUID, Event>) {
+    internal fun receive(ball: HashMap<String, Event>) {
         logger.debug("Receiving a new ball of size: {}", ball.size)
         logger.debug("Ball will relay {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
-        ball.forEach { eventId, event ->
+        ball.forEach { eventIdentifier, event ->
             if (event.ttl.get() < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {
-                    val nextBallEvent = nextBall[eventId]
+                    val nextBallEvent = nextBall[eventIdentifier]
                     if (nextBallEvent != null) {
                         if (nextBallEvent.ttl.get() < event.ttl.get()) {
                             nextBallEvent.ttl.set(event.ttl.get())
                         }
                     } else {
-                        nextBall.put(eventId, event)
+                        nextBall.put(eventIdentifier, event)
                     }
                 })
             }

@@ -26,7 +26,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
      */
     override fun deliver(event: Event) {
         deliveredEvents++
-        logger.info("Delivered: [${event.sourceId}, ${event.timestamp}]")
+        logger.info("Delivered: ${event.toIdentifier()}")
     }
 
     /**
@@ -34,7 +34,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
      */
     override fun broadcast(event: Event) {
         super.broadcast(event)
-        logger.info("Sending: [${event.sourceId}, ${event.timestamp}]")
+        logger.info("Sending: ${event.toIdentifier()}")
     }
 
     /**

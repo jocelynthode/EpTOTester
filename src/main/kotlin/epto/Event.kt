@@ -65,6 +65,10 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
         return "Event{id=$id, timestamp=$timestamp, ttl=$ttl, sourceId=$sourceId}"
     }
 
+    internal fun toIdentifier(): String {
+        return "[$sourceId, $timestamp]"
+    }
+
     fun serialize(out: FSTObjectOutput) {
         out.writeLong(this.id.mostSignificantBits)
         out.writeLong(this.id.leastSignificantBits)
