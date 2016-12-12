@@ -32,9 +32,9 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
         if(sendTimes.containsKey(event.id)) {
             val sendTime = sendTimes[event.id] as Long
             val delta = System.nanoTime() - sendTime
-            logger.info("Delivered: [${event.sourceId}, ${event.timestamp}] -- Local Delta: $delta")
+            logger.info("Delivered: ${event.toIdentifier()} -- Local Delta: $delta")
         } else {
-            logger.info("Delivered: [${event.sourceId}, ${event.timestamp}]")
+            logger.info("Delivered: ${event.toIdentifier()}")
         }
     }
 
@@ -43,7 +43,7 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
      */
     override fun broadcast(event: Event) {
         super.broadcast(event)
-        logger.info("Sending: [${event.sourceId}, ${event.timestamp}]")
+        logger.info("Sending: ${event.toIdentifier()}")
         sendTimes[event.id] = System.nanoTime()
     }
 
@@ -65,12 +65,13 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
     override fun stop() {
         peer.stop()
         logger.info("Quitting EpTO tester")
-        logger.info("Balls sent: ${peer.core.gossipMessagesSent}")
-        logger.info("Balls received: ${peer.core.gossipMessagesReceived}")
+        logger.info("Total Balls sent: ${peer.core.gossipMessagesSent}")
+        logger.info("Total Balls received: ${peer.core.gossipMessagesReceived}")
         logger.info("PSS messages sent: ${peer.core.pssMessagesSent}")
         logger.info("PSS messages received: ${peer.core.pssMessagesReceived}")
         logger.info("Events sent: ${Main.Companion.eventsSent}")
         logger.info("Events received: $deliveredEvents")
         logger.info("Events received but not delivered: ${peer.orderingComponent.received.size}")
+        logger.debug("Received events: {}", peer.orderingComponent.received.keys.joinToString())
     }
 }

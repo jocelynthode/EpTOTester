@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 '''
 __author__ = "Jocelyn Thode"
 
@@ -7,20 +7,22 @@ inspired from a script from Sebastien Vaucher
 
 # import pydevd
 import random
+import logging
 
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 available_peers = {}
-K = 20
+K = 25
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
 
 def florida_string(ip):
     available_peers[ip] = int(time.time())
 
     to_choose = list(available_peers.keys())
+    logging.info("View size: {:d}".format(len(to_choose)))
     to_choose.remove(ip)
-
     if len(to_choose) > K:
         to_send = random.sample(to_choose, K)
     else:

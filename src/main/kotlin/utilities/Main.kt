@@ -10,6 +10,11 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import net.sourceforge.argparse4j.inf.ArgumentType
+import net.sourceforge.argparse4j.inf.ArgumentParser
+import net.sourceforge.argparse4j.inf.Argument
+
+
 
 /**
  * Main class used to start the benchmarks
@@ -57,9 +62,28 @@ class Main {
                     .type(Integer.TYPE)
                     .setDefault(10453)
             parser.addArgument("-u", "--fixed-rate")
-                    .help("If this option is set a probability will be calculated to ensure the overall event broadcast rate is at the value fixed (events/s")
+                    .help("If this option is set a probability will be calculated to ensure the overall event broadcast rate is at the value fixed (events/s)")
                     .type(Integer.TYPE)
                     .setDefault(-1)
+            parser.addArgument("--churn-rate")
+                    .help("Specifies the upper bound of peers removed/added per round")
+                    .type(Integer.TYPE)
+                    .setDefault(0)
+            parser.addArgument("--message-loss")
+                    .help("Specifies the message loss of the network as a float value between 0 and 1")
+                    .type(ArgumentType(@Suppress("UNUSED_PARAMETER")
+                    fun(parser: ArgumentParser, arg: Argument, value: String):Double {
+                        try {
+                            val n = value.toDouble()
+                            if (n > 1.0 || n < 0.0) {
+                                throw ArgumentParserException("Message loss must be in the interval [0,1]", parser)
+                            }
+                            return n
+                        } catch (e: NumberFormatException) {
+                            throw ArgumentParserException(e, parser)
+                        }
+                    }))
+                    .setDefault(0.0)
 
 
             try {
@@ -83,6 +107,8 @@ class Main {
             val pssPort = namespace.getInt("pss_port")
             val fixedRate = namespace.getInt("fixed_rate")
             val c = namespace.getInt("constant")
+            val churnRate = namespace.getInt("churn_rate")
+            val messageLossRate = namespace.getDouble("message_loss")
 
             //c = 4 for 99.9875% =>  c+1 = 5
             val log2N = Math.log(peerNumber) / Math.log(2.0)
@@ -92,13 +118,15 @@ class Main {
                 namespace.getInt("ttl")
             }
             val k = if (namespace.getInt("fanout") == null) {
-                Math.ceil(2.0 * Math.E * Math.log(peerNumber) / Math.log(Math.log(peerNumber))).toInt()
+                val churnParameter = peerNumber / (peerNumber - churnRate) * 1 / (1 - messageLossRate)
+                Math.ceil(2.0 * Math.E * Math.log(peerNumber) / Math.log(Math.log(peerNumber)) * churnParameter).toInt()
             } else {
                 namespace.getInt("fanout")
             }
 
             if (InetAddress.getByName(localIp).isLoopbackAddress)
-                logger.warn("WARNING: Hostname resolves to loopback address! Please fix network configuration\nor expect only local peers to connect.")
+                logger.warn("WARNING: Hostname resolves to loopback address! Please fix network configuration\n" +
+                        "or expect only local peers to connect.")
 
 
             val application = TesterApplication(ttl, k, tracker, peerNumber.toInt(), delta, InetAddress.getByName(localIp),
@@ -132,7 +160,7 @@ class Main {
                     }
                 }
                 var i = 0
-                while (i < 30) {
+                while (i < 40) {
                     logger.debug("Events not yet delivered: {}", application.peer.orderingComponent.received.size)
                     Thread.sleep(10000)
                     i++

@@ -48,8 +48,10 @@ def run_churn(time_to_start):
         logger.info(args.synthetic)
         nodes_trace = NodesTrace(synthetic=args.synthetic)
     else:
-        # TODO specify min and max time
-        nodes_trace = NodesTrace(database='websites02.db')
+        # Website02.db epoch starts 1st January 201. Exact formula obtained from Sebastien Vaucher
+        websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
+        nodes_trace = NodesTrace(database='websites02.db', min_time=websites_epoch + 22200,
+                                 max_time=websites_epoch + 22200 + 10800, time_factor=3)
 
     if args.local:
         hosts_fname = None
@@ -65,19 +67,18 @@ def run_churn(time_to_start):
     # Add initial cluster
     logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
     churn.add_processes(nodes_trace.initial_size())
-    nodes_trace.next()
     delay = int((time_to_start - (time.time() * 1000)) / 1000)
     logger.debug('Delay: {:d}'.format(delay))
     logger.info('Starting churn at {:s} UTC'
                 .format(datetime.utcfromtimestamp(time_to_start // 1000).isoformat()))
     time.sleep(delay)
     logger.info('Starting churn')
-
-    for _, to_kill, to_create in nodes_trace:
+    nodes_trace.next()
+    for size, to_kill, to_create in nodes_trace:
         logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
-                     .format(_, len(to_kill), len(to_create)))
+                     .format(size, len(to_kill), len(to_create)))
         churn.add_suspend_processes(len(to_kill), len(to_create))
-        time.sleep(delta)
+        time.sleep(delta / 1000)
 
     logger.info('Churn finished')
 
@@ -114,6 +115,15 @@ def create_logger():
         conf = yaml.load(f)
         logging.config.dictConfig(conf)
 
+
+def normalized_double(s):
+    n = float(s)
+    if n < 0.0 or n > 1.0:
+        raise argparse.ArgumentTypeError("Message loss must be in the interval [0,1]")
+
+    return n
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run benchmarks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -134,13 +144,22 @@ if __name__ == '__main__':
 
     churn_parser = subparsers.add_parser('churn', help='Activate churn')
     churn_parser.add_argument('period', type=int,
-                              help='The interval between killing/adding new containers in s')
+                              help='The interval between killing/adding new containers in ms')
     churn_parser.add_argument('--synthetic', '-s', metavar='N', type=churn_tuple, nargs='+',
                               help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
     churn_parser.add_argument('--delay', '-d', type=int, default=0,
                               help='With how much delay compared to the tester should the tester start in ms')
+    churn_parser.add_argument('--churn-rate', '-r', type=int, default=0,
+                              help='Specifies the upper bound of peers removed/added per round')
+    churn_parser.add_argument('--message-loss', '-m', type=normalized_double, default=0.0,
+                              help='Specifies the message loss of the network as a float value between 0 and 1')
 
     args = parser.parse_args()
+
+    if not args.churn:
+        args.churn_rate = 0
+        args.message_loss = 0.0
+
     if not args.fixed_rate:
         args.fixed_rate = args.peer_number
     if args.verbose:
@@ -215,8 +234,9 @@ if __name__ == '__main__':
         environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
                             'TIME': time_to_start, 'TIME_TO_RUN': args.time_to_run,
                             'RATE': args.rate, 'FIXED_RATE': args.fixed_rate,
-                            'CONSTANT': args.constant}
-        environment_vars = ['{:s}={:d}'.format(k, v) for k, v in environment_vars.items()]
+                            'CONSTANT': args.constant, 'CHURN_RATE': args.churn_rate,
+                            'MESSAGE_LOSS': args.message_loss}
+        environment_vars = ['{:s}={}'.format(k, v) for k, v in environment_vars.items()]
         logger.debug(environment_vars)
 
         service_replicas = 0 if args.churn else args.peer_number
@@ -226,7 +246,8 @@ if __name__ == '__main__':
 
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
-            threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True).start()
+            thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
+            thread.start()
             wait_on_service(SERVICE_NAME, 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
@@ -236,9 +257,7 @@ if __name__ == '__main__':
                 # Wait until only stopped containers are still alive
                 wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
             else:
-                while threading.active_count() > 1:
-                    logging.debug('Thread count: {:d}'.format(threading.active_count()))
-                    time.sleep(5)
+                thread.join()  # Wait for churn to finish
                 time.sleep(600)  # Wait 10 more minutes
 
         else:

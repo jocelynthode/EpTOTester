@@ -22,8 +22,8 @@ class Churn:
     def __init__(self, hosts_filename=None, service_name='epto', repository=''):
         self.containers = {}
         self.peer_list = []
-        self.periods = 0
         self.logger = logging.getLogger('churn')
+        self.suspended_containers = []
 
         self.service_name = service_name
         self.repository = repository
@@ -39,33 +39,20 @@ class Churn:
         if to_suspend_nb == 0:
             return
 
-        # Retrieve all containers id
-        if not self.containers:
-            for host in self.hosts:
-                command_ps = ["docker", "ps", "-aqf",
-                              "name={service},status=running,ancestor={repo}{service}".format(
-                                  service=self.service_name, repo=self.repository)]
-                if host != 'localhost':
-                    command_ps = ["ssh", host] + command_ps
-
-                self.containers[host] = subprocess.check_output(command_ps,
-                                                                universal_newlines=True).splitlines()
-            self.logger.debug(self.containers)
-
         for i in range(to_suspend_nb):
             command_suspend = ["docker", "kill", '--signal=SIGSTOP']
-
             # Retry until we find a working choice
             count = 0
             while count < 3:
                 try:
                     choice = random.choice(self.hosts)
-
-                    if choice != 'localhost':
-                        command_suspend = ["ssh", choice] + command_suspend
-
-                    container = random.choice(self.containers[choice])
-                    self.containers[choice].remove(container)
+                    self._refresh_host_containers(choice)
+                    container, command_suspend = self._choose_container(command_suspend, choice)
+                    while container in self.suspended_containers:
+                        command_suspend = ["docker", "kill", '--signal=SIGSTOP']
+                        choice = random.choice(self.hosts)
+                        self._refresh_host_containers(choice)
+                        container, command_suspend = self._choose_container(command_suspend, choice)
                 except (ValueError, IndexError):
                     count += 1
                     if not self.containers[choice]:
@@ -77,13 +64,14 @@ class Churn:
                     continue
                 break
 
-            command_suspend += [container]
+            command_suspend.append(container)
             count = 0
             while count < 3:
                 try:
                     subprocess.check_call(command_suspend, stdout=subprocess.DEVNULL)
                     self.logger.info('Container {} on host {} was suspended'
                                      .format(container, choice))
+                    self.suspended_containers.append(container)
                 except subprocess.CalledProcessError:
                     count += 1
                     self.logger.error("Container couldn't be removed, retrying...")
@@ -118,7 +106,24 @@ class Churn:
     def add_suspend_processes(self, to_suspend_nb, to_create_nb):
         self.suspend_processes(to_suspend_nb)
         self.add_processes(to_create_nb)
-        self.periods += 1
 
     def set_logger_level(self, log_level):
         self.logger.setLevel(log_level)
+
+    def _choose_container(self, command_suspend, host):
+        if host != 'localhost':
+            command_suspend = ["ssh", host] + command_suspend
+
+        container = random.choice(self.containers[host])
+        self.containers[host].remove(container)
+        return container, command_suspend
+
+    def _refresh_host_containers(self, host):
+        command_ps = ["docker", "ps", "-aqf",
+                      "name={service},status=running,ancestor={repo}{service}".format(
+                          service=self.service_name, repo=self.repository)]
+        if host != 'localhost':
+            command_ps = ["ssh", host] + command_ps
+
+        self.containers[host] = subprocess.check_output(command_ps,
+                                                        universal_newlines=True).splitlines()

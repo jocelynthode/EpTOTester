@@ -1,7 +1,8 @@
 
 \section{Evaluation}
 \subsection{Bandwidth}
-\jt{\epto was run with $c=4$ to prevent any holes and a $\delta$ period of 100ms}
+\jt{\epto was run with $c=4$ to prevent any holes and a $\delta$ period of 100ms. Churn was run for 17minutes. 3min at the end with no churn, to see stabilization. Churn starts 30seconds after protocol}
+
 \begin{figure}[h]
 	\centering
 	\input{figures/bandwidth-figure.tex}
@@ -154,3 +155,5 @@ In \autoref{fig:total-events-churn} When only killing nodes, \epto and \jgroups 
 However when killing and adding nodes \epto is clearly superior, delivering more than 2000 more events than \jgroups, even when \jgroups coordinator is not killed.
 
 We are not sure why this is happening, but one hypothesis is that \jgroups peers take a longer time to join the cluster and thus start sending events later. Since the benchmarks start and stop at a given time, they send less events in total.
+
+

@@ -25,8 +25,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     private val logger by logger()
 
-    internal val received = HashMap<UUID, Event>()
-    private val delivered = HashMap<UUID, Event>()
+    internal val received = HashMap<String, Event>()
+    private val delivered = HashMap<String, Event>()
     private var lastDeliveredTs: Int = 0
 
     /**
@@ -35,20 +35,20 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      *
      * @param ball the received ball
      */
-    private fun updateReceived(ball: HashMap<UUID, Event>) {
+    private fun updateReceived(ball: HashMap<String, Event>) {
         // update TTL of received events
         received.values.forEach(Event::incrementTtl)
 
         // update set of received events with events in the ball
-        ball.values.filter { event -> !delivered.containsKey(event.id) && event.timestamp >= lastDeliveredTs }
+        ball.values.filter { event -> !delivered.containsKey(event.toIdentifier()) && event.timestamp >= lastDeliveredTs }
                 .forEach { event ->
-                    val receivedEvent = received[event.id]
+                    val receivedEvent = received[event.toIdentifier()]
                     if (receivedEvent != null) {
                         if (receivedEvent.ttl.get() < event.ttl.get()) {
                             receivedEvent.ttl.set(event.ttl.get())
                         }
                     } else {
-                        received.put(event.id, event)
+                        received.put(event.toIdentifier(), event)
                     }
                 }
         logger.debug("Received size: {}", received.size)
@@ -64,7 +64,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      */
     private fun deliver(deliverableEvents: List<Event>) {
         for (event in deliverableEvents) {
-            delivered.put(event.id, event)
+            delivered.put(event.toIdentifier(), event)
             lastDeliveredTs = event.timestamp
             application.deliver(event)
         }
@@ -76,7 +76,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      *
      * @param ball the ball containing the received events
      */
-    fun orderEvents(ball: HashMap<UUID, Event>) {
+    fun orderEvents(ball: HashMap<String, Event>) {
 
         updateReceived(ball)
 
@@ -102,7 +102,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
                 eventsToRemove.add(event)
             } else {
                 // event can be delivered, remove from received events
-                received.remove(event.id)
+                received.remove(event.toIdentifier())
             }
         }
         deliverableEvents.removeAll(eventsToRemove)

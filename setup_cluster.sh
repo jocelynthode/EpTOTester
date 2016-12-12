@@ -15,7 +15,7 @@ ssh_pid=$!
 sleep 5s
 
 docker tag epto:latest localhost:5000/epto:latest
-docker tag tracker:latest localhost:5000/epto-tracker:latest
+docker tag epto-tracker:latest localhost:5000/epto-tracker:latest
 docker push localhost:5000/epto:latest
 docker push localhost:5000/epto-tracker:latest
 
