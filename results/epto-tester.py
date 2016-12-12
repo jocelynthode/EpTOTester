@@ -246,8 +246,8 @@ print("Population std fo the time to deliver: %f ms" % statistics.pstdev(global_
 print("-------------------------------------------")
 messages_sent = [stat.msg_sent for stat in stats]
 messages_received = [stat.msg_received for stat in perfect_stats]
-balls_sent = [stat.balls_sent for stat in stats]
-balls_received = [stat.balls_received for stat in stats]
+balls_sent = [stat.balls_sent for stat in stats if stat.balls_sent]
+balls_received = [stat.balls_received for stat in stats if stat.balls_received]
 print(len(stats))
 print(len(balls_sent))
 print(len(balls_received))
