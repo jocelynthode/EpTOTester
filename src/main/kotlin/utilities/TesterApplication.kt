@@ -62,5 +62,6 @@ class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: In
         logger.info("Events sent: ${Main.Companion.eventsSent}")
         logger.info("Events received: $deliveredEvents")
         logger.info("Events received but not delivered: ${peer.orderingComponent.received.size}")
+        logger.debug("Received events: {}", peer.orderingComponent.received.keys.joinToString())
     }
 }
