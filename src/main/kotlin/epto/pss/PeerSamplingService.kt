@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
  * @author Jocelyn Thode
  */
 class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 23, val exch: Int = 12,
-                          val s: Int = 8, val h: Int = 4, trackerURL: String) {
+                          val s: Int = 9, val h: Int = 3, trackerURL: String) {
 
     private val logger by logger()
 
