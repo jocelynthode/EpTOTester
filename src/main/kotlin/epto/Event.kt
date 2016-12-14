@@ -62,7 +62,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
     }
 
     override fun toString(): String {
-        return "Event{id=$id, timestamp=$timestamp, ttl=$ttl, sourceId=$sourceId}"
+        return "Event{id=$id, timestamp=$timestamp, ttl=${ttl.get()}, sourceId=$sourceId}"
     }
 
     internal fun toIdentifier(): String {

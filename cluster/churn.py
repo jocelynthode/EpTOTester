@@ -40,7 +40,7 @@ class Churn:
             return
 
         for i in range(to_suspend_nb):
-            command_suspend = ["docker", "kill", '--signal=SIGSTOP']
+            command_suspend = ["docker", "kill", '--signal=SIGUSR1']
             # Retry until we find a working choice
             count = 0
             while count < 3:
@@ -49,7 +49,7 @@ class Churn:
                     self._refresh_host_containers(choice)
                     container, command_suspend = self._choose_container(command_suspend, choice)
                     while container in self.suspended_containers:
-                        command_suspend = ["docker", "kill", '--signal=SIGSTOP']
+                        command_suspend = ["docker", "kill", '--signal=SIGUSR1']
                         choice = random.choice(self.hosts)
                         self._refresh_host_containers(choice)
                         container, command_suspend = self._choose_container(command_suspend, choice)

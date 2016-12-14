@@ -44,7 +44,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         this.scheduler = Executors.newScheduledThreadPool(1)
         this.periodicDissemination = Runnable {
             try {
-                logger.debug("nextBall size: {}", nextBall.size)
+                //logger.debug("nextBall size: {}", nextBall.size)
                 synchronized(nextBallLock) {
                     nextBall.values.forEach(Event::incrementTtl)
                     if (!nextBall.isEmpty()) {
@@ -80,8 +80,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * @param ball The received ball
      */
     internal fun receive(ball: HashMap<String, Event>) {
-        logger.debug("Receiving a new ball of size: {}", ball.size)
-        logger.debug("Ball will relay {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
+        //logger.debug("Receiving a new ball of size: {}", ball.size)
+        //logger.debug("Ball will relay {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
         ball.forEach { eventIdentifier, event ->
             if (event.ttl.get() < oracle.TTL) {
                 synchronized(nextBallLock, fun(): Unit {
@@ -94,8 +94,19 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                         nextBall.put(eventIdentifier, event)
                     }
                 })
+            } else {
+                debug(event)
             }
             oracle.updateClock(event.timestamp) //only needed with logical time
+        }
+    }
+
+    private fun debug(event: Event) {
+        if (logger.isDebugEnabled) {
+            if (!peer.orderingComponent.received.containsKey(event.toIdentifier()) &&
+                    !peer.orderingComponent.delivered.containsKey(event.toIdentifier())) {
+                logger.debug("Event received too late: {}, TTL: {}", event.toIdentifier(), event.ttl.get())
+            }
         }
     }
 

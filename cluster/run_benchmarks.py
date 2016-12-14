@@ -51,7 +51,7 @@ def run_churn(time_to_start):
         # Website02.db epoch starts 1st January 201. Exact formula obtained from Sebastien Vaucher
         websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
         nodes_trace = NodesTrace(database='websites02.db', min_time=websites_epoch + 22200,
-                                 max_time=websites_epoch + 22200 + 10800, time_factor=3)
+                                 max_time=websites_epoch + 22200 + 7200, time_factor=2)
 
     if args.local:
         hosts_fname = None

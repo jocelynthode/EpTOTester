@@ -41,7 +41,6 @@ def extract_nodes(from_seconds=0):
             if timestamp >= min_time:
                 views[source] = nodes
                 break
-
         for source, nodes in views.items():
             yield ' '.join([source, *nodes])
 
@@ -65,8 +64,12 @@ U = G.to_undirected()
 
 print("Average shortest path: %f" % nx.average_shortest_path_length(G))
 print("Average clustering: %f" % nx.average_clustering(U))
+print("Is graph connected: %s" % nx.is_connected(U))
 print("Is graph strongly connected: %s" % nx.is_strongly_connected(G))
-print('Diameter of the graph: %d' % nx.diameter(G))
+try:
+    print('Diameter of the graph: %d' % nx.diameter(G))
+except nx.exception.NetworkXError:
+    print("Diameter can't be calculated as graph is not strongly connected")
 indeg = G.in_degree()
 print(indeg)
 print("Node nb: %d" % G.number_of_nodes())
