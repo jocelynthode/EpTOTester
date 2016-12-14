@@ -29,7 +29,7 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
 
     val gossipChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))!!
     val pssChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))!!
-    val pss = PeerSamplingService(50000, this, trackerURL = trackerURL)
+    val pss = PeerSamplingService(15000, this, trackerURL = trackerURL)
     val gossip = Gossip(this, k)
 
     internal var gossipMessagesSent = 0

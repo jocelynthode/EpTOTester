@@ -9,6 +9,7 @@ inspired from a script from Sebastien Vaucher
 import random
 import logging
 
+
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -38,6 +39,17 @@ class FloridaHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(florida_string(self.client_address[0]))
+        elif self.path == '/terminate':
+            if self.client_address[0] in available_peers:
+                del available_peers[self.client_address[0]]
+                logging.info("Removed {:s}".format(self.client_address[0]))
+                logging.info("View size: {:d}".format(len(available_peers)))
+            else:
+                logging.error("IP already removed or was never here")
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Success")
         else:
             self.send_response(404)
             self.send_header("Content-type", "text/plain")

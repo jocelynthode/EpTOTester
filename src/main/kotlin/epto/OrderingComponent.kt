@@ -26,7 +26,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     private val logger by logger()
 
     internal val received = HashMap<String, Event>()
-    private val delivered = HashMap<String, Event>()
+    internal val delivered = HashMap<String, Event>()
     private var lastDeliveredTs: Int = 0
 
     /**
