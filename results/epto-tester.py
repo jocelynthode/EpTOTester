@@ -47,7 +47,6 @@ if args.ignore_events:
 expected_ratio = 1 - (1 / (PEER_NUMBER ** args.constant))
 k = ttl = delta = 0
 local_deltas = []
-# events_sent = {}
 events_delivered = {}
 
 
@@ -73,7 +72,6 @@ def extract_stats(file):
 
     start_at = match_line(r'(\d+) - Sending:')
     file.seek(0)  # Start again
-    # events_sent = {}
     events_delivered = {}
     local_deltas = []
 
@@ -104,7 +102,6 @@ def extract_stats(file):
                 continue
             elif match.group(3):
                 if match.group(4) not in ignored_events:
-                    events_sent[match.group(4)] = int(match.group(3))
                     events_sent_count += 1
                 else:
                     print('Ignored Event!')
@@ -129,20 +126,20 @@ def extract_stats(file):
     # Only count complete peers
     if balls_sent is None:
         return Stats(State.dead, None, None, None, evts_sent,
-                     None, tmp_balls_sent, tmp_balls_received), events_sent, events_delivered, local_deltas
+                     None, tmp_balls_sent, tmp_balls_received), events_delivered, local_deltas
     balls_received = match_line(r'\d+ - Total Balls received: (\d+)')
     messages_sent = match_line(r'\d+ - Events sent: (\d+)')
     messages_received = match_line(r'\d+ - Events received: (\d+)')
     if state == State.late:
         return Stats(state, None, None, None, messages_sent,
-                     None, balls_sent, balls_received), events_sent, events_delivered, local_deltas
+                     None, balls_sent, balls_received), events_delivered, local_deltas
     else:
         print(state)
         print(messages_received)
         print(len(events_delivered))
         print(file)
         return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
-                     messages_received, balls_sent, balls_received), events_sent, events_delivered, local_deltas
+                     messages_received, balls_sent, balls_received), events_delivered, local_deltas
 
 
 def all_stats(files):
@@ -150,13 +147,11 @@ def all_stats(files):
     bar = progressbar.ProgressBar()
     file_stats = []
     local_deltas = []
-    # events_sent = {}
     events_delivered = {}
     for file in bar(files):
         with open(file, 'r') as f:
             file_stat, events_delivered_temp, local_deltas_temp = extract_stats(f)
             file_stats.append(file_stat)
-            # events_sent.update(events_sent_temp)
             for event, time in events_delivered_temp.items():
                 if event in events_delivered:
                     events_delivered[event].append(time)
