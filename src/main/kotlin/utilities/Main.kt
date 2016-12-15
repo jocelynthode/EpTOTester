@@ -151,7 +151,7 @@ class Main {
                 val endTime = startTime + timeToRun
                 logger.info("EpTO will end at {} UTC",
                         LocalDateTime.ofEpochSecond((endTime / 1000), 0, ZoneOffset.ofHours(0)))
-                logger.info("Sending 1 event every ${rate}ms) with a probability of $probability")
+                logger.info("Sending 1 event every ${rate}ms with a probability of $probability")
                 while (System.currentTimeMillis() < endTime) {
                     Thread.sleep(rate)
                     if (Math.random() < probability) {
