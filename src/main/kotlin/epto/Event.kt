@@ -48,7 +48,7 @@ data class Event(val id: UUID = UUID.randomUUID()) : Comparable<Event>, Serializ
      *
      * @param other a non-null Event
      *
-     * @return int (1 if before, -1 if after)
+     * @return -1, 0 or 1 as this Event is less than, equal to, or greater than "other"
      */
     override fun compareTo(other: Event): Int {
         val compare = timestamp.compareTo(other.timestamp)

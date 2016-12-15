@@ -27,7 +27,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     internal val received = HashMap<String, Event>()
     internal val delivered = HashMap<String, Event>()
-    private var lastDeliveredTs: Int = 0
+    private var lastDeliveredTs: Int = -1
+    private var lastDeliveredEvent: Event = Event()
 
     /**
      * Update the received hash map TTL values and either add the new events to received or
@@ -65,7 +66,17 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     private fun deliver(deliverableEvents: List<Event>) {
         for (event in deliverableEvents) {
             delivered.put(event.toIdentifier(), event)
+
+            // This problem should only happen if the PSS properties are not good
+            if (lastDeliveredTs ==  event.timestamp) {
+                if (event.compareTo(lastDeliveredEvent) == -1) {
+                    logger.error("DROPPING EVENT ${event.toIdentifier()} BECAUSE OUT OF ORDER")
+                    return
+                }
+            }
+
             lastDeliveredTs = event.timestamp
+            lastDeliveredEvent = event
             application.deliver(event)
         }
     }
