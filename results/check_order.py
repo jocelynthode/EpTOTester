@@ -96,7 +96,7 @@ for name, stats in events.items():
     try:
         if complete_list == stats:
             logging.debug('{:s} and {:s} are ordered'.format(least_holes_file[0], name))
-            logging.info('{:s} and {:s} have exactly the same events ({:d})'.format(least_holes_file[0], name,
+            logging.debug('{:s} and {:s} have exactly the same events ({:d})'.format(least_holes_file[0], name,
                                                                                     len(complete_list)))
 
             continue
@@ -115,7 +115,7 @@ if not is_out_of_order:
     logging.info('All files have the same order discarding holes!')
 
 difference_set = set(sent_events) - set(complete_list)
-logging.info(difference_set)
+logging.info("Difference set : {}".format(difference_set))
 has_duplicate = False
 for name, a_list in events.items():
     a_set = set(a_list)
@@ -145,4 +145,4 @@ if has_problem:
 if not has_problem or not churn_problem:
     logging.info('All events claimed to be sent were sent')
 
-logging.info(difference_set)
+logging.info("Difference set : {}".format(difference_set))
