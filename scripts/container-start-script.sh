@@ -30,6 +30,11 @@ signal_handler() {
         kill $java_pid
     fi
     echo "KILLED PROCESSES"
+
+    while true
+    do
+      tail -f /dev/null & wait ${!}
+    done
 }
 
 trap 'signal_handler' SIGUSR1
@@ -42,7 +47,5 @@ java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar -Dlogfile.name="${MY_IP_A
 "${MY_IP_ADDR[0]}" "http://epto-tracker:4321" "${PEER_NUMBER}" "$TIME" "$TIME_TO_RUN" &
 java_pid=${!}
 
-while true
-do
-  tail -f /dev/null & wait ${!}
-done
+wait ${java_pid}
+kill ${dstat_pid}
