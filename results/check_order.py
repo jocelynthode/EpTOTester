@@ -21,12 +21,13 @@ parser.add_argument('files', metavar='FILE', nargs='+', type=str,
                     help='the files to parse')
 parser.add_argument('--verbose', '-v', action='store_true',
                     help='Switch DEBUG logging on')
+parser.add_argument('--name', '-n', type=str, help='Log file name', default='order')
 args = parser.parse_args()
 if args.verbose:
     log_level = logging.DEBUG
 else:
     log_level = logging.INFO
-logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level, filename='order.log')
+logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level, filename='{:s}.log'.format(args.name))
 
 
 def all_events():
@@ -44,13 +45,14 @@ sent_events = []
 def extract_events(file):
     events = []
     for line in iter(file):
-        match = re.match(r'\d+ - Delivered: (\[.+\])', line)
-        if match:
+        match = re.match(r'\d+ - Delivered: (\[.+\])|\d+ - Sending: (\[.+\])|'
+                         r'.+DROPPING EVENT (\[.+\]) BECAUSE OUT OF ORDER', line)
+        if match.group(1):
             events.append(match.group(1))
-        else:
-            match = re.match(r'\d+ - Sending: (\[.+\])', line)
-            if match:
-                sent_events.append(match.group(1))
+        elif match.group(2):
+            sent_events.append(match.group(2))
+        elif match.group(3):
+            logging.error("File {:s} has event {:s} out of order!".format(file.name, match.group(3)))
     return Stats(events)
 
 
@@ -126,13 +128,13 @@ if not has_duplicate:
 
 # This part checks in case EpTO logs that it has sent an event but was interrupted before actually
 # sending it
-no_problem = False
-if len(complete_list) == sent_events:
-    no_problem = True
+has_problem = True
+if all(True for event_list in events.values() if len(event_list) == len(sent_events)):
+    has_problem = False
 
 # There might be a problem
 churn_problem = False
-if not no_problem:
+if has_problem:
     logging.info('Checking for possible churn problem...')
     bar = progressbar.ProgressBar()
     for event in bar(sent_events):
@@ -140,7 +142,7 @@ if not no_problem:
             churn_problem = True
             difference_set.remove(event)
             logging.info('TO IGNORE: {:s}'.format(event))
-if no_problem or not churn_problem:
+if not has_problem or not churn_problem:
     logging.info('All events claimed to be sent were sent')
 
 logging.info(difference_set)
