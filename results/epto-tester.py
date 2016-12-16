@@ -137,10 +137,6 @@ def extract_stats(file):
         return Stats(state, None, None, None, messages_sent,
                      None, balls_sent, balls_received), events_delivered, local_deltas
     else:
-        print(state)
-        print(messages_received)
-        print(len(events_delivered))
-        print(file)
         return Stats(state, start_at, end_at, end_at - start_at, messages_sent,
                      messages_received, balls_sent, balls_received), events_delivered, local_deltas
 

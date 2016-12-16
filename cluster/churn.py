@@ -119,7 +119,7 @@ class Churn:
         return container, command_suspend
 
     def _refresh_host_containers(self, host):
-        command_ps = ["docker", "ps", "-aqf",
+        command_ps = ["docker", "ps", "-qf",
                       "name={service},status=running,ancestor={repo}{service}".format(
                           service=self.service_name, repo=self.repository)]
         if host != 'localhost':

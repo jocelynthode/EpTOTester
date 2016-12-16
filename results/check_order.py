@@ -47,7 +47,9 @@ def extract_events(file):
     for line in iter(file):
         match = re.match(r'\d+ - Delivered: (\[.+\])|\d+ - Sending: (\[.+\])|'
                          r'.+DROPPING EVENT (\[.+\]) BECAUSE OUT OF ORDER', line)
-        if match.group(1):
+        if not match:
+            continue
+        elif match.group(1):
             events.append(match.group(1))
         elif match.group(2):
             sent_events.append(match.group(2))
@@ -128,21 +130,27 @@ if not has_duplicate:
 
 # This part checks in case EpTO logs that it has sent an event but was interrupted before actually
 # sending it
+
 has_problem = True
-if all(True for event_list in events.values() if len(event_list) == len(sent_events)):
+a_list = [True for event_list in events.values() if len(event_list) == len(sent_events)]
+print("A list: {}".format(a_list))
+if a_list and all(a_list):
+    logging.info("All lists are equal to the sent events list")
     has_problem = False
+
 
 # There might be a problem
 churn_problem = False
+final_set = set(difference_set)
 if has_problem:
     logging.info('Checking for possible churn problem...')
     bar = progressbar.ProgressBar()
-    for event in bar(sent_events):
+    for event in bar(difference_set):
         if not any(True for event_list in events.values() if event in event_list):
             churn_problem = True
-            difference_set.remove(event)
+            final_set.remove(event)
             logging.info('TO IGNORE: {:s}'.format(event))
 if not has_problem or not churn_problem:
     logging.info('All events claimed to be sent were sent')
 
-logging.info("Difference set : {}".format(difference_set))
+logging.info("Final set : {}".format(final_set))
