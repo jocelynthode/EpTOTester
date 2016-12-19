@@ -12,6 +12,7 @@ This repository provides a working Kotlin implementation of EpTO as well as JGro
 * Docker >= 1.12
 * OpenJDK or OracleJDK >= 8
 * Python >= 3.5
+* pip >= 9.0.1
 * Read the [Cluster instructions](https://github.com/jocelynthode/EptoTester/blob/master/projects/README.md)
 
 #### Running
