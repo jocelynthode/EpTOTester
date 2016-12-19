@@ -1,11 +1,4 @@
 #!/usr/bin/env python3.5
-import argparse
-import difflib
-import logging
-import re
-from collections import namedtuple
-
-import progressbar
 """
 Author: Jocelyn Thode
 
@@ -13,6 +6,14 @@ Author: Jocelyn Thode
 * Check for events that were possibly never sent to the cluster even if they appear in the logs
   due to churn. If such events exist it writes them to a file so that epto-tester.py can ignore them
 """
+import argparse
+import difflib
+import logging
+import re
+from collections import namedtuple
+
+import progressbar
+
 Stats = namedtuple('Stats', ['events'])
 is_out_of_order = False
 
