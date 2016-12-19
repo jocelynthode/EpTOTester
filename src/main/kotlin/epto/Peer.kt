@@ -80,7 +80,7 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
                 isRunning = false
                 logger.error(e)
             } catch (e: Event.EventUnserializeException) {
-                logger.error(e)
+                logger.error("Error while unserializing an event", e)
             }
         }
     }

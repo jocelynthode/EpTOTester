@@ -55,7 +55,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                     nextBall.clear()
                 }
             } catch (e: Exception) {
-                logger.error(e)
+                logger.error(e.message, e)
             }
         }
     }
