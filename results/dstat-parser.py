@@ -91,7 +91,6 @@ means['recv-error'] = std['recv'].values
 means['send-error'] = std['send'].values
 means.to_csv('total-bytes-sent-recv.csv')
 
-exit(1)
 def open_events(files):
     dfs = []
     bar = progressbar.ProgressBar()

@@ -5,3 +5,4 @@ numpy==1.11.2
 pandas==0.19.1
 pandas-datareader==0.2.1
 progressbar2==3.10.1
+tqdm==4.8.4
