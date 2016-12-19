@@ -1,6 +1,6 @@
 # JGroups
 
-This is a a SEQUENCER implementation mimicking the behavior of EpTO Tester[[1]](https://github.com/jocelynthode/EptoTester) to compare JGroups against EpTO
+This is a a SEQUENCER implementation mimicking the behavior of EpTO Tester to compare JGroups against EpTO
 
 # Verification Scripts
 
