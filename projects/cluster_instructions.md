@@ -1,6 +1,6 @@
 # Cluster Setup Instructions
 
-These instructions explain how to setup a remote cluster with Docker 1.12 to run EpTO tests. Debian is used on our virtual machines managed by OpenNebula. These instructions were created using the model offered by Sébastien Vaucher (https://github.com/sebyx31/ErasureBench/blob/master/projects/erasure-tester/swarm_instructions.md)
+These instructions explain how to setup a remote cluster with Docker 1.12 to run EpTO tests. Debian is used on our virtual machines managed by OpenNebula. These instructions were created using the model offered by Sébastien Vaucher[[1]](https://github.com/sebyx31/ErasureBench/blob/master/projects/erasure-tester/swarm_instructions.md)
 
 ##  Setup the image
 
