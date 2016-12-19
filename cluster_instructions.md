@@ -76,8 +76,8 @@ Copy this image on OpenNebula.
 
 ## Deploy the application
 
-### Automated way (with manual data collection from the master)
-This way assumes you have a key-pair to connect to your master.
+### Automated way (with manual data collection from the hosts)
+This way assumes you have a SSH key-pair to connect to your master.
  ```
  ./setup_cluster.sh
  ```
