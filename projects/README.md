@@ -90,5 +90,5 @@ This way assumes you have a SSH key-pair to connect to your master.
  
 ## Run the benchmarks (on the master node)
  **Take care of adjusting values in the scripts file to your own computer!**
-* start ~/epto/run_benchmarks.py
+* start ~/{epto,jgroups}/run_benchmarks.py
 * Wait for the script to complete
