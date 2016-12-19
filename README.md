@@ -14,6 +14,8 @@ If you want to run EpTO localy execute: `cluster/run_benchmarks.py` with the `--
 
 If you want to run it on your cluster follow the [Cluster instructions](https://github.com/jocelynthode/epto-neem/blob/master/cluster_instructions.md)
 
+If you only want to obtain and run the Java program. Gradle with shadowJar is used to generate a jar file.
+
 # Verification Scripts
 
 Scripts are provided to verify the ordering of EpTO, extract various informations from EpTO logs and the PSS health. They are located in the folder results.
