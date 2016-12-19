@@ -25,5 +25,7 @@ Scripts are provided to verify the ordering of EpTO, extract various information
 ## FTA 
 The [Failure Trace Archive](http://fta.scem.uws.edu.au) regroups various failure traces. These traces can be exploited by the python classes `cluster/nodes_trace.py` and `cluster/churn.py`.
 
+If you want to visualize the different traces I recommend using Sébastien Vaucher's script that generates plots for traces.[[2]](https://github.com/sebyx31/ErasureBench/tree/master/projects/fta-parser)
+
 ## Synthetic 
 The above classes can also be used to generate simple synthethic churn. To find out how to use them, please refer to the help of `cluster/run_benchmarks.py`
