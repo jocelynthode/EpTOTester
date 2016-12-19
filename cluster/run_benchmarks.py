@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""
+Author: Jocelyn Thode
+
+This script is in charge of running the benchmarks either locally or on the cluster.
+
+It creates the network, services and the churn if we need it.
+
+"""
 import argparse
 import docker
 import logging

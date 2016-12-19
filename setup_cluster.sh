@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # This scripts  will build the images, push them to the repository run the tests
-# and get the results back
 # Credits : https://github.com/sebyx31/ErasureBench/blob/master/projects/erasure-tester/benchmark_on_cluster.sh
 
 MANAGER_IP=172.16.2.119

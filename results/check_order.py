@@ -6,7 +6,13 @@ import re
 from collections import namedtuple
 
 import progressbar
+"""
+Author: Jocelyn Thode
 
+* Check the order of EpTO delivered events, ignoring holes.
+* Check for events that were possibly never sent to the cluster even if they appear in the logs
+  due to churn. If such events exist it writes them to a file so that epto-tester.py can ignore them
+"""
 Stats = namedtuple('Stats', ['events'])
 is_out_of_order = False
 

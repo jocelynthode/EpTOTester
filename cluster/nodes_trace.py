@@ -17,7 +17,7 @@ class NodesTrace:
     For each call to the generator, returns a tuple:
     (current number of nodes, node IDs to kill, node IDs to create)
 
-    Changelog:
+    Changelog From Sébastien Vaucher version:
      * Synthetic: Can now take a list of tuples of the form [(to_kill, to_create), ...]
      * Change static properties to instance properties
     """

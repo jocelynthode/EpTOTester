@@ -1,4 +1,11 @@
 #!/usr/bin/env python3.5
+"""
+Author: Jocelyn Thode
+
+Check PSS Health.
+
+WARNING This script only works when there are no churn!! WARNING
+"""
 import argparse
 import progressbar
 import re

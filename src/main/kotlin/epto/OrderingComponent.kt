@@ -61,13 +61,17 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     /**
      * Deliver events mature enough that haven't been yet delivered to the application
      *
+     * WARNING: This current version will do a back check and log an error if it notices an error that can happen
+     * because of bad PSS properties in a small cluster. This is not part of the original EpTO paper
+     *
      * @param deliverableEvents events mature enough to be delivered
      */
     private fun deliver(deliverableEvents: List<Event>) {
         for (event in deliverableEvents) {
             delivered.put(event.toIdentifier(), event)
 
-            // This problem should only happen if the PSS properties are not good
+            // This problem should only happen if the PSS properties are not good and this part is not in the original
+            // EpTO paper
             if (lastDeliveredTs ==  event.timestamp) {
                 if (event.compareTo(lastDeliveredEvent) == -1) {
                     logger.error("DROPPING EVENT ${event.toIdentifier()} BECAUSE OUT OF ORDER")

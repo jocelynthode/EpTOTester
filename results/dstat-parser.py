@@ -1,4 +1,15 @@
 #!/usr/bin/env python3.5
+"""
+Author: Jocelyn Thode
+
+Create the csv files from the data extracted by epto-tester.py. These csv files are then used in the LaTeX report to
+generate the figures
+
+It also creates quick matplotlib figures to have an early peek in the data
+
+"""
+
+
 import argparse
 import csv
 import re

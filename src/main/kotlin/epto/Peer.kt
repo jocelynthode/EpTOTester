@@ -85,6 +85,9 @@ class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAd
         }
     }
 
+    /**
+     * Stops the peer
+     */
     fun stop() {
         isRunning = false
         disseminationComponent.stop()

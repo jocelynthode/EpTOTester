@@ -26,7 +26,9 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
     private val logger by logger()
     private var isRunning = false
 
-
+    /**
+     * Run by the Thread
+     */
     override fun run() {
         isRunning = true
         while (isRunning) {
@@ -81,6 +83,9 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     }
 
+    /**
+     * Stops the PassiveThread
+     */
     fun stop() {
         isRunning = false
     }

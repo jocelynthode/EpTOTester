@@ -34,6 +34,12 @@ class Churn:
         self.cluster_size = 0
 
     def suspend_processes(self, to_suspend_nb):
+        """
+        Suspend the requested number of docker containers
+
+        :param to_suspend_nb:
+        :return:
+        """
         if to_suspend_nb < 0:
             raise ArithmeticError('Suspend number must be greater or equal to 0')
         if to_suspend_nb == 0:
@@ -82,6 +88,12 @@ class Churn:
                 break
 
     def add_processes(self, to_create_nb):
+        """
+        Create the requested number of docker containers
+
+        :param to_create_nb:
+        :return:
+        """
         if to_create_nb < 0:
             raise ArithmeticError('Add number must be greater or equal to 0')
         if to_create_nb == 0:
@@ -104,6 +116,13 @@ class Churn:
         self.logger.info('Service scaled up to {:d}'.format(self.cluster_size))
 
     def add_suspend_processes(self, to_suspend_nb, to_create_nb):
+        """
+        Abstraction letting the user create and suspend containers in the same round
+
+        :param to_suspend_nb:
+        :param to_create_nb:
+        :return:
+        """
         self.suspend_processes(to_suspend_nb)
         self.add_processes(to_create_nb)
 
