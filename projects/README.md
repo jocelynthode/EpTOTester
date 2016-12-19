@@ -1,3 +1,8 @@
+# Run locally
+To run locally just call `cluster/run_benchmarks.py` with the `--local` option in the application folder you want to run. This will create the docker container and the service running it.
+
+**Take care of adjusting values in the scripts file to your own computer!**
+
 # Cluster Setup Instructions
 
 These instructions explain how to setup a remote cluster with Docker 1.12 to run EpTO tests. Debian is used on our virtual machines managed by OpenNebula. These instructions were created using the model offered by Sébastien Vaucher[[1]](https://github.com/sebyx31/ErasureBench/blob/master/projects/erasure-tester/swarm_instructions.md)
@@ -78,11 +83,12 @@ Copy this image on OpenNebula.
 
 ### Automated way (with manual data collection from the hosts)
 This way assumes you have a SSH key-pair to connect to your master.
+**Take care of adjusting values in the scripts file to your own computer!**
  ```
  ./setup_cluster.sh
  ```
  
 ## Run the benchmarks (on the master node)
- 
+ **Take care of adjusting values in the scripts file to your own computer!**
 * start ~/epto/run_benchmarks.py
 * Wait for the script to complete
