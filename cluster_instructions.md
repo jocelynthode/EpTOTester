@@ -84,5 +84,5 @@ This way assumes you have a key-pair to connect to your master.
  
 ## Run the benchmarks (on the master node)
  
-* start ~/epto/run_benchmarks_cluster.sh
+* start ~/epto/run_benchmarks.py
 * Wait for the script to complete
