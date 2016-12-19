@@ -1,6 +1,6 @@
-# EpTO
+# EpTOTester
 
-This is a working implementation of EpTO[[1]](http://dl.acm.org/citation.cfm?id=2814804) in Kotlin.
+This repository provides a working Kotlin implementation of EpTO as well as JGroups SEQUENCER application to compare the both of them.
 
 # Requirements & Running
 
@@ -10,7 +10,7 @@ This is a working implementation of EpTO[[1]](http://dl.acm.org/citation.cfm?id=
 * Read the [Cluster instructions](https://github.com/jocelynthode/epto-neem/blob/master/cluster_instructions.md)
 
 ## Running
-If you want to run EpTO localy execute: `cluster/run_benchmarks.py` with the `--local` option on
+If you want to run EpTO/JGroups localy execute: `cluster/run_benchmarks.py` with the `--local` option on
 
 If you want to run it on your cluster follow the [Cluster instructions](https://github.com/jocelynthode/epto-neem/blob/master/cluster_instructions.md)
 
@@ -18,7 +18,7 @@ If you only want to obtain and run the Java program. Gradle with shadowJar is us
 
 # Verification Scripts
 
-Scripts are provided to verify the ordering of EpTO, extract various informations from EpTO logs and the PSS health. They are located in the folder results.
+Scripts are provided to verify the ordering of EpTO/JGroups, extract various informations from EpTO/JGroups logs and the PSS health (in case of EpTO). They are located in the folder results.
 
 # Churn Generation
 
