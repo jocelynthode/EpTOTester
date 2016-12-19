@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <File name="File" fileName="/data/${sys:logfile.name}.txt">
+            <PatternLayout pattern="%d{UNIX_MILLIS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="FileSimple" fileName="/data/${sys:logfile.name}.txt">
+            <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
+        </File>
+        <File name="FileTime" fileName="/data/${sys:logfile.name}.txt">
+            <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="utilities.TesterApplication" level="info" additivity="false">
+            <AppenderRef ref="FileSimple"/>
+        </Logger>
+        <Logger name="utilities.Main$Companion" level="debug" additivity="false">
+            <AppenderRef ref="FileSimple"/>
+        </Logger>
+        <Logger name="epto.pss.PeerSamplingService" level="debug" additivity="false">
+            <AppenderRef ref="FileTime"/>
+        </Logger>
+        <Logger name="epto.udp.Gossip" level="info"/>
+        <Logger name="epto.udp.Core" level="info"/>
+        <Logger name="epto.DisseminationComponent" level="info"/>
+        <Logger name="epto.OrderingComponent" level="info"/>
+        <Logger name="epto.pss.PassiveThread" level="info"/>
+        <Logger name="epto.Peer" level="info"/>
+        <Logger name="epto.libs.Utilities" level="info"/>
+        <Root level="info">
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>

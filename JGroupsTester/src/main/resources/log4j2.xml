@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <File name="File" fileName="/data/${sys:logfile.name}.txt">
+            <PatternLayout pattern="%d{UNIX_MILLIS} - %msg%n"/>
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="EventTester" level="info"/>
+        <Logger name="org.jgroups.stack.GossipRouter" level="info"/>
+        <Logger name="org.jgroups.protocols.pbcast.FLUSH" level="info"/>
+        <Root level="info">
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>

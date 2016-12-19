@@ -188,13 +188,10 @@ gradle-app.setting
 *.csv#
 report/generated-figures/*
 
-/results/*.txt
-/results/pss/*.txt
-/scripts/*.tar.gz
-/cluster/hosts
-/results/*.tar.gz
-/results/pss/*.tar.gz
-/results/**/*.csv
+**/results/**/*.txt
+**/*.tar.gz
+**/cluster/hosts
+**/results/**/*.csv
 **/__pycache__
-!/results/requirements.txt
+!**/results/**/requirements.txt
 

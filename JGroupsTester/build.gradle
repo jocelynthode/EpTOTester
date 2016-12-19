@@ -1,0 +1,53 @@
+buildscript {
+    ext.kotlin_version = '1.0.5'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'com.palantir.docker' version '0.5.2'
+}
+apply plugin: 'kotlin'
+
+group 'ch.unibnf.jgroups'
+version '1.0-SNAPSHOT'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+sourceCompatibility = 1.8
+mainClassName = 'EventTesterKt'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.jgroups:jgroups:3.6.11.Final'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile 'net.sourceforge.argparse4j:argparse4j:0.7.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6.2'
+}
+
+task mkdirLibs {
+    mkdir('build/libs')
+}
+
+docker {
+    name 'jgroups'
+    dockerfile 'Dockerfile'
+    dependsOn tasks.mkdirLibs
+    dependsOn tasks.shadowJar
+    files 'scripts/', 'build/libs'
+}
+
