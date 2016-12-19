@@ -7,7 +7,7 @@ This repository provides a working Kotlin implementation of EpTO as well as JGro
 ## Requirements
 * Docker >= 1.12
 * OpenJDK or OracleJDK >= 8
-* Read the [Cluster instructions](https://github.com/jocelynthode/epto-neem/blob/master/cluster_instructions.md)
+* Read the [Cluster instructions](https://github.com/jocelynthode/EptoTester/blob/master/projects/README.md)
 
 ## Running
 If you want to run EpTO/JGroups localy execute: `cluster/run_benchmarks.py` with the `--local` option on
