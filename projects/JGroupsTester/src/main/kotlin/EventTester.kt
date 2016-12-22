@@ -46,7 +46,7 @@ class EventTester(val peerNumber: Int, val rate: Long, val startTime: Long, val 
                 logger.debug("Coordinator is {}", channel.view.creator)
             }
             var i = 0
-            while (i < 30) {
+            while (i < 40) {
                 Thread.sleep(10000)
                 i++
             }
