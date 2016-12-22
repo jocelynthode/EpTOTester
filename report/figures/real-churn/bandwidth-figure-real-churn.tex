@@ -1,0 +1,76 @@
+\begin{tikzpicture}
+\usetikzlibrary{plotmarks}
+\pgfplotsset{
+	height=4cm,
+	width=\linewidth,
+	every axis plot post/.append style={
+		solid,
+		very thin,
+		mark=none
+	},
+	/pgfplots/area cycle list/.style={/pgfplots/cycle list={%
+			{black,fill=black,mark=none},%
+			{black,fill=white!25!black,mark=none},%
+			{black,fill=white!50!black,mark=none},%
+			{black,fill=white!75!black,mark=none},%
+			{black,fill=white,mark=none},%
+		}
+	},
+}
+\begin{groupplot}[
+ymajorgrids,
+group style={
+	group size=1 by 4,
+	vertical sep=6mm,
+	horizontal sep=0mm,
+	xlabels at=edge bottom,
+	xticklabels at=edge bottom,
+	ylabels at=edge left,
+},
+stack plots=y,area style, enlarge x limits=false, 
+ymin=0,
+xmin=0,
+xmax=61,
+ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
+xlabel={Time $\left[\si{\minute}\right]$},
+legend columns=5,
+legend cell align=left,
+legend style={at={(0.2,2)},anchor=north, font=\small, draw=none},]
+\nextgroupplot[height=2.2cm, 
+ylabel={Nodes}, 
+ymin=80,ymax=120,
+ytick={80,120}, 
+yticklabels={80,...,120},
+xmajorgrids,
+yminorgrids,
+tick label style={font=\footnotesize},
+label style={font=\tiny}]
+\addplot[const plot, color=blue, mark=none] table [x=minute, y=size, col sep=comma] {csv-data/real-trace.csv};
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},
+yticklabels={0,1,2,3,4}]
+\addplot table[x=time,y=EpTO-real-trace-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\legend{0, 0.25, 0.5, 0.75, 1}
+%
+\nextgroupplot%[ymax=4,ytick={0,1,2,3,4},]
+\addplot table[x=time,y=JGroups-coord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4}]
+\addplot table[x=time, y=JGroups-nocoord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\end{groupplot}
+%
+\node[anchor=south, rotate=-90] at (group c1r2.east) {EpTO};
+\node[anchor=south, rotate=-90] at (group c1r3.east) {JGroups coord};
+\node[anchor=south, rotate=-90] at (group c1r4.east) {JGroups nocoord};
+\end{tikzpicture}

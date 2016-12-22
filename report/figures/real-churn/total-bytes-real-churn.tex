@@ -1,0 +1,47 @@
+\begin{tikzpicture}
+\usetikzlibrary{plotmarks}
+\pgfplotsset{width=\linewidth, height=4.7cm}
+\begin{axis}[
+ymin=0,
+ymax=85,
+enlarge x limits=0.3,
+ybar=0,
+/pgf/bar width=3mm,
+/pgfplots/area legend,
+nodes near coords,
+legend style={
+	anchor=north west,
+	at={(0.6,0.97)},
+	cells={anchor=west},
+	draw=none,
+},
+every node near coord/.append style={
+	rotate=90,
+	anchor=north,
+	font=\tiny,
+	xshift=3mm,
+	yshift=0.3mm,
+},
+ymajorgrids,
+xtick=data,
+xlabel=Protocol,
+xticklabel style={text height=1.5ex, rotate=30}, 
+ylabel={Total $\left[\si{\giga\byte}\right]$},
+symbolic x coords={EpTO, JGroups-nocoord, JGroups-coord},
+]
+% 100-1sec 1kill/min
+\addplot+[mark=none, pattern=north east lines,pattern color=blue, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Receive
+	(EpTO, 81.4132665062) +- (0, 1.0822819001435)
+	(JGroups-nocoord, 5.6382174422) +- (0, 0.058029870294168)
+	(JGroups-coord, 5.6118450728) +- (0, 0.089291024953546)
+};
+\addplot+[mark=none, pattern=crosshatch dots,pattern color=red, error bars/.cd,y dir=both, y explicit] coordinates {
+	% Send
+	(EpTO, 82.6741897528) +- (0, 1.08368411575119)
+	(JGroups-nocoord, 5.4807749566) +- (0, 0.056977818312573)
+	(JGroups-coord, 5.4548362802) +- (0, 0.086273738554255)
+};
+\legend{receive, send}
+\end{axis}
+\end{tikzpicture}

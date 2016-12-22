@@ -28,15 +28,15 @@ legend style={at={(1.1,1.3)},anchor=north, font=\small, draw=none},
 cycle list name=my colors,
 ]
 \nextgroupplot
-\addplot+[const plot, mark=none] table[x=EpTO-suspend-x, y=EpTO-suspend-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
-\addplot+[const plot, mark=none] table[x=JGroups-suspend-coord-x, y=JGroups-suspend-coord-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
-\addplot+[const plot, mark=nonee] table[x=JGroups-suspend-nocoord-x, y=JGroups-suspend-nocoord-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
+\addplot+[const plot, mark=none] table[x=EpTO-suspend-x, y=EpTO-suspend-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=none] table[x=JGroups-suspend-coord-x, y=JGroups-suspend-coord-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=nonee] table[x=JGroups-suspend-nocoord-x, y=JGroups-suspend-nocoord-y, col sep=comma] {\tablelocaltime};
 \legend{EpTO, JGroups-nocoord, JGroups-coord}
 %
 \nextgroupplot
-\addplot+[const plot, mark=nonek] table[x=EpTO-add-suspend-x, y=EpTO-add-suspend-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
-\addplot+[const plot, mark=none] table[x=JGroups-add-suspend-coord-x, y=JGroups-add-suspend-coord-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
-\addplot+[const plot, mark=none] table[x=JGroups-add-suspend-nocoord-x, y=JGroups-add-suspend-nocoord-y, col sep=comma] {csv-data/plot-local-time-cdf.csv};
+\addplot+[const plot, mark=nonek] table[x=EpTO-add-suspend-x, y=EpTO-add-suspend-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=none] table[x=JGroups-add-suspend-coord-x, y=JGroups-add-suspend-coord-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=none] table[x=JGroups-add-suspend-nocoord-x, y=JGroups-add-suspend-nocoord-y, col sep=comma] {\tablelocaltime};
 \end{groupplot}
 %
 \node[anchor=south] at (group c1r1.north) {1 kill/minute};

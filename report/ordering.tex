@@ -1,0 +1,22 @@
+\section{Ordering Algorithms}
+\label{sec:ordering}
+\jt{I'm not sure we still need this section}
+Distributed systems, like centralized systems, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you cannot easily order these messages.
+Therefore we need ordering algorithms to overcome this problem.
+\par
+We have two types of ordering algorithms \autocite{lamport1978time}: the partial order algorithms and the total order algorithms.
+\subsection{Partial Order Algorithms}
+Assuming S is partially ordered under $\leq$, then the following statements hold for all a, b and c in S:
+\begin{itemize}
+	\item Reflexivity: $a \leq a$ for all $a \in S$.
+	\item Antisymmetry: $a \leq b$ and $b \leq a$ implies $a=b$ .
+	\item Transitivity: $a \leq b$  and $b \leq c$  implies $a \leq c$.
+\end{itemize}
+
+\subsection{Total Order Algorithms}
+A totally ordered set of events is a partially ordered set which satisfies one additional property:
+\begin{itemize}
+	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
+\end{itemize}
+\par
+In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important, for example when we need to know exactly which operations have been invoked in which order. We then have to use total order, otherwise we can end up in an inconsistent state.

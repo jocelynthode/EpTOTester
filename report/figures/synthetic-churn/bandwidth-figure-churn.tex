@@ -1,0 +1,90 @@
+\begin{tikzpicture}[domain=0:1800]
+\usetikzlibrary{plotmarks}
+\pgfplotsset{
+	height=4cm,
+	width=\linewidth / 2.5,
+	every axis plot post/.append style={
+		solid,
+		very thin,
+		mark=none
+	},
+	/pgfplots/area cycle list/.style={/pgfplots/cycle list={%
+			{black,fill=black,mark=none},%
+			{black,fill=white!25!black,mark=none},%
+			{black,fill=white!50!black,mark=none},%
+			{black,fill=white!75!black,mark=none},%
+			{black,fill=white,mark=none},%
+		}
+	},
+}
+\begin{groupplot}[
+ymajorgrids,
+group style={
+	group size=2 by 3,
+	vertical sep=8mm,
+	horizontal sep=4mm,
+	xlabels at=edge bottom,
+	ylabels at=edge left,
+	yticklabels at=edge left,
+},
+stack plots=y,area style, enlarge x limits=false, 
+ymin=0,
+xmin=0,
+ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
+xlabel={Time $\left[\si{\minute}\right]$},
+legend columns=5,
+legend cell align=left,
+legend style={at={(1.25,1.5)},anchor=north, font=\small, draw=none},]
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},
+yticklabels={0,1,2,3,4},]
+\addplot table[x=time,y=EpTO-suspend-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-suspend-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-suspend-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-suspend-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-suspend-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\legend{0, 0.25, 0.5, 0.75, 1}
+%
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},]
+\addplot table[x=time,y=EpTO-add-suspend-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-add-suspend-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-add-suspend-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-add-suspend-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-add-suspend-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\nextgroupplot[ymax=20,ytick={0,5,10,15,20},
+yticklabels={0,5,10,15,20},]
+\addplot table[x=time,y=JGroups-suspend-coord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-coord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-coord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-coord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-coord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\nextgroupplot[ymax=20,ytick={0,5,10,15,20},]
+\addplot table[x=time,y=JGroups-add-suspend-coord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-coord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-coord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-coord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-coord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\nextgroupplot[ymax=2,ytick={0,0.5,1,1.5,2},
+yticklabels={0,0.5,1,1.5,2},]
+\addplot table[x=time,y=JGroups-suspend-nocoord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-nocoord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-nocoord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-nocoord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-suspend-nocoord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\nextgroupplot[ymax=2,ytick={0,0.5,1,1.5,2},]
+\addplot table[x=time,y=JGroups-add-suspend-nocoord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-nocoord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-nocoord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-nocoord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-add-suspend-nocoord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+%
+\end{groupplot}
+\node[anchor=south] at (group c1r1.north) {1 kill};
+\node[anchor=south] at (group c2r1.north) {1 \{kill,add\}/minute};
+\node[anchor=south, rotate=-90] at (group c2r1.east){EpTO};
+\node[anchor=south, rotate=-90] at (group c2r2.east){JGroups coord};
+\node[anchor=south, rotate=-90] at (group c2r3.east){JGroups nocoord};
+\end{tikzpicture}

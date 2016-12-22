@@ -1,0 +1,160 @@
+% !TeX program = lualatex
+\documentclass[10pt,conference,a4paper]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[rm={oldstyle=false}]{cfr-lm}
+\usepackage[australian,american]{babel}
+
+\usepackage[backend=biber,style=ieee,bibencoding=utf8,sorting=none,doi=false,isbn=false,url=false,date=short]{biblatex}
+\usepackage{amssymb}
+\usepackage[cmex10]{amsmath}
+\usepackage{csquotes}
+\usepackage[nolist]{acronym}
+\usepackage{float}
+\usepackage{todonotes}
+\usepackage{pgfplots}
+\usepackage{pgf}
+\usepackage[binary-units]{siunitx}
+\usepackage{pgfplotstable}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{lipsum}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xspace}
+\usepackage[caption=false]{subfig}
+
+\usetikzlibrary{patterns}
+
+\usepgfplotslibrary{external, groupplots, units}
+\tikzexternalize
+\tikzsetexternalprefix{generated-figures/}
+
+\sisetup{
+	round-mode          = places,
+	round-precision     = 2,
+}
+\DeclareSIUnit\mbps{MB/s}
+
+\pgfplotscreateplotcyclelist{my colors}{%
+solid, color=black\\%
+densely dotted, color=blue\\%
+densely dashed, color=red\\%
+}
+\makeatother
+%% Environment for comments: Set the boolean to false to produce a comment-free version.
+\newboolean{showcomments}
+\setboolean{showcomments}{true}
+\ifthenelse{\boolean{showcomments}}
+{ \newcommand{\mynote}[3]{
+		\fbox{\bfseries\sffamily\scriptsize#1}
+		{\small$\blacktriangleright$\textsf{\textit{\color{#3}{#2}}}$\blacktriangleleft$}}}
+{ \newcommand{\mynote}[3]{}}
+% One command per author:
+\newcommand{\jt}[1]{\mynote{Jocelyn}{#1}{blue}}
+
+\newcommand{\epto}{\textsc{EpTO}\xspace}
+\newcommand{\jgroups}{\textsc{JGroups}\xspace}
+
+\newif\ifjmcs
+% Change false to true to have the JMCS cover page
+\jmcstrue
+
+\pgfplotsset{
+	compat=1.14,
+	tick label style={font=\small},
+	label style={font=\small},
+	legend style={font=\small},
+	/pgfplots/short line legend/.style={
+		legend image code/.code={
+			\draw[mark repeat=2,mark phase=2,##1]
+			plot coordinates {
+				(0cm,0cm)
+				(0.2cm,0cm)
+				(0.4cm,0cm)
+			};%
+		}
+	},
+	/pgfplots/xtick pos=left,
+}
+
+\def\ieeetitle{EpTO TO DEFINE}
+\def\ieeeauthor{X,X,X}
+
+\def\thesistitle{EpTO TO DEFINE}
+\def\thesissubtitle{X}
+\def\thesisauthor{Jocelyn Thode}
+
+
+\author{\IEEEauthorblockN{\ieeeauthor}
+	\IEEEauthorblockA{University of Fribourg, Switzerland\\
+		\href{mailto:first.last@unifr.ch}{first.last@unifr.ch}}
+}
+\title{\ieeetitle}
+
+\addbibresource{references.bib}
+\renewcommand*{\bibfont}{\small}
+
+\hypersetup{
+	pdftitle=\thesistitle,
+	pdfauthor=\thesisauthor
+}
+
+% \noautocite{*}
+
+
+\begin{document}
+	
+\ifjmcs
+\begin{titlepage}
+	\begin{otherlanguage}{australian}
+		\begin{center}
+			\begin{figure}[t]
+				\center{\includegraphics[scale=0.2]{logos/MSc_quer.png}}
+				\vspace{0.4in}
+			\end{figure}
+			
+			{\bfseries\Huge \thesistitle \par
+				\Large \vspace{0.1in} \thesissubtitle \par}
+			
+			\vspace{0.3in}
+			\LARGE{\textbf{Master Thesis} \\}
+			\vspace{0.4in}
+			
+			{\Large \thesisauthor}
+			
+			\vspace{0.3in}
+			{\Large Université de Fribourg \par}
+			\vfill
+			{\Large \today \par}
+			
+			\vspace{0.9in}
+			
+			% === Logos ==============================================
+			\begin{figure}[htp]
+				\centering
+				\subfloat{\includegraphics[scale=0.60]{logos/UNI_Bern.pdf}}\hfill
+				\subfloat{\includegraphics[scale=0.54]{logos/UNI_Neuchatel.pdf}}\hfill
+				\subfloat{\includegraphics[scale=0.81]{logos/UNI_Fribourg.pdf}}
+			\end{figure}
+			% === // Logos ===========================================
+			
+		\end{center}
+	\end{otherlanguage}
+\end{titlepage}
+
+\pagebreak
+\fi
+
+%	\maketitle
+	
+\input{abstract.tex}
+\input{introduction.tex}
+\input{ordering.tex}
+\input{definitions.tex}
+\input{framework.tex}
+\input{evaluation.tex}
+\input{future-work.tex}
+\input{conclusion.tex}
+
+\printbibliography
+\end{document}

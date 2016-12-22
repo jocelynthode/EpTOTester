@@ -1,25 +1,38 @@
 
 \section{Evaluation}
+\label{sec:evaluation}
+\pgfplotstableread[col sep=comma]{csv-data/average-bytes-sent-recv.csv}\tableaverage
+\pgfplotstableread[col sep=comma]{csv-data/plot-global-time-cdf.csv}\tableglobaltime
+\pgfplotstableread[col sep=comma]{csv-data/plot-local-deltas-cdf.csv}\tablelocaldeltas
+\pgfplotstableread[col sep=comma]{csv-data/plot-local-time-cdf.csv}\tablelocaltime
+In this section we present the results of the benchmarks.
+\subsection{Testbed}
+\jt{Write about benchmarks}
+\subsection{Parameter}
+\epto uses a constant $c$ to set the probability of a hole appearing. We set $c = 4$ in all our benchmarks so as to not experience any holes as \jgroups does not produce holes under normal conditions. We use a $\delta$ period of \SI{100}{\milli\second} for tests with no churn or synthethic churn and \SI{250}{\milli\second} for tests following a real trace.
+\par 
+We used specific settings recommended for a big cluster available in the \jgroups library.
 \subsection{Bandwidth}
 \jt{\epto was run with $c=4$ to prevent any holes and a $\delta$ period of 100ms. Churn was run for 17minutes. 3min at the end with no churn, to see stabilization. Churn starts 30seconds after protocol}
+\jt{We should define acronyms for the different benchmark variants}
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\input{figures/bandwidth-figure.tex}
+	\input{figures/no-churn/bandwidth-figure.tex}
 	\vspace{-2mm} 
 	\caption{Throughput percentiles of a node during an experiment}
 	\vspace{-2mm} 
 	\label{fig:bandwidth}
 \end{figure}
-In \autoref{fig:bandwidth} we can see \epto has a worse baseline compared to \jgroups. It uses a median bandwidth of approximately \SI{1}{\mbps} for the smallest benchmark whereas \jgroups uses a median bandwidth of less than \SI{0.2}{\mbps}. However, in \jgroups most of the work is done solely by the coordinator. We can clearly see this as the 100th percentile is much higher than the rest and uses approximately \SI{.5}{\mbps}.
+In \autoref{fig:bandwidth} we can see \epto has a worse baseline compared to \jgroups. It uses a median bandwidth of approximately \SI{1}{\mbps} for $(50,50)$ whereas \jgroups uses a median bandwidth of less than \SI{0.2}{\mbps}. However, in \jgroups most of the work is done solely by the coordinator. We can clearly see this as the 100th percentile is much higher than the rest and uses approximately \SI{.6}{\mbps}.
 
 Comparing \epto and \jgroups in terms of bandwidth when we increase the number of events sent per second, we can see the bandwidth doubling in both cases.In lower peers scenario such as the ones presented in \autoref{fig:bandwidth} \jgroups is clearly at an advantage. Since \epto has a worse baseline we will reach the maximum bandwidth possible much quicker when increasing the event throughput.
 
 Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto is performing better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it by 50\% or less. \jt{logarithmic I think as was expected}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum bandwidth.
 
-\begin{figure}
+\begin{figure}[htp]
 	\centering
-	\input{figures/bandwidth-figure-churn.tex}
+	\input{figures/synthetic-churn/bandwidth-figure-churn.tex}
 	\vspace{-2mm} 
 	\caption{Throughput percentiles of a node during an experiment with churn}
 	\vspace{-2mm} 
@@ -28,53 +41,91 @@ Comparing \epto and \jgroups in terms of bandwidth when we increase the number o
 
 In \autoref{fig:bandwidth-churn} We analyze two different synthetic churns. In the first one we kill one node per minute. In the second one, we still kill one node per minute, but we immediately create a new one. For \jgroups we ran the benchmarks once without killing the coordinator and once killing it.
 
-All tests were run using 100 peers and a global throughput of 50 events per second (100-1sec). \jt{I need to rephrase 50-1sec, 100-1sec etc. to be clearer}
-
 We can see that the churn doesn't affect  \epto at all when there are only nodes leaving. We have small peaks when adding a node to \SI{3}{\mbps} or less. Probably due to running the PSS initialization method on top of having one more node spreading rumors in the system. This is confirmed at the end of the plot where \epto goes back to a normal Bandwidth after stabilization.
 
-On the other hand, when killing the coordinator in \jgroups we can see a huge spike in bandwidth, going from \SI{1}{\mbps} to more than \SI{15}{\mbps}. This is due to how \jgroups operates when selecting a new coordinator.
+On the other hand, when killing the coordinator in \jgroups we can see a huge spike in bandwidth, going from \SI{1.2}{\mbps} to more than \SI{15}{\mbps}. This is due to how \jgroups operates when selecting a new coordinator.
 
 Even when not killing the coordinator, \jgroups suffers from the churn. We can see that each time the view changes, it generates an almost 100\% increase in bandwidth usage. This is due to \jgroups having to update the view and propagate it to every peer.
 
 \newpage
 
-\subsection{Total Bytes sent/received}
-\begin{figure}[h]
+\subsection{Total GigaBytes sent/received}
+\begin{table}[htp]
 	\centering
-	\input{figures/total-bytes.tex}
-	\vspace{-2mm} 
-	\caption{Total bytes sent/received during an average experiment}
-	\vspace{-2mm} 
-	\label{fig:total-bandwidth}
-\end{figure}
-In \autoref{fig:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c*n*\log_2 n$ messages per events and \jgroups sends at least $n$ messages per event so we should have at least $c*\log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
+	\caption{Total \si{\giga\byte} sent/received in a stable system}
+	\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+	\begin{tabular}{lSSSS}
+		\toprule
+		&& \multicolumn{3}{c}{Cluster parameters} \\
+		\cmidrule{3-5}
+		{Protocol}&& {50P50E} & {50P50E} & {100P50E} \\
+		\midrule
+		\multirow{2}{*}{\epto}&{Receive}& 10.85(016) & 22.31(039) & 26.01(028) \\
+						    &{Sending}& 10.85(016) & 22.31(039) & 26.01(028)\\
+		\midrule
+		\multirow{2}{*}{\jgroups}&{Receive}& 0.81(003) & 1.48(001) & 2.00(001)\\
+							   &{Sending}& 0.80(003) & 1.47(001) & 1.95(001)\\
+		\bottomrule
+	\end{tabular}
+	\label{table:total-bandwidth} 
+\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/no-churn/total-bytes.tex}
+%	\vspace{-2mm} 
+%	\caption{Total bytes sent/received during an average experiment}
+%	\vspace{-2mm} 
+%	\label{fig:total-bandwidth}
+%\end{figure}
+In \autoref{table:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c*n*\log_2 n$ messages per events and \jgroups sends at least $n$ messages per event so we should have at least $c*\log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
+\begin{table}[htp]
 	\centering
-	\input{figures/total-bytes-churn.tex}
-	\vspace{-2mm} 
-	\caption{Total bytes sent/received during an average experiment with churn}
-	\vspace{-2mm} 
-	\label{fig:total-bandwidth-churn}
-\end{figure}
-In \autoref{fig:total-bandwidth-churn} we can see that \jgroups total bandwidth usage doesn't increase significantly compared to \epto with churn. An explanation for this phenomenon is that \jgroups takes more than a minute to find out the coordinator is effectively dead. During this time the bandwidth is practically not used. The big spike when the new coordinator is chosen compensates for this hole thus making the total bandwidth used appear as to not have changed.
+	\caption{Total \si{\giga\byte} sent/received with a synthetic churn}
+	\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+	\begin{tabular}{lSSS}
+		\toprule
+		&& \multicolumn{2}{c}{Churn parameters} \\
+		\cmidrule{3-4}
+		{Protocol}&& \{1kill\}/minute & \{1kill,1add\}/minute \\
+		\midrule
+		\multirow{2}{*}{\epto}&{Receive}& 21.00(024) & 26.32(032)\\
+							&{Sending}& 21.21(025) & 26.57(032)\\
+		\midrule
+		\multirow{2}{*}{\jgroups-coord}&{Receive}& 1.55(002) & 1.85(002)\\
+									 &{Sending}& 1.51(002) & 1.79(002)\\
+		\midrule
+		\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 1.54(001) & 1.83(002)\\
+									   &{Sending}& 1.49(001) & 1.78(002)\\
+		\bottomrule
+	\end{tabular}
+	\label{table:total-bandwidth-churn} 
+\end{table}
 
-The fact that killing the coordinator or not has no effect on the total bandwidth used tends to show the hypothesis to be correct.
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/synthetic-churn/total-bytes-churn.tex}
+%	\vspace{-2mm} 
+%	\caption{Total bytes sent/received during an average experiment with churn}
+%	\vspace{-2mm} 
+%	\label{fig:total-bandwidth-churn}
+%\end{figure}
+In \autoref{table:total-bandwidth-churn} we can see that \jgroups total bandwidth usage is smaller when there is churn. One hypothesis for this is that a JGroups replica takes a longer time to start up thus the overall benchmark has a longer time with less than 100 replicas. We also do not see a difference whether we kill the coordinator or not. This can be explained by the fact that before the detection of the faulty coordinator \jgroups is forced to a stop for time up to \SI{20}{\second}. The big spike afterwards compensates for this hole.
 \subsection{Local Times}
 \label{sub:local-times}
 \jt{Having a table for each percentile figure might be a good idea to put numbers for key percentiles (min,50th,max) for example}
-\begin{figure}[h]
+\begin{figure*}[htp]
 	\centering
-	\input{figures/local-times.tex}
+	\input{figures/no-churn/local-times.tex}
 	\vspace{-2mm} 
 	\caption{Local dissemination times}
 	\vspace{-2mm}
 	\label{fig:local-times} 
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\input{figures/local-times-churn.tex}
+	\input{figures/synthetic-churn/local-times-churn.tex}
 	\vspace{-2mm} 
 	\caption{Local dissemination times with churn}
 	\vspace{-2mm} 
@@ -83,18 +134,18 @@ The fact that killing the coordinator or not has no effect on the total bandwidt
 In \autoref{fig:local-times}, \jgroups delivers all events quicker than \epto in all scenarios, even when churn is involved as is shown in \autoref{fig:local-times-churn}. However, \epto is not too far behind. The difference between \epto and \jgroups is likely to be even smaller when running them in a real WAN network due to the latency. \epto in our configuration has a $\delta$ period of \SI{100}{\milli\second} and is thus handicapped against \jgroups in a LAN environment, because it only increments the TTL of an event every \SI{100}{\milli\second}.
 \newpage
 \subsection{Global Times}
-\begin{figure}[h]
+\begin{figure*}[htp]
 	\centering
-	\input{figures/global-times.tex}
+	\input{figures/no-churn/global-times.tex}
 	\vspace{-2mm} 
 	\caption{Global dissemination times}
 	\vspace{-2mm}
 	\label{fig:global-times}  
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\input{figures/global-times-churn.tex}
+	\input{figures/synthetic-churn/global-times-churn.tex}
 	\vspace{-2mm} 
 	\caption{Global dissemination times with churn}
 	\vspace{-2mm} 
@@ -105,55 +156,187 @@ We computed global times as well. They are represented in \autoref{fig:global-ti
 Nonetheless, here too we can see that \epto is consistently slower than \jgroups for the same reason as stated in \autoref{sub:local-times}.
 \newpage
 \subsection{Local Dissemination stretch}
-\begin{figure}[h]
+\begin{figure*}[htp]
 	\centering
-	\input{figures/local-delta.tex}
+	\input{figures/no-churn/local-delta.tex}
 	\vspace{-2mm} 
 	\caption{Local dissemination stretch}
 	\vspace{-2mm}
 	\label{fig:local-delta}  
-\end{figure}
-\jt{I wonder if we should split the plots (3 by 2) having a row for EpTO and a row for JGroups. This way we could show more for JGroups local dissemination stretch}In \autoref{fig:local-delta}, We can see the percentiles of the local dissemination stretch. The local dissemination stretch is the time measurement between the sending of an event by a peer and the delivery of this event locally.
+\end{figure*}
+In \autoref{fig:local-delta}, We can see the percentiles of the local dissemination stretch. The local dissemination stretch is the time measurement between the sending of an event by a peer and the delivery of this event locally.
 
-\jgroups is usually much faster than \epto in a perfect environment. This is expected as the benchmarks involve a small number of nodes and are performed in a LAN environment with minmimal latency. The median dissemination stretch of \jgroups is around \SI{8}{\milli\second} where as the median dissemiantion stretch of \epto is around \SI{685}{\milli\second}. When increasing the number of peers, JGroups starts to have long delivery times
+\jgroups is usually much faster than \epto in a perfect environment. This is expected as the benchmarks involve a small number of nodes and are performed in a LAN environment with minmimal latency. The median dissemination stretch of \jgroups is around \SI{7}{\milli\second} where as the median dissemiantion stretch of \epto is around \SI{630}{\milli\second} for $(100,50)$. When increasing the number of peers, \jgroups starts to have long delivery times for some outliers.
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\input{figures/local-delta-churn.tex}
+	\input{figures/synthetic-churn/local-delta-churn.tex}
 	\vspace{-2mm} 
 	\caption{Local dissemination stretch with churn}
 	\vspace{-2mm}
 	\label{fig:local-delta-churn}   
 \end{figure}
-In \autoref{fig:local-delta-churn} We can see a completely different picture. When under churn, the 90th percentile of \jgroups is at \SI{447}{\milli\second} and the highest percentiles are at more than \SI{20}{\second} with the highest dissemination stretch being \SI{67.5}{\second}. This effect is due to the coordinator dying as we clearly see that it does not happen when we do not kill it.
+In \autoref{fig:local-delta-churn} We can see a completely different picture. When under churn, the 95th percentile of \jgroups is at \SI{31}{\milli\second} compared to \SI{14}{\milli\second} when there is no churn. The highest percentiles are at more than \SI{10}{\second}. This effect is due to the coordinator dying as we clearly see that it does not happen when we do not kill it.
 
-The median is bigger at around \SI{11}{\milli\second}, whether we kill the coordinator or not. This shows that there are some degradation in \jgroups local dissemination stretch when under churn.
+The median is bigger at around \SI{9}{\milli\second}, whether we kill the coordinator or not. This shows that there are some degradation in \jgroups local dissemination stretch when under churn.
 
-On the contrary, \epto performs very well under churn. The median stays really close at \SI{686}{\milli\second} with the 99.9th percentile being at \SI{1647}{\milli\second} compared to \SI{1366}{\milli\second} when no churn is happening.
+On the contrary, \epto performs very well under churn. The median degrade a bit at \SI{650}{\milli\second} with the 99th percentile being at \SI{1030}{\milli\second} compared to \SI{982}{\milli\second} when no churn is happening.
 \newpage
 \subsection{Events sent}
-\begin{figure}[h]
+\jt{Representing as a table might be better}
+\begin{table}[htp]
 	\centering
-	\input{figures/total-events-sent.tex}
-	\vspace{-2mm} 
-	\caption{Total events sent per experiment on average}
-	\vspace{-2mm}
-	\label{fig:total-events}   
-\end{figure}
-In \autoref{fig:total-events} we can see that both \epto and \jgroups deliver the same amount of events. This is expected in a perfect environment.
-\begin{figure}[h]
+	\caption{Total events sent in a stable environment}
+\sisetup{table-format=6.1, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+\begin{tabular}{lSSS}
+	\toprule
+	& \multicolumn{3}{c}{Cluster parameters} \\
+	\cmidrule{2-4}
+	Protocol & {50P50E} & {50P50E} & {100P50E} \\
+	\midrule
+	\epto & 59993.8(33) & 119898.2(97) & 59913.0(1643) \\
+	\jgroups & 59961.9(109) & 119885.7(50) & 60023.1(2871) \\
+	\bottomrule
+\end{tabular}
+\label{table:total-events}  
+\end{table}
+
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/no-churn/total-events-sent.tex}
+%	\vspace{-2mm} 
+%	\caption{Total events sent per experiment on average}
+%	\vspace{-2mm}
+%	\label{fig:total-events}   
+%\end{figure}
+In \autoref{table:total-events} we can see that both \epto and \jgroups deliver the same amount of events. This is expected in a perfect environment.
+\begin{table}[htp]
 	\centering
-	\input{figures/total-events-sent-churn.tex}
+	\caption{Total events sent with a synthetic churn}
+\sisetup{table-format=6.1, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+\begin{tabular}{lSSS}
+	\toprule
+	& \multicolumn{2}{c}{Cluster parameters} \\
+	\cmidrule{2-3}
+	Protocol & \{1kill\}/minute & \{1kill,1add\}/minute \\
+	\midrule
+	\epto & 53898.5(1339) & 59798.6(1401) \\
+	\jgroups-coord & 53834.7(1755) & 59507.9(2409) \\
+	\jgroups-nocoord & 53830.5(2003) & 59450.5(1751) \\
+	\bottomrule
+\end{tabular}
+    \label{table:total-events-churn}
+\end{table}
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/synthetic-churn/total-events-sent-churn.tex}
+%	\vspace{-2mm} 
+%	\caption{Total events sent per experiment during churn on average}
+%	\vspace{-2mm}
+%	\label{fig:total-events-churn}  
+%\end{figure}
+
+In \autoref{table:total-events-churn} When only killing nodes, \epto and \jgroups again deliver the same amount of events. When killing and adding nodes, JGroups seems to deliver a smaller amount of nodes, however it does not look significant \jt{I didn't run any statistical analysis}
+\section{Real Trace}
+\subsection{Bandwidth}
+
+\begin{figure}[htp]
+	\centering
+	\input{figures/real-churn/bandwidth-figure-real-churn.tex}
 	\vspace{-2mm} 
-	\caption{Total events sent per experiment during churn on average}
-	\vspace{-2mm}
-	\label{fig:total-events-churn}  
+	\caption{Throughput percentiles of a node during an experiment with churn}
+	\vspace{-2mm} 
+	\label{fig:bandwidth-real-churn}
 \end{figure}
 
-In \autoref{fig:total-events-churn} When only killing nodes, \epto and \jgroups again deliver the same amount of events.
+\newpage
+\subsection{Total Bytes sent/received}
+\begin{table}[htp]
+	\centering
+	\caption{Total \si{\giga\byte} sent/received}
+	\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+	\begin{tabular}{lSS}
+		\toprule
+		&& \multicolumn{1}{c}{Churn parameters} \\
+		\cmidrule{3-3}
+		{Protocol}&& {Real Trace} \\
+		\midrule
+		\multirow{2}{*}{\epto}&{Receive}& 81.41(108)\\
+		&{Sending}& 82.67(108)\\
+		\midrule
+		\multirow{2}{*}{\jgroups-coord}&{Receive}& 5.61(008)\\
+		&{Sending}& 5.45(008)\\
+		\midrule
+		\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 5.63(005)\\
+		&{Sending}& 5.48(005)\\
+		\bottomrule
+	\end{tabular}
+	\label{table:total-bandwidth-real-churn} 
+\end{table}
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/real-churn/total-bytes-real-churn.tex}
+%	\vspace{-2mm} 
+%	\caption{Total bytes sent/received during an average experiment with churn}
+%	\vspace{-2mm} 
+%	\label{fig:total-bandwidth-real-churn}
+%\end{figure}
 
-However when killing and adding nodes \epto is clearly superior, delivering more than 2000 more events than \jgroups, even when \jgroups coordinator is not killed.
+\subsection{Local Times}
+\label{sub:local-times}
+\begin{figure}[htp]
+	\centering
+	\input{figures/real-churn/local-times-real-churn.tex}
+	\vspace{-2mm} 
+	\caption{Local dissemination times}
+	\vspace{-2mm}
+	\label{fig:local-times-real-churn} 
+\end{figure}
 
-We are not sure why this is happening, but one hypothesis is that \jgroups peers take a longer time to join the cluster and thus start sending events later. Since the benchmarks start and stop at a given time, they send less events in total.
+\newpage
+\subsection{Global Times}
 
+\begin{figure}[htp]
+	\centering
+	\input{figures/real-churn/global-times-real-churn.tex}
+	\vspace{-2mm} 
+	\caption{Global dissemination times with churn}
+	\vspace{-2mm} 
+	\label{fig:global-times-real-churn} 
+\end{figure}
+\newpage
+\subsection{Local Dissemination stretch}
 
+\begin{figure}[htp]
+	\centering
+	\input{figures/real-churn/local-delta-real-churn.tex}
+	\vspace{-2mm} 
+	\caption{Local dissemination stretch with churn}
+	\vspace{-2mm}
+	\label{fig:local-delta-real-churn}   
+\end{figure}
+\newpage
+\subsection{Events sent}
+\begin{table}[htp]
+	\centering
+	\caption{Total events sent during a real trace}
+\sisetup{table-format=6.1, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+\begin{tabular}{lS}
+	\toprule
+	Protocol & \\
+	\midrule
+	\epto & 165844.2(2102) \\
+	\jgroups-coord & 166183.0(13681) \\
+	\jgroups-nocoord & 166585.8(8249) \\
+	\bottomrule
+\end{tabular}
+    \label{table:total-sent-real-churn}
+\end{table}
+%\begin{figure}[h]
+%	\centering
+%	\input{figures/real-churn/total-events-sent-real-churn.tex}
+%	\vspace{-2mm} 
+%	\caption{Total events sent per experiment during churn on average}
+%	\vspace{-2mm}
+%	\label{fig:total-events-real-churn}  
+%\end{figure}

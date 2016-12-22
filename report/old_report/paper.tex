@@ -105,6 +105,59 @@
 	\closeout\widthfile
 	\fi
 }
+
+\newif\ifjmcs
+% Change false to true to have the JMCS cover page
+\jmcsfalse
+
+\pgfplotsset{
+	compat=1.12,
+	tick label style={font=\small},
+	label style={font=\small},
+	legend style={font=\small},
+	/pgfplots/short line legend/.style={
+		legend image code/.code={
+			\draw[mark repeat=2,mark phase=2,##1]
+			plot coordinates {
+				(0cm,0cm)
+				(0.2cm,0cm)
+				(0.4cm,0cm)
+			};%
+		}
+	},
+	/pgfplots/xtick pos=left,
+}
+
+\newif\ifjmcs
+% Change false to true to have the JMCS cover page
+\jmcsfalse
+
+def\ieeetitle{Have a Seat on the ErasureBench:\\Easy Evaluation of Erasure Coding Libraries\\ for Distributed Storage Systems}
+
+%\def\ieeetitle{ErasureBench: an Experimental Testbed to Compare\\ Locally Repairable and Erasure Coding Libraries}
+
+\def\ieeeauthor{Sébastien Vaucher, Hugues Mercier, Valerio Schiavoni}
+
+\def\thesistitle{ErasureBench}
+\def\thesissubtitle{An experimental testbed to evaluate erasure-coding libraries}
+\def\thesisauthor{Sébastien Vaucher}
+
+
+\author{\IEEEauthorblockN{\ieeeauthor}
+	\IEEEauthorblockA{University of Neuchâtel, Switzerland\\
+		\href{mailto:first.last@unine.ch}{first.last@unine.ch}}
+}
+\title{\ieeetitle}
+
+\addbibresource{references.bib}
+\renewcommand*{\bibfont}{\small}
+
+\hypersetup{
+	pdftitle=\thesistitle,
+	pdfauthor=\thesisauthor
+}
+
+
 \begin{document}
 \graphicspath{{figures/}}
 
@@ -114,7 +167,7 @@
 
 
 \begin{abstract}
-Total ordering has always been of interest in large-scale distributed systems. EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO \autocite{matos2015epto} and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
+EpTO is one of the recently introduced total order algorithms for large-scale distributed systems and claims to provide total order and scalability at the same time. In this paper, we verify this claim by implementing EpTO \autocite{matos2015epto} and evaluate its reliability in real-world conditions. We then compare it to a deterministic total order algorithm named JGroups.
 \end{abstract}
 \section{Introduction}
 

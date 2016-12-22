@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+\begin{axis}[
+every axis plot/.append style={very thick},
+grid=major,
+grid style={dashed,gray!30},
+ymax=1.05,
+ymin=0,
+xlabel={Time $\left[\si{\second}\right]$},
+x tick label style={/pgf/number format/fixed},
+ytick={0,0.2,0.4,0.6,0.8,1},
+yticklabels={0,0.2,0.4,0.6,0.8,1},
+ylabel=Percentiles,
+legend columns=3,
+legend cell align=left,
+legend style={at={(0.5,1.1)},anchor=north, font=\small, draw=none},
+cycle list name=my colors,
+]
+\addplot+[const plot, mark=none] table[x=EpTO-real-trace-x, y=EpTO-real-trace-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=none] table[x=JGroups-coord-x, y=JGroups-coord-y, col sep=comma] {\tablelocaltime};
+\addplot+[const plot, mark=nonee] table[x=JGroups-nocoord-x, y=JGroups-nocoord-y, col sep=comma] {\tablelocaltime};
+\legend{EpTO, JGroups-nocoord, JGroups-coord}
+\end{axis}
+\end{tikzpicture}
