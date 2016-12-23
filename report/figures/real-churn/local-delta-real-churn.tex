@@ -1,6 +1,7 @@
 \begin{tikzpicture}
 \begin{axis}[
 every axis plot/.append style={very thick},
+height=5cm,
 grid=major,
 grid style={dashed,gray!30},
 ymax=1.05,
@@ -13,7 +14,7 @@ yticklabels={0,0.2,0.4,0.6,0.8,1},
 ylabel=Percentiles,
 legend columns=3,
 legend cell align=left,
-legend style={at={(0.5,1.1)},anchor=north, font=\small, draw=none},
+legend style={at={(0.5,1.2)},anchor=north, font=\small, draw=none},
 cycle list name=my colors,
 ]
 \addplot+[const plot, mark=none] table[x=EpTO-real-trace-x, y=EpTO-real-trace-y, col sep=comma] {\tablelocaldeltas};

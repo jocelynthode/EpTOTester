@@ -1,4 +1,5 @@
 \section{Definitions}
+\label{sec:definitions}
 A process or peer is defined as an actor in our system running the application that needs total order. Each process will communicate with other processes in the distributed system, exchange events, and order them together.
 \par
 An event is defined as data sent at a given time by a peer. For example, we could imagine a system where each process publishes some data to other peers. The moment where we publish data combined with the data is called an event.
@@ -11,10 +12,9 @@ in the number of processes, ...''. The number of rounds needed to deliver an eve
 \par
 Since \epto uses a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this instance there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by \epto's deterministic ordering algorithm, thus the total order property is preserved.
 \par
-We write the cluster parameters as $(p,e)$, where $p$ designates the total number of peers and $e$ designates the global event throughput. We tested \epto and \jgroups with three different cluster parameters:
+We write the cluster parameters as $(p,e)$, where $p$ designates the total number of peers and $e$ designates the global event throughput per second. We tested \epto and \jgroups with three different cluster parameters:
 \begin{description}[\IEEEsetlabelwidth{$(100,100)$:}]
-	\item[\textbf{$(100,100)$}:] 50 peers with a global event throughput of 50 events per seconds.
-	\item[\textbf{$(100,100)$}:] 50 peers with a global event throughput of 100 events per seconds.
-	\item[\textbf{$(100,100)$}:] 100 peers with a global event throughput of 50 events per seconds. This parameter was also used for all synthetic churns.
+	\item[\textbf{$(50,50)$}:] 50 peers with a global event throughput of 50 events per second.
+	\item[\textbf{$(50,100)$}:] 50 peers with a global event throughput of 100 events per second.
+	\item[\textbf{$(100,50)$}:] 100 peers with a global event throughput of 50 events per second. This parameter was also used for all synthetic churns.
 \end{description}
-\par
