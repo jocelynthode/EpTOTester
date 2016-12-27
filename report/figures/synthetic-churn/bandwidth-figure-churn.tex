@@ -1,4 +1,4 @@
-\begin{tikzpicture}[domain=0:1800]
+\begin{tikzpicture}
 \usetikzlibrary{plotmarks}
 \pgfplotsset{
 	height=4cm,
@@ -34,7 +34,7 @@ ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
 xlabel={Time $\left[\si{\minute}\right]$},
 legend columns=5,
 legend cell align=left,
-legend style={at={(1.25,1.5)},anchor=north, font=\small, draw=none},]
+legend style={at={(1.15,1.5)},anchor=north, font=\small, draw=none},]
 \nextgroupplot[ymax=4,ytick={0,1,2,3,4},
 yticklabels={0,1,2,3,4},]
 \addplot table[x=time,y=EpTO-suspend-0.000000, col sep=comma]{\tableaverage} \closedcycle;
@@ -84,7 +84,7 @@ yticklabels={0,0.5,1,1.5,2},]
 \end{groupplot}
 \node[anchor=south] at (group c1r1.north) {1 kill};
 \node[anchor=south] at (group c2r1.north) {1 \{kill,add\}/minute};
-\node[anchor=south, rotate=-90] at (group c2r1.east){EpTO};
-\node[anchor=south, rotate=-90] at (group c2r2.east){JGroups coord};
-\node[anchor=south, rotate=-90] at (group c2r3.east){JGroups nocoord};
+\node[anchor=south, rotate=-90] at (group c2r1.east){\epto};
+\node[anchor=south, rotate=-90] at (group c2r2.east){\jgroups-coord};
+\node[anchor=south, rotate=-90] at (group c2r3.east){\jgroups-nocoord};
 \end{tikzpicture}

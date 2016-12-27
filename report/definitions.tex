@@ -4,17 +4,17 @@ A process or peer is defined as an actor in our system running the application t
 \par
 An event is defined as data sent at a given time by a peer. For example, we could imagine a system where each process publishes some data to other peers. The moment where we publish data combined with the data is called an event.
 \par
-A ball is a set of events bundled together and sent as one package. We use balls in \epto to reduce network traffic and make it scalable in terms of processes and events.
+A ball is a set of events bundled together and sent as one package. We use balls in \epto to reduce network traffic.
 
-We define \epto scaling well as it was defined in  \autocite{matos2015epto}:  ``The number
+We define \epto scaling well as it is defined in  \autocite{matos2015epto}:  ``The number
 of messages transmitted per process per round is logarithmic
-in the number of processes, ...''. The number of rounds needed to deliver an event stays low as well.
+in the number of processes, ...''. The number of rounds needed to deliver is logarithmic as well.
 \par
-Since \epto uses a probabilistic agreement instead of a deterministic agreement, there might be a situation where a peer does not receive an event (with a very low arbitrary probability). In this instance there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by \epto's deterministic ordering algorithm, thus the total order property is preserved.
+Since \epto uses a probabilistic agreement instead of a deterministic agreement, there is a very low arbitrary probability a peer does not receive an event. In this instance there will be a hole in the sequence of delivered events but even in this case, the order of the delivered events will be protected by \epto's deterministic ordering algorithm, thus the total order property is preserved.
 \par
-We write the cluster parameters as $(p,e)$, where $p$ designates the total number of peers and $e$ designates the global event throughput per second. We tested \epto and \jgroups with three different cluster parameters:
+We write the cluster parameters as $(n,e)$, where $n$ designates the total number of peers and $e$ denominates the global event throughput per second. We tested \epto and \jgroups with three different cluster parameters:
 \begin{description}[\IEEEsetlabelwidth{$(100,100)$:}]
 	\item[\textbf{$(50,50)$}:] 50 peers with a global event throughput of 50 events per second.
 	\item[\textbf{$(50,100)$}:] 50 peers with a global event throughput of 100 events per second.
-	\item[\textbf{$(100,50)$}:] 100 peers with a global event throughput of 50 events per second. This parameter was also used for all synthetic churns.
+	\item[\textbf{$(100,50)$}:] 100 peers with a global event throughput of 50 events per second. These parameters were also used for all synthetic churns.
 \end{description}

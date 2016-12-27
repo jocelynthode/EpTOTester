@@ -35,42 +35,43 @@ ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
 xlabel={Time $\left[\si{\minute}\right]$},
 legend columns=5,
 legend cell align=left,
-legend style={at={(0.4,1.9)},anchor=north, font=\small, draw=none},]
+legend style={at={(0.6,1.9)},anchor=north, font=\small, draw=none},]
 \nextgroupplot[height=2.3cm, 
 ylabel={Nodes}, 
 ymin=75,ymax=120,
-ytick={80,100,115}, 
-yticklabels={80,100,115},
+ytick={80,100,120}, 
+yticklabels={80,100,120},
 xmajorgrids,
 yminorgrids,
 tick label style={font=\footnotesize},
 label style={font=\tiny}]
-\addplot[const plot, color=blue, mark=none] table [x=minute, y=size, col sep=comma] {csv-data/real-trace.csv};
+\addplot[const plot, color=blue, mark=none,set layers,
+axis lines = middle,] table [x=minute, y=size, col sep=comma] {csv-data/real-trace.csv};
 \nextgroupplot[ymax=4,ytick={0,1,2,3,4},
 yticklabels={0,1,2,3,4}]
-\addplot table[x=time,y=EpTO-real-trace-0.000000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=EpTO-real-trace-0.250000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=EpTO-real-trace-0.500000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=EpTO-real-trace-0.750000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=EpTO-real-trace-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-0.750000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=EpTO-real-trace-1.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \legend{0, 0.25, 0.5, 0.75, 1}
 %
 \nextgroupplot%[ymax=4,ytick={0,1,2,3,4},]
-\addplot table[x=time,y=JGroups-coord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-coord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-coord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-coord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-coord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-0.750000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-coord-1.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 %
 \nextgroupplot[ymax=4,ytick={0,1,2,3,4}]
-\addplot table[x=time, y=JGroups-nocoord-0.000000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-nocoord-0.250000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-nocoord-0.500000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-nocoord-0.750000, col sep=comma]{\tableaverage} \closedcycle;
-\addplot table[x=time,y=JGroups-nocoord-1.000000, col sep=comma]{\tableaverage} \closedcycle;
+\addplot table[x=time, y=JGroups-nocoord-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-0.750000, col sep=comma]{\tableaveragereal} \closedcycle;
+\addplot table[x=time,y=JGroups-nocoord-1.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \end{groupplot}
 %
-\node[anchor=south, rotate=-90] at (group c1r2.east) {EpTO};
-\node[anchor=south, rotate=-90] at (group c1r3.east) {JGroups coord};
-\node[anchor=south, rotate=-90] at (group c1r4.east) {JGroups nocoord};
+\node[anchor=south, rotate=-90] at (group c1r2.east) {\epto};
+\node[anchor=south, rotate=-90] at (group c1r3.east) {\jgroups-coord};
+\node[anchor=south, rotate=-90] at (group c1r4.east) {\jgroups-nocoord};
 \end{tikzpicture}

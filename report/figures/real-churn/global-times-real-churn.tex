@@ -10,6 +10,10 @@ xlabel={Time $\left[\si{\second}\right]$},
 x tick label style={/pgf/number format/fixed},
 ytick={0,0.2,0.4,0.6,0.8,1},
 yticklabels={0,0.2,0.4,0.6,0.8,1},
+xmin=3649,
+xmax=3663,
+xtick={3650,3655,3660},
+xticklabels={3650,3655,3660},
 ylabel=Percentiles,
 legend columns=3,
 legend cell align=left,
@@ -19,6 +23,6 @@ cycle list name=my colors,
 \addplot+[const plot, mark=none] table[x=EpTO-real-trace-x, y=EpTO-real-trace-y, col sep=comma] {\tableglobaltime};
 \addplot+[const plot, mark=none] table[x=JGroups-coord-x, y=JGroups-coord-y, col sep=comma] {\tableglobaltime};
 \addplot+[const plot, mark=nonee] table[x=JGroups-nocoord-x, y=JGroups-nocoord-y, col sep=comma] {\tableglobaltime};
-\legend{EpTO, JGroups-nocoord, JGroups-coord}
+\legend{\epto, \jgroups-nocoord, \jgroups-coord}
 \end{axis}
 \end{tikzpicture}
