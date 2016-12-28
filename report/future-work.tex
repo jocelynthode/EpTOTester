@@ -1,4 +1,6 @@
 \section{Future Work}
 \label{sec:future-work}
-\jt{Speak about running test on a bigger infrastructure, because the small ammount of nodes does not let us see the full potential of \epto. Then speak about the ongoing work of Push-Pull}
-\lipsum[1-2]
+\jt{Do we have Push-Pull references?}
+Future work should focus on testing \epto on a bigger cluster, preferably at a point where \jgroups can no longer function, as \epto is designed to work on very large number of peers. As it is, \epto does indeed work as intended in our infrastructure and under churn, but a larger test would showcase \epto's ability to handle large peer numbers.
+\par
+Future work also includes working on an alternate \epto dissemination algorithm. This algorithm would use a Push-Pull approach to further reduce the needed number of balls in the system and thus reduce the network load.
