@@ -1,6 +1,6 @@
 \section{Ordering Algorithms}
 \label{sec:ordering}
-\jt{Do we still want this section?}
+\jt{Do we still want this section?}\hm{Absolutely!}
 Distributed systems and centralized systems alike, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you cannot easily order these messages.
 Therefore we need ordering algorithms to overcome this problem.
 \par
@@ -19,4 +19,4 @@ A totally ordered set of events is a partially ordered set which satisfies one a
 	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
 \end{itemize}
 \par
-In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important, for example when we need to know exactly which operations have been invoked in which order. We then have to use total order, otherwise we can end up in an inconsistent state.
+In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important, for example when we need to know exactly which operations have been invoked in which order. We then have to use total order, otherwise we can end up in an inconsistent state. \hm{It would be enlightening to be more precise here and add a large-scale distributed application for which total order is important.}

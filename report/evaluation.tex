@@ -1,11 +1,11 @@
 
 \section{Evaluation}
 \label{sec:evaluation}
-\pgfplotstableread[col sep=comma]{csv-data/average-bandwidth.csv}\tableaverage
-\pgfplotstableread[col sep=comma]{csv-data/average-bandwidth-real-trace.csv}\tableaveragereal
-\pgfplotstableread[col sep=comma]{csv-data/plot-global-time-cdf.csv}\tableglobaltime
-\pgfplotstableread[col sep=comma]{csv-data/plot-local-deltas-cdf.csv}\tablelocaldeltas
-\pgfplotstableread[col sep=comma]{csv-data/plot-local-time-cdf.csv}\tablelocaltime
+%\pgfplotstableread[col sep=comma]{csv-data/average-bandwidth.csv}\tableaverage
+%\pgfplotstableread[col sep=comma]{csv-data/average-bandwidth-real-trace.csv}\tableaveragereal
+%\pgfplotstableread[col sep=comma]{csv-data/plot-global-time-cdf.csv}\tableglobaltime
+%\pgfplotstableread[col sep=comma]{csv-data/plot-local-deltas-cdf.csv}\tablelocaldeltas
+%\pgfplotstableread[col sep=comma]{csv-data/plot-local-time-cdf.csv}\tablelocaltime
 In this section we present our results. In the following benchmarks \epto uses a constant $c$ to set the probability of a hole appearing. We set $c = 4$ in all our benchmarks so as to not experience any holes as \jgroups does not produce holes under normal conditions. We use a $\delta$ period of \SI{100}{\milli\second} for tests with no churn or synthethic churn and \SI{250}{\milli\second} for tests following a real trace.
 \par 
 We used specific settings recommended by \jgroups for a big cluster.
@@ -23,28 +23,28 @@ Every \jgroups test run with churn is run once killing the coordinator and once 
 We compared \epto and \jgroups based on their bandwidth, the time to deliver every expected events, their local dissemination stretch and finally the number of events sent.
 \subsection{Bandwidth}
 The initial bandwidth peaks observed for \epto are due to the PSS initialization. When a node starts, it received an initial view and then quickly run the PSS four times to obtain a random enough view.
-\begin{figure}[hpt]
-	\centering
-	\input{figures/no-churn/bandwidth-figure.tex}
-	\vspace{-2mm} 
-	\caption{Bandwidth percentiles of a node during an experiment}
-	\vspace{-2mm} 
-	\label{fig:bandwidth}
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/no-churn/bandwidth-figure.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Bandwidth percentiles of a node during an experiment}
+% 	\vspace{-2mm} 
+% 	\label{fig:bandwidth}
+% \end{figure}
 In \autoref{fig:bandwidth} we observe that \epto has a worse baseline compared to \jgroups. It uses a median bandwidth of approximately \SI{1}{\mbps} for $(50,50)$ whereas \jgroups uses a median bandwidth of less than \SI{0.2}{\mbps}. However, in \jgroups most of the work is done solely by the coordinator. We can clearly see this as the 100th percentile is much higher than the rest and uses approximately \SI{.6}{\mbps}.
 
 Comparing \epto and \jgroups in terms of bandwidth when we increase the number of events sent per second, we can see the bandwidth doubling in both cases. In lower peers scenario such as the ones presented in \autoref{fig:bandwidth} \jgroups is clearly at an advantage. Since \epto has a worse baseline we will reach the maximum bandwidth possible much quicker when increasing the event throughput.
 
 Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto scales better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it marginally \jt{logarithmic I think as was expected}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum bandwidth.
 
-\begin{figure}[hpt]
-	\centering
-	\input{figures/synthetic-churn/bandwidth-figure-churn.tex}
-	\vspace{-2mm} 
-	\caption{Bandwidth percentiles of a node during an experiment with churn}
-	\vspace{-2mm} 
-	\label{fig:bandwidth-churn}
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/synthetic-churn/bandwidth-figure-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Bandwidth percentiles of a node during an experiment with churn}
+% 	\vspace{-2mm} 
+% 	\label{fig:bandwidth-churn}
+% \end{figure}
 
 In \autoref{fig:bandwidth-churn} We analyze two different synthetic churns. In the first one we kill one node per minute. In the second one, we still kill one node per minute, but we immediately create a new one. For \jgroups we ran the benchmarks once without killing the coordinator and once killing it.
 
@@ -122,66 +122,66 @@ In \autoref{table:total-bandwidth}, \epto has a worse baseline than \jgroups. Th
 In \autoref{table:total-bandwidth-churn} we see that \jgroups total bandwidth usage is smaller when there is churn. One hypothesis for this is that a JGroups replica takes a longer time to start up compared to stopping a replica. Therefore the overall benchmark has a longer time with less than 100 replicas. We also do not see a difference whether we kill the coordinator or not. This can be explained by the fact that before the detection of the faulty coordinator \jgroups is forced to a stop for time up to \SI{20}{\second}. The big spike afterwards compensates for this hole.
 \subsection{Local Times}
 \label{sub:local-times}
-\begin{figure*}[hpt]
-	\centering
-	\input{figures/no-churn/local-times.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination times}
-	\vspace{-2mm}
-	\label{fig:local-times} 
-\end{figure*}
+% \begin{figure*}[hpt]
+% 	\centering
+% 	\input{figures/no-churn/local-times.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination times}
+% 	\vspace{-2mm}
+% 	\label{fig:local-times} 
+% \end{figure*}
 
-\begin{figure}[hpt]
-	\centering
-	\input{figures/synthetic-churn/local-times-churn.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination times with churn}
-	\vspace{-2mm} 
-	\label{fig:local-times-churn} 
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/synthetic-churn/local-times-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination times with churn}
+% 	\vspace{-2mm} 
+% 	\label{fig:local-times-churn} 
+% \end{figure}
 In \autoref{fig:local-times}, \jgroups delivers all events quicker than \epto in all scenarios, even when churn is involved as is shown in \autoref{fig:local-times-churn}. However, \epto is not too far behind. The difference between \epto and \jgroups is likely to be even smaller when running them in a real WAN network due to the latency. \epto in our configuration has a $\delta$ period of \SI{100}{\milli\second} and is thus handicapped against \jgroups in a LAN environment, because it only increments the TTL of an event every \SI{100}{\milli\second}. We expect \epto to outperform \jgroups in this situation when we have a high number of peers in the system.
 \subsection{Global Times}
-\begin{figure*}[hpt]
-	\centering
-	\input{figures/no-churn/global-times.tex}
-	\vspace{-2mm} 
-	\caption{Global dissemination times}
-	\vspace{-2mm}
-	\label{fig:global-times}  
-\end{figure*}
+% \begin{figure*}[hpt]
+% 	\centering
+% 	\input{figures/no-churn/global-times.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Global dissemination times}
+% 	\vspace{-2mm}
+% 	\label{fig:global-timexss}  
+% \end{figure*}
 
-\begin{figure}[hpt]
-	\centering
-	\input{figures/synthetic-churn/global-times-churn.tex}
-	\vspace{-2mm} 
-	\caption{Global dissemination times with churn}
-	\vspace{-2mm} 
-	\label{fig:global-times-churn} 
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/synthetic-churn/global-times-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Global dissemination times with churn}
+% 	\vspace{-2mm} 
+% 	\label{fig:global-times-churn} 
+% \end{figure}
 We computed global times as well. They are represented in \autoref{fig:global-times} and \autoref{fig:global-times-churn}. These global times are of less interest than their local counterpart as the differences in clocks between hosts can skew this measurement.
 
 Nonetheless, here too we can see that \epto is consistently slower than \jgroups for the same reason as stated in \autoref{sub:local-times}.
 \subsection{Local Dissemination stretch}
-\begin{figure}[hpt]
-	\centering
-	\input{figures/no-churn/local-delta.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination stretch}
-	\vspace{-2mm}
-	\label{fig:local-delta}  
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/no-churn/local-delta.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination stretch}
+% 	\vspace{-2mm}
+% 	\label{fig:local-delta}  
+% \end{figure}
 In \autoref{fig:local-delta}, We see the percentiles of the local dissemination stretch. The local dissemination stretch is the time measurement between the sending of an event by a peer and the delivery of this event locally.
 \par
 \jgroups is usually much faster than \epto in a perfect environment. This is expected as the benchmarks involve a small number of nodes and are performed in a LAN environment with minimal latency. The median dissemination stretch of \jgroups is around \SI{7}{\milli\second} where as the median dissemination stretch of \epto is around \SI{630}{\milli\second} for $(100,50)$. When increasing the number of peers, \jgroups starts to have longer delivery times for some outliers. A small portion of the local dissemination stretches are really fast (\SI{1}{\milli\second} or lower). This happens when the coordinator itself sends an event. Since it has to deliver it to himself the local dissemination stretch is intra-process and thus extremely fast.
 
-\begin{figure}[hpt]
-	\centering
-	\input{figures/synthetic-churn/local-delta-churn.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination stretch with churn}
-	\vspace{-2mm}
-	\label{fig:local-delta-churn}   
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/synthetic-churn/local-delta-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination stretch with churn}
+% 	\vspace{-2mm}
+% 	\label{fig:local-delta-churn}   
+% \end{figure}
 In \autoref{fig:local-delta-churn} We see a completely different picture. When under churn, the 95th percentile of \jgroups is at \SI{31}{\milli\second} compared to \SI{14}{\milli\second} when there is no churn. The highest percentiles are at more than \SI{10}{\second}. This effect is due to the coordinator dying as we clearly see that it does not happen when we do not kill it.
 
 The median is bigger at around \SI{9}{\milli\second}, whether we kill the coordinator or not. This shows that there are some degradation in \jgroups local dissemination stretch when under churn.
@@ -243,14 +243,14 @@ In \autoref{table:total-events} we see that both \epto and \jgroups deliver the 
 
 In \autoref{table:total-events-churn} When only killing nodes, \epto and \jgroups again deliver the same amount of events. When killing and adding nodes, JGroups seems to deliver a smaller amount of nodes, however it does not look significant enough to draw any conclusion. \jt{I didn't run any statistical analysis}
 \subsection{Real Trace}
-\begin{figure}[hpt]
-	\centering
-	\input{figures/real-churn/bandwidth-figure-real-churn.tex}
-	\vspace{-2mm} 
-	\caption{Bandwidth percentiles of a node during an experiment with a real churn}
-	\vspace{-2mm} 
-	\label{fig:bandwidth-real-churn}
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/real-churn/bandwidth-figure-real-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Bandwidth percentiles of a node during an experiment with a real churn}
+% 	\vspace{-2mm} 
+% 	\label{fig:bandwidth-real-churn}
+% \end{figure}
 \autoref{fig:bandwidth-real-churn} confirms the results from the synthetic churn. \epto is not affected by the churn. As before, \jgroups is affected in the same situations as when following a synthetic churn. The spikes visible on \jgroups-coord and \jgroups-nocoord show the different view changes occuring. 
 \par
 \begin{table}[hpt]
@@ -284,33 +284,33 @@ In \autoref{table:total-events-churn} When only killing nodes, \epto and \jgroup
 %	\caption{Total bytes sent/received during an average experiment with churn}
 %	\vspace{-2mm} 
 %	\label{fig:total-bandwidth-real-churn}
-%\end{figure}
-\begin{figure}[hpt]
-	\centering
-	\input{figures/real-churn/local-times-real-churn.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination times}
-	\vspace{-2mm}
-	\label{fig:local-times-real-churn} 
-\end{figure}
-\begin{figure}[hpt]
-	\centering
-	\input{figures/real-churn/global-times-real-churn.tex}
-	\vspace{-2mm} 
-	\caption{Global dissemination times with a real churn}
-	\vspace{-2mm} 
-	\label{fig:global-times-real-churn} 
-\end{figure}
+% %\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/real-churn/local-times-real-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination times}
+% 	\vspace{-2mm}
+% 	\label{fig:local-times-real-churn} 
+% \end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/real-churn/global-times-real-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Global dissemination times with a real churn}
+% 	\vspace{-2mm} 
+% 	\label{fig:global-times-real-churn} 
+% \end{figure}
 The local and global dissemination times shown in respectively \autoref{fig:local-times-real-churn} and \autoref{fig:global-times-real-churn} still show \jgroups to outperform \epto in this scenario. Again we want to emphasize that \epto would more than probably outperform \jgroups in a bigger size cluster.
 \par
-\begin{figure}[hpt]
-	\centering
-	\input{figures/real-churn/local-delta-real-churn.tex}
-	\vspace{-2mm} 
-	\caption{Local dissemination stretch with a real churn}
-	\vspace{-2mm}
-	\label{fig:local-delta-real-churn}   
-\end{figure}
+% \begin{figure}[hpt]
+% 	\centering
+% 	\input{figures/real-churn/local-delta-real-churn.tex}
+% 	\vspace{-2mm} 
+% 	\caption{Local dissemination stretch with a real churn}
+% 	\vspace{-2mm}
+% 	\label{fig:local-delta-real-churn}   
+% \end{figure}
 In \autoref{fig:local-delta-real-churn}, \epto as worse outliers than before and so does \jgroups-coord.
 \begin{table}[hpt]
 	\centering
