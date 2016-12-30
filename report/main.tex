@@ -9,6 +9,7 @@
 \usepackage{amssymb}
 \usepackage[cmex10]{amsmath}
 \usepackage{csquotes}
+\usepackage{cleveref}
 \usepackage[nolist]{acronym}
 \usepackage{float}
 \usepackage{todonotes}
@@ -36,12 +37,15 @@
 \DeclareSIUnit\mbps{MB/s}
 \DeclareSIUnit\gbps{Gb/s}
 
+
+
 \pgfplotscreateplotcyclelist{my colors}{%
 solid, color=black\\%
 densely dotted, color=blue\\%
 densely dashed, color=red\\%
 }
 \makeatother
+
 %% Environment for comments: Set the boolean to false to produce a comment-free version.
 \newboolean{showcomments}
 \setboolean{showcomments}{true}
@@ -56,6 +60,7 @@ densely dashed, color=red\\%
 
 \newcommand{\epto}{\textsc{EpTO}\xspace}
 \newcommand{\jgroups}{\textsc{JGroups}\xspace}
+\newcommand{\eptotester}{\textsc{EpTOTester}\xspace}
 
 \newif\ifjmcs
 % Change false to true to have the JMCS cover page
@@ -79,11 +84,12 @@ densely dashed, color=red\\%
 	/pgfplots/xtick pos=left,
 }
 
-\def\ieeetitle{EpTO TO DEFINE}
+\def\ieeetitle{EpTOTester}
 \def\ieeeauthor{X,X,X}
 
-\def\thesistitle{EpTO TO DEFINE}
-\def\thesissubtitle{X}
+\def\thesistitle{EpTOTester}
+\def\thesissubtitle{Implementation of Large-Scale Epidemic Total Order Algorithms
+}
 \def\thesisauthor{Jocelyn Thode}
 
 
