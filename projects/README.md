@@ -93,7 +93,7 @@ This way assumes you have a SSH key-pair to connect to your master.
 * start ~/{epto,jgroups}/run_benchmarks.py
 * Wait for the script to complete
 
-## Verify Results
+# Verify Results
 To verify the validity of the collected results multiple scripts are provided in the folder results.
 * You can verify the pss health
 * You can verify the order of the events sent, discarding holes with `check_order.py`. This script will also log all events that were logged as sent, but were never sent in practice due to churn
