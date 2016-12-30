@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -50,6 +51,8 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                             pss.selectToKeep(receivedView, isPush)
                         }
                         pss.core.pssMessagesReceived++
+                    } catch (e: SocketException) {
+                        logger.error("Error while sending a view")
                     } catch (e: IOException) {
                         logger.error("Error unserializing view", e)
                     }

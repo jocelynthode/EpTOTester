@@ -41,6 +41,8 @@ class Gossip(val core: Core, val K: Int = 15) {
         val ballsToSend = Math.ceil(nextBall.size / maxEvents.toDouble()).toInt()
 
         logger.debug("Total Ball size in Events: {}", nextBall.size)
+        logger.debug("Max Events: {}", maxEvents)
+        logger.debug("KView size: {}, KView:  [{}]", kView.size, kView.joinToString())
         if (ballsToSend > 1) {
             relaySplitted(nextBall, ballsToSend, kView)
         } else {
@@ -90,13 +92,18 @@ class Gossip(val core: Core, val K: Int = 15) {
     }
 
     private fun selectKFromView(): ArrayList<PeerInfo> {
-        val tmpList = ArrayList(core.pss.view)
-        Collections.shuffle(tmpList)
-        if (core.pss.view.size < K) {
-            logger.warn("View is smaller than size K ({})", core.pss.view.size)
-            return tmpList
+        var kView = ArrayList<PeerInfo>()
+        // We don't want the view to be modified during this time
+        synchronized(core.pss.pssLock) {
+            kView = ArrayList(core.pss.view)
         }
-        return ArrayList(tmpList.subList(0, K))
+        if (kView.size < K) {
+            logger.warn("View is smaller than size K ({})", core.pss.view.size)
+            return kView
+        }
+        // As lists are small, this is no big deal
+        Collections.shuffle(kView)
+        return ArrayList(kView.subList(0,K))
     }
 }
 

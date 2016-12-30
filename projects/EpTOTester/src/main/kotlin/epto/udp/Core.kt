@@ -67,6 +67,7 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun sendPss(message: ByteArray, target: InetAddress) {
+        logger.debug("PSS Bytes size : {}", message.size)
         val bytesSent = pssChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, pssPort))
         if (bytesSent == 0) {
             logger.error("Message could not be sent due to insufficient space in the underlying buffer")

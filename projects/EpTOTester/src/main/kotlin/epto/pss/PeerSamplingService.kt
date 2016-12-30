@@ -42,7 +42,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
     private val logger by logger()
 
     val view = ArrayList<PeerInfo>()
-    private val pssLock = Any()
+    internal val pssLock = Any()
     val passiveThread = PassiveThread(pssLock, this)
     private val rand = Random()
     private val scheduler = Executors.newScheduledThreadPool(1)
@@ -182,6 +182,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
      * @param receivedView  the received view
      */
     fun selectToKeep(receivedView: ArrayList<PeerInfo>, isPush: Boolean) {
+        receivedView.filter { it != null }
         //merge view and received
         view.addAll(receivedView)
         //remove duplicates from view
@@ -272,7 +273,7 @@ class PeerSamplingService(var gossipInterval: Int, val core: Core, val c: Int = 
         }
     }
 
-    internal class PSSInitializationException(s: String) : Throwable(s) {}
+    internal class PSSInitializationException(s: String) : Throwable(s)
 }
 
 
