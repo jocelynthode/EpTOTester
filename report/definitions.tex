@@ -2,13 +2,11 @@
 \label{sec:definitions}
 A process or peer is defined as an actor in our system running the application that needs total order. Each process communicates with other processes in the distributed system, exchange events, and order them together. \hm{I changed it, but you switched from the present to the future tense in the same sentence. You might as well check the rest of the document for other instances, if any.} \jt{I checked the whole document again I think it is fixed now}
 \par
-An event $j$ is defined as \\$e_j=(broadcasterID,timestamp,payload)$, where the timestamp is the local time at the process when the event is created and is used with the broadcasterID to order events. The payload represents the data sent. %\hm{Not clear. Define it mathematically with something like $e_k=(id,time,payload)$ where the time is the (local) time at the process when the event is created.}
+An event $j$ is defined as: $$e_j \triangleq (broadcasterID,timestamp,payload)$$ where the timestamp is the local time at the process when the event is created and is used with the broadcasterID to order events. The payload represents the data sent. %\hm{Not clear. Define it mathematically with something like $e_k=(id,time,payload)$ where the time is the (local) time at the process when the event is created.}
 \par
-A ball is an abstraction taken from the balls-and-bins problem. In practice, we bundle sets of events together and send them as one packet to reduce the network traffic overhead. \hm{Not clear. A ball is an abstraction. We reduce traffic by bundling events.} \jt{Is this better?}
+A ball is an abstraction taken from the balls-and-bins problem. In practice, we bundle sets of events together and send them as one packet to reduce the network traffic overhead.
 
-We define \epto scaling well as it is defined in  \autocite{matos2015epto}:  ``The number
-of messages transmitted per process per round is logarithmic
-in the number of processes, ...''. The number of rounds needed to deliver is logarithmic as well. \hm{This paragraph is confusing. Is it necessary?} \jt{I remember having questions about what scaling well meant during the workshop that is why I added this definition. If you feel it is not needed we can remove it}
+The number of rounds needed to deliver an event, the fan-out and the number of messages transmitted per process per round are all logarithmic in the number of processes. \autocite{matos2015epto}
 \par
 Since \epto uses a probabilistic agreement instead of a deterministic agreement, there is a nonzero probability that a peer does not receive an event. In this instance there will be a hole in the sequence of delivered events, but the order of delivered events is protected by \epto's deterministic ordering algorithm, thus the total order property is preserved. The probability that a peer does not receive an event is controlled by \epto and depends on various parameters such as the fan-out, the number of rounds (time to live), the number of nodes, and the network conditions. In particular, this probability can be made smaller than the probability of catastrophic network failure. %\hm{I rewrote this paragraph. Please reread.}\jt{Done.}
 \par
