@@ -52,7 +52,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                         }
                         pss.core.pssMessagesReceived++
                     } catch (e: SocketException) {
-                        logger.error("Error while sending a view")
+                        logger.error("Error while sending a view", e)
                     } catch (e: IOException) {
                         logger.error("Error unserializing view", e)
                     }
