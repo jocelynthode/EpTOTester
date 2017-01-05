@@ -47,5 +47,6 @@ java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar -Dlogfile.name="${MY_IP_A
 "${MY_IP_ADDR[0]}" "http://epto-tracker:4321" "${PEER_NUMBER}" "$TIME" "$TIME_TO_RUN" &
 java_pid=${!}
 
+./server.py ${MY_IP_ADDR[0]} &
 wait ${java_pid}
 kill ${dstat_pid}

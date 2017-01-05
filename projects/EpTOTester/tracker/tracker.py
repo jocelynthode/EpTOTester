@@ -29,7 +29,7 @@ def florida_string(ip):
     else:
         to_send = to_choose
 
-    return '|'.join(to_send).encode()
+    return '|'.join(to_choose).encode()
 
 
 class FloridaHandler(BaseHTTPRequestHandler):
