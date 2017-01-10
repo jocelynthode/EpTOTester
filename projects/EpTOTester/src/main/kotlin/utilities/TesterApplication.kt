@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Jocelyn Thode
  */
-class TesterApplication(ttl: Int, k: Int, trackerURL: String, val peerNumber: Int,
+class TesterApplication(ttl: Int, k: Int, p: Int, trackerURL: String, val peerNumber: Int,
                         delta: Long, myIp: InetAddress, gossipPort: Int, pssPort: Int) :
-        Application(ttl, k, trackerURL, delta, myIp, gossipPort, pssPort) {
+        Application(ttl, k, p, trackerURL, delta, myIp, gossipPort, pssPort) {
 
     var deliveredEvents = 0
     private val sendTimes = ConcurrentHashMap<UUID, Long>()

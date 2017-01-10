@@ -10,6 +10,7 @@ import java.net.InetSocketAddress
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.concurrent.Executors
 
 /**
  * Implementation of a PSS passive thread receiving views from other peers
@@ -26,6 +27,7 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
 
     private val logger by logger()
     private var isRunning = false
+    private val myExecutor = Executors.newCachedThreadPool()
 
     /**
      * Run by the Thread
@@ -40,15 +42,17 @@ class PassiveThread(val pssLock: Any, val pss: PeerSamplingService) : Runnable {
                 if (address != null) {
                     try {
                         val (isPush, receivedView) = unserialize(buf)
-                        synchronized(pssLock) {
-                            logger.debug("isPush : {}", isPush)
-                            if (isPush) {
-                                val senderPeerInfo = pss.view.find { it.address ==  (address as InetSocketAddress).address }
-                                val toSend = pss.selectToSend(false, senderPeerInfo)
-                                pss.core.sendPss(toSend, (address as InetSocketAddress).address)
+                        myExecutor.execute {
+                            synchronized(pssLock) {
+                                logger.debug("isPush : {}", isPush)
+                                if (isPush) {
+                                    val senderPeerInfo = pss.view.find { it.address ==  (address as InetSocketAddress).address }
+                                    val toSend = pss.selectToSend(false, senderPeerInfo)
+                                    pss.core.sendPss(toSend, (address as InetSocketAddress).address)
+                                }
+                                logger.debug("sender Address : {}", (address as InetSocketAddress).address.hostAddress)
+                                pss.selectToKeep(receivedView, isPush)
                             }
-                            logger.debug("sender Address : {}", (address as InetSocketAddress).address.hostAddress)
-                            pss.selectToKeep(receivedView, isPush)
                         }
                         pss.core.pssMessagesReceived++
                     } catch (e: SocketException) {

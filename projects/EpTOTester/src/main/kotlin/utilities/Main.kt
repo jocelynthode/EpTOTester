@@ -50,6 +50,9 @@ class Main {
                     .setDefault(1000L)
             parser.addArgument("-k", "--fanout").help("Number of peers to gossip")
                     .type(Integer.TYPE)
+            parser.addArgument("-p", "--fanin").help("Pull factor")
+                    .type(Integer.TYPE)
+                    .setDefault(10)
             parser.addArgument("-t", "--ttl").help("Number of rounds before considering an event mature")
                     .type(Integer.TYPE)
             parser.addArgument("-d", "--delta").help("EpTO dissemination period in milliseconds")
@@ -58,7 +61,7 @@ class Main {
             parser.addArgument("-g", "--gossip-port").help("Port on which the gossip channel will listen")
                     .type(Integer.TYPE)
                     .setDefault(10353)
-            parser.addArgument("-p", "--pss-port").help("Port on which the pss channel will listen")
+            parser.addArgument("-s", "--pss-port").help("Port on which the pss channel will listen")
                     .type(Integer.TYPE)
                     .setDefault(10453)
             parser.addArgument("-u", "--fixed-rate")
@@ -124,12 +127,15 @@ class Main {
                 namespace.getInt("fanout")
             }
 
+            //TODO Find a good P Value
+            val p = namespace.getInt("fanin")
+
             if (InetAddress.getByName(localIp).isLoopbackAddress)
                 logger.warn("WARNING: Hostname resolves to loopback address! Please fix network configuration\n" +
                         "or expect only local peers to connect.")
 
 
-            val application = TesterApplication(ttl, k, tracker, peerNumber.toInt(), delta, InetAddress.getByName(localIp),
+            val application = TesterApplication(ttl, k, p, tracker, peerNumber.toInt(), delta, InetAddress.getByName(localIp),
                     gossipPort, pssPort)
             application.start()
 

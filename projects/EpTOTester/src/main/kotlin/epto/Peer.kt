@@ -36,13 +36,13 @@ import java.util.*
  *
  *@author Jocelyn Thode
  */
-class Peer(application: Application, ttl: Int, k: Int, delta: Long, myIp: InetAddress,
+class Peer(application: Application, ttl: Int, k: Int, p: Int, delta: Long, myIp: InetAddress,
            gossipPort: Int = 10353, pssPort: Int = 10453, trackerURL: String) : Runnable {
 
     private val logger by logger()
 
     val uuid = UUID.randomUUID()!!
-    val core = Core(myIp, k, gossipPort, pssPort, trackerURL)
+    val core = Core(myIp, k, p, gossipPort, pssPort, trackerURL)
     val oracle = StabilityOracle(ttl)
     val orderingComponent = OrderingComponent(oracle, application)
     val disseminationComponent = DisseminationComponent(oracle, this, core.gossip, orderingComponent, k, delta)

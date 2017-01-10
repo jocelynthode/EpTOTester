@@ -22,7 +22,7 @@ import java.nio.channels.DatagramChannel
  * @see PeerSamplingService
  * @see Gossip
  */
-class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453, trackerURL: String) {
+class Core(val myIp: InetAddress, k: Int, p: Int, val gossipPort: Int = 10353, val pssPort: Int = 10453, trackerURL: String) {
 
     private val logger by logger()
 
@@ -30,7 +30,7 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
     val gossipChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(gossipPort))
     val pssChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(pssPort))
     val pss = PeerSamplingService(15000, this, trackerURL = trackerURL)
-    val gossip = Gossip(this, k)
+    val gossip = Gossip(this, k, p)
 
     internal var gossipMessagesSent = 0
     internal var gossipMessagesReceived = 0

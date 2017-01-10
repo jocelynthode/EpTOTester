@@ -21,11 +21,11 @@ import java.net.InetAddress
  *
  * @author Jocelyn Thode
  */
-abstract class Application(ttl: Int, k: Int, trackerURL: String, delta: Long, val myIp: InetAddress, gossipPort: Int, pssPort: Int) {
+abstract class Application(ttl: Int, k: Int, p: Int, trackerURL: String, delta: Long, val myIp: InetAddress, gossipPort: Int, pssPort: Int) {
 
     internal val logger by logger()
 
-    internal val peer = Peer(this, ttl, k, delta, myIp, gossipPort, pssPort, trackerURL)
+    internal val peer = Peer(this, ttl, k, p, delta, myIp, gossipPort, pssPort, trackerURL)
 
     init {
         peer.core.startPss()

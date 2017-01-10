@@ -27,7 +27,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     internal val received = HashMap<String, Event>()
     internal val delivered = HashMap<String, Event>()
-    private var lastDeliveredTs: Int = -1
+    internal var lastDeliveredTs: Int = -1
     private var lastDeliveredEvent: Event = Event()
 
     /**
@@ -40,18 +40,6 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         // update TTL of received events
         received.values.forEach(Event::incrementTtl)
 
-        // update set of received events with events in the ball
-        ball.values.filter { event -> !delivered.containsKey(event.toIdentifier()) && event.timestamp >= lastDeliveredTs }
-                .forEach { event ->
-                    val receivedEvent = received[event.toIdentifier()]
-                    if (receivedEvent != null) {
-                        if (receivedEvent.ttl.get() < event.ttl.get()) {
-                            receivedEvent.ttl.set(event.ttl.get())
-                        }
-                    } else {
-                        received.put(event.toIdentifier(), event)
-                    }
-                }
         logger.debug("Received size: {}", received.size)
         logger.debug("Min TTL: {}, Max TTL: {}",
                 received.values.minBy { it.ttl.get() }?.ttl?.get(),
@@ -127,5 +115,20 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         deliverableEvents.sort(null)
 
         deliver(deliverableEvents)
+    }
+
+    fun  receiveEvents(ball: HashMap<String, Event>) {
+        // update set of received events with events in the ball
+        ball.filter { entry -> !delivered.containsKey(entry.key) && entry.value.timestamp >= lastDeliveredTs }
+                .forEach { entry ->
+                    val receivedEvent = received[entry.key]
+                    if (receivedEvent != null) {
+                        if (receivedEvent.ttl.get() < entry.value.ttl.get()) {
+                            receivedEvent.ttl = entry.value.ttl
+                        }
+                    } else {
+                        received.put(entry.key, entry.value)
+                    }
+                }
     }
 }

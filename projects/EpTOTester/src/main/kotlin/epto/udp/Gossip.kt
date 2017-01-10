@@ -17,7 +17,7 @@ import java.util.*
  *
  * @see Core
  */
-class Gossip(val core: Core, val K: Int = 15) {
+class Gossip(val core: Core, val K: Int, val P: Int) {
 
     private val logger by logger()
 
@@ -49,6 +49,13 @@ class Gossip(val core: Core, val K: Int = 15) {
             sendRelay(nextBall, kView)
         }
     }
+
+
+    /* TODO
+    fun sendPull() {
+        Send to P values chosen at random
+    }
+     */
 
     private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
         logger.debug("Relay Ball size in Events: {}", nextBall.size)
