@@ -27,8 +27,8 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
     private val logger by logger()
 
 
-    val gossipChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(gossipPort))
-    val pssChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(pssPort))
+    val gossipChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, gossipPort))
+    val pssChannel: DatagramChannel = DatagramChannel.open().bind(InetSocketAddress(myIp, pssPort))
     val pss = PeerSamplingService(15000, this, trackerURL = trackerURL)
     val gossip = Gossip(this, k)
 
@@ -50,7 +50,7 @@ class Core(val myIp: InetAddress, k: Int, val gossipPort: Int = 10353, val pssPo
      * @param target the peer to send the message
      */
     fun send(message: ByteArray, target: InetAddress) {
-        logger.debug("Is target reachable: {}", target.isReachable(1000))
+        //logger.debug("Is target reachable: {}", target.isReachable(1000))
         logger.debug("Sending gossip to : {}", target.hostAddress)
         logger.debug("Message size: {}", message.size)
         val bytesSent = gossipChannel.send(ByteBuffer.wrap(message), InetSocketAddress(target, gossipPort))
