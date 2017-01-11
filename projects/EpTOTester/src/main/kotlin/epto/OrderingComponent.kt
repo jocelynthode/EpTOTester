@@ -36,7 +36,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      *
      * @param ball the received ball
      */
-    private fun updateReceived(ball: HashMap<String, Event>) {
+    private fun updateReceived() {
         // update TTL of received events
         received.values.forEach(Event::incrementTtl)
 
@@ -79,9 +79,9 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      *
      * @param ball the ball containing the received events
      */
-    fun orderEvents(ball: HashMap<String, Event>) {
+    fun orderEvents() {
 
-        updateReceived(ball)
+        updateReceived()
 
         // collect deliverable events and determine smallest
         // timestamp of non deliverable events
@@ -117,7 +117,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         deliver(deliverableEvents)
     }
 
-    fun  receiveEvents(ball: HashMap<String, Event>) {
+    fun receiveEvents(ball: HashMap<String, Event>) {
         // update set of received events with events in the ball
         ball.filter { entry -> !delivered.containsKey(entry.key) && entry.value.timestamp >= lastDeliveredTs }
                 .forEach { entry ->

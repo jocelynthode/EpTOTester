@@ -5,6 +5,11 @@ import epto.udp.Gossip
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.Executors
+import com.github.mgunlogson.cuckoofilter4j.CuckooFilter
+import com.google.common.hash.Funnel
+import java.net.InetSocketAddress
+import java.util.ArrayList
+import com.google.common.hash.PrimitiveSink
 
 
 
@@ -16,8 +21,8 @@ import java.util.concurrent.Executors
  *
  * @property oracle            StabilityOracle for the clock
  * @property peer              the Peer
- * @param gossip    the gossip
- * @param orderingComponent OrderingComponent to order events
+ * @property gossip    the gossip
+ * @property orderingComponent OrderingComponent to order events
  * @property K the fanout used to send balls
  * @property delta the delay between each execution of EpTO
  *
@@ -28,7 +33,7 @@ import java.util.concurrent.Executors
  *
  * @author Jocelyn Thode
  */
-class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, gossip: Gossip,
+class DisseminationComponent(private val oracle: StabilityOracle, private val peer: Peer, private val gossip: Gossip,
                              private val orderingComponent: OrderingComponent, val K: Int, val delta: Long) {
 
     private val logger by logger()
@@ -38,6 +43,16 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     private val periodicDissemination: Runnable
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
     private val myExecutor = Executors.newCachedThreadPool()
+    private val MAX_KEYS = 2000000
+    private val FPP = Math.pow(10.0, -9.0) //TODO use the c from EpTO
+    private object EventFunnel : Funnel<Event> {
+        override fun funnel(from: Event, into: PrimitiveSink) {
+            //We only use the identifier
+            into.putLong(from.sourceId!!.mostSignificantBits)
+                    .putLong(from.sourceId!!.leastSignificantBits)
+                    .putInt(from.timestamp)
+        }
+    }
 
     private val nonPushedEvents = ConcurrentHashMap<String, Event>()
 
@@ -51,25 +66,21 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                     nextBall.values.forEach(Event::incrementTtl)
                     if (!nextBall.isEmpty()) {
                         val events = nextBall.values.toList()
-                        gossip.relay(events)
+                        gossip.sendGossip(events)
                     }
-                    orderingComponent.orderEvents(nextBall)
-                    val timestamp = orderingComponent.lastDeliveredTs
-                    //TODO val filter = new Filter()
-                    orderingComponent.delivered.forEach { s, event ->
-                        if (event.timestamp == timestamp) {
-                            //TODO filter.add(event)
-                        }
-                    }
-                    //TODO filter.addAll(orderingComponent.received)
-                    //TODO gossip.sendPull(timestamp, filter)
-                    //TODO receive here ?
-                    //TODO Receive on a third port or same?
-                    //TODO where to receive
+                    orderingComponent.orderEvents()
                     nextBall.clear()
                     synchronized(nonPushedEvents) {
                         nonPushedEvents.clear()
                     }
+                    val timestamp = orderingComponent.lastDeliveredTs
+                    //TODO Maybe do earlier in a thread
+                    val filter = CuckooFilter.Builder(EventFunnel, MAX_KEYS).withFalsePositiveRate(FPP).build()
+                    orderingComponent.delivered.values.filter { it.timestamp == timestamp }
+                            .forEach {filter.put(it)}
+                    orderingComponent.received.values.forEach {filter.put(it)}
+
+                    gossip.sendPullRequest(timestamp, filter)
                 }
             } catch (e: Exception) {
                 logger.error(e.message, e)
@@ -94,14 +105,12 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
      * Updates nextBall events with the new ball events only if the TTL is smaller and finally updates
      * the clock.
      *
-     * This method is non-blocking
-     *
      * @param ball The received ball
      */
-    internal fun receive(ball: HashMap<String, Event>) {
+    internal fun receiveGossip(ball: HashMap<String, Event>) {
         myExecutor.execute {
             logger.debug("Receiving a new ball of size: {}", ball.size)
-            logger.debug("Ball will relay {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
+            logger.debug("Ball will sendGossip {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
             //TODO refactor to be in synchronized block probably
             orderingComponent.receiveEvents(ball)
             ball.forEach { eventIdentifier, event ->
@@ -118,8 +127,6 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                     })
                 } else {
                     debug(event)
-                    //TODO even though nonPushed is multi thread I don't think we need to synchronize
-                    //Nothing bad could happen I think
                     synchronized(nextBall) {
                         nextBall.remove(eventIdentifier)
                     }
@@ -130,6 +137,32 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                 oracle.updateClock(event.timestamp) //only needed with logical time
             }
         }
+    }
+
+    /**
+     * Find out which event the sender needs with the filter and send them
+     *
+     * @param timestamp the filter timestamp
+     * @param filter the probabilistic filter
+     * @param address the sender address
+     */
+    fun  receivePullRequest(timestamp: Int, filter: CuckooFilter<Event>, address: InetSocketAddress) {
+        //TODO need to be more efficient
+        val allKnownEvents = ArrayList<Event>()
+        allKnownEvents.addAll(orderingComponent.received.values)
+        allKnownEvents.addAll(orderingComponent.delivered.values)
+
+        val eventsToSend = allKnownEvents.filter { it.timestamp >= timestamp && !filter.mightContain(it) }
+        gossip.sendPullReply(eventsToSend as ArrayList<Event>, address)
+    }
+
+    /**
+     * Pass the received events to the ordering component
+     *
+     * @param ball The received ball
+     */
+    fun  receivePullReply(ball: HashMap<String, Event>) {
+        orderingComponent.receiveEvents(ball)
     }
 
     private fun isPush(event: Event): Boolean {

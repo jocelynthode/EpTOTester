@@ -1,11 +1,13 @@
 package epto.udp
 
+import com.github.mgunlogson.cuckoofilter4j.CuckooFilter
 import epto.Application
 import epto.Event
 import epto.libs.Utilities.logger
 import epto.pss.PeerSamplingService.PeerInfo
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.util.*
 
 /**
@@ -14,6 +16,7 @@ import java.util.*
  * @property core the Core
  *
  * @property K the gossip fanout
+ * @property P the gossip fanin
  *
  * @see Core
  */
@@ -28,7 +31,8 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
     internal val maxSize = 1432
     //an event is 40 Bytes max (id : 16Bytes, ts: 4Bytes, ttl: 4Bytes, srcId: 16Bytes)
     //We substract 4Bytes for the ball length
-    private val maxEvents = (maxSize - 4) / 40
+    //We substract 4Bytes for the messageType
+    private val maxEvents = (maxSize - 8) / 40
     internal var totalSplits = 0
 
     /**
@@ -36,8 +40,8 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
      *
      * @param nextBall the ball of events to send
      */
-    fun relay(nextBall: List<Event>) {
-        val kView = selectKFromView()
+    fun sendGossip(nextBall: List<Event>) {
+        val kView = selectNFromView(K)
         val ballsToSend = Math.ceil(nextBall.size / maxEvents.toDouble()).toInt()
 
         logger.debug("Total Ball size in Events: {}", nextBall.size)
@@ -50,18 +54,68 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         }
     }
 
-
-    /* TODO
-    fun sendPull() {
-        Send to P values chosen at random
-    }
+    /**
+     * Send a PullRequest to P EpTO peers
+     *
+     * @param timestamp the minimum even timestamp in which we are interested
+     * @param filter the filter to be send to determine event we do not have
      */
+    fun sendPullRequest(timestamp: Int, filter: CuckooFilter<Event>) {
+        val pView = selectNFromView(P)
+        val byteOut = ByteArrayOutputStream()
+        val out = Application.conf.getObjectOutput(byteOut)
+        try {
+            out.writeInt(MessageType.PULL_REQUEST.ordinal)
+            out.writeInt(timestamp)
+            out.writeObject(filter)
+            out.flush()
+        } catch (e: IOException) {
+            logger.error("Exception while encoding pull request", e)
+        } finally {
+            out.close()
+        }
+
+        if (byteOut.size() > maxSize) {
+            logger.warn("Packet size is too big !")
+        }
+        pView.forEach {
+            core.send(byteOut.toByteArray(), it.address)
+        }
+        core.pullRequestSent++
+    }
+
+    /**
+     * Send the events requested by the EpTO peer
+     *
+     * @param eventsToSend the ball to send
+     * @param target the requester address
+     */
+    fun  sendPullReply(eventsToSend: ArrayList<Event>, target: InetSocketAddress) {
+        val byteOut = ByteArrayOutputStream()
+        val out = Application.conf.getObjectOutput(byteOut)
+        try {
+            out.writeInt(MessageType.PULL_REPLY.ordinal)
+            out.writeInt(eventsToSend.size)
+            eventsToSend.forEach { it.serialize(out) }
+            out.flush()
+        } catch (e: IOException) {
+            logger.error("Exception while sending pull reply", e)
+        } finally {
+            out.close()
+        }
+        if (byteOut.size() > maxSize) {
+            logger.warn("Ball size is too big !")
+        }
+        core.send(byteOut.toByteArray(), target.address)
+        core.pullReplySent++
+    }
 
     private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
         logger.debug("Relay Ball size in Events: {}", nextBall.size)
         val byteOut = ByteArrayOutputStream()
         val out = Application.conf.getObjectOutput(byteOut)
         try {
+            out.writeInt(MessageType.GOSSIP.ordinal)
             out.writeInt(nextBall.size)
             nextBall.forEach { it.serialize(out) }
             out.flush()
@@ -78,6 +132,7 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         kView.forEach {
             core.send(byteOut.toByteArray(), it.address)
         }
+        core.gossipMessagesSent++
         logger.debug("Sent Ball")
     }
 
@@ -98,19 +153,28 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         }
     }
 
-    private fun selectKFromView(): ArrayList<PeerInfo> {
-        var kView = ArrayList<PeerInfo>()
+    private fun selectNFromView(n: Int): ArrayList<PeerInfo> {
+        var nView = ArrayList<PeerInfo>()
         // We don't want the view to be modified during this time
         synchronized(core.pss.pssLock) {
-            kView = ArrayList(core.pss.view)
+            nView = ArrayList(core.pss.view)
         }
-        if (kView.size < K) {
+        if (nView.size < n) {
             logger.warn("View is smaller than size K ({})", core.pss.view.size)
-            return kView
+            return nView
         }
         // As lists are small, this is no big deal
-        Collections.shuffle(kView)
-        return ArrayList(kView.subList(0,K))
+        Collections.shuffle(nView)
+        return ArrayList(nView.subList(0,n))
+    }
+
+
+    companion object {
+        enum class MessageType {
+            GOSSIP,
+            PULL_REQUEST,
+            PULL_REPLY
+        }
     }
 }
 

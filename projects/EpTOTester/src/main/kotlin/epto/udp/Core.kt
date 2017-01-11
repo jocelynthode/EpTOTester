@@ -36,6 +36,10 @@ class Core(val myIp: InetAddress, k: Int, p: Int, val gossipPort: Int = 10353, v
     internal var gossipMessagesReceived = 0
     internal var pssMessagesSent = 0
     internal var pssMessagesReceived = 0
+    internal var pullRequestSent = 0
+    internal var pullRequestReceived = 0
+    internal var pullReplyReceived = 0
+    internal var pullReplySent = 0
 
     init {
         gossipChannel.configureBlocking(true)
@@ -58,7 +62,6 @@ class Core(val myIp: InetAddress, k: Int, p: Int, val gossipPort: Int = 10353, v
             logger.error("Message could not be sent due to insufficient space in the underlying buffer")
             return
         }
-        gossipMessagesSent++
         logger.debug("Balls sent: {}", gossipMessagesSent)
     }
 
@@ -94,5 +97,4 @@ class Core(val myIp: InetAddress, k: Int, p: Int, val gossipPort: Int = 10353, v
         pssChannel.close()
         pss.stop()
     }
-
 }
