@@ -54,7 +54,7 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         }
     }
 
-    private val nonPushedEvents = ConcurrentHashMap<String, Event>()
+    private val nonPushedEvents = HashMap<String, Event>()
 
 
     init {
@@ -111,7 +111,6 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
         myExecutor.execute {
             logger.debug("Receiving a new ball of size: {}", ball.size)
             logger.debug("Ball will sendGossip {} events", ball.filter { it.value.ttl.get() < oracle.TTL }.size)
-            //TODO refactor to be in synchronized block probably
             orderingComponent.receiveEvents(ball)
             ball.forEach { eventIdentifier, event ->
                 if (isPush(event)) {

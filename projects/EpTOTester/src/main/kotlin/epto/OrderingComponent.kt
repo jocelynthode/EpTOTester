@@ -77,10 +77,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
     /**
      * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
      *
-     * @param ball the ball containing the received events
      */
-    fun orderEvents() {
-
+    @Synchronized fun orderEvents() { //TODO Synchronize is probably overkill
         updateReceived()
 
         // collect deliverable events and determine smallest
@@ -117,14 +115,19 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
         deliver(deliverableEvents)
     }
 
-    fun receiveEvents(ball: HashMap<String, Event>) {
+    /**
+     * Add received events to be ordered
+     *
+     * @param ball the received ball
+     */
+    @Synchronized fun receiveEvents(ball: HashMap<String, Event>) {//TODO Synchronize is probably overkill
         // update set of received events with events in the ball
         ball.filter { entry -> !delivered.containsKey(entry.key) && entry.value.timestamp >= lastDeliveredTs }
                 .forEach { entry ->
                     val receivedEvent = received[entry.key]
                     if (receivedEvent != null) {
                         if (receivedEvent.ttl.get() < entry.value.ttl.get()) {
-                            receivedEvent.ttl = entry.value.ttl
+                            receivedEvent.ttl.set(entry.value.ttl.get())
                         }
                     } else {
                         received.put(entry.key, entry.value)
