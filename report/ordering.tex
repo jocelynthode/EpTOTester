@@ -1,6 +1,5 @@
-\section{Ordering Algorithms}
-\label{sec:ordering}
-\mm{rename to background. we also need to include some related work on TO (see epto paper) and on practical evaluation (e.g.: the papers pointed above plus splay}
+\section{Background}
+\label{sec:background}
 Distributed systems and centralized systems alike, need to preserve the temporal order of events produced by concurrent processes in the system. When there are separated processes that can only communicate through messages, you cannot easily order these messages.
 Therefore we need ordering algorithms to overcome this problem.
 \par
@@ -19,4 +18,8 @@ A totally ordered set of events is a partially ordered set which satisfies one a
 	\item Totality (trichotomy law): For any $a, b \in S$, either $a \leq b$  or $b \leq a$.
 \end{itemize}
 \par
-In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important. For example, imagine we have multiple databases around the world. We want them to appear as if it is only one database. To achieve this, every operation done a particular database would have to be replicated on all the others, we would then have to make sure that every operation is executed in the same order on every database to end up in the same state. \hm{It would be enlightening to be more precise here and add a large-scale distributed application for which total order is important.}\jt{I came up with a possible total order application. However I am not sure if it is the best use case. Maybe Miguel has a better idea.}\mm{we can point that that TO is equivalent to consensus and used in approaches such as distirbuted state machines. Actually it is the fact that TO is not scalable that lead to the emergence of all the work on eventual consistency.}
+In other words, total order is an ordering that defines the exact order of every event in the system. On the other hand, partial ordering only defines the order between certain key events that depend on each other. Partial order can be useful since it is less costly to implement. However, in some cases the order of all events is important. For example, imagine we have multiple databases around the world. We want them to appear as if it is only one database. To achieve this, every operation done a particular database would have to be replicated on all the others, we would then have to make sure that every operation is executed in the same order on every database to end up in the same state. However, Total Order is not usually scalable. This lead to the emergence of most of the work on eventual consistency.
+\subsection{Related Work}
+Related work concerning Total Order is already extensively covered in \autocite{matos2015epto}.
+
+\autocites[]{Chandra2007}[]{Maia2011} each test extensively a different large scale distributed system. However, they do not offer a framework to benchmark different systems than theirs. \autocite{Leonini2009} presents a framework named SPlay to deploy such applications. Unfortunately, SPlay only allows for LUA application. \eptotester offers a convenient framework to deploy distributed applications provided they run in a docker container.
