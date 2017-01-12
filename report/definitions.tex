@@ -1,5 +1,6 @@
 \section{Definitions}
 \label{sec:definitions}
+\jt{I think event should stay in this section what do you think?}
 A process or peer is defined as an actor in our system running the application that needs total order. Each process communicates with other processes in the distributed system, exchange events, and order them together.
 \par
 An event $j$ is defined as: $$e_j \triangleq (broadcasterID,timestamp,payload)$$ where the timestamp is the local time at the process when the event is created and is used with the broadcasterID to order events. The payload represents the data sent.
