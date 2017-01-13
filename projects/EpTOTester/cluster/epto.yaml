@@ -1,0 +1,16 @@
+service:
+  name: "epto"
+  network:
+    name: "epto_network"
+    subnet: "172.130.0.0/16"
+  parameters:
+    delta: 100
+    rate: 1000
+    fixed_rate: 50
+    constant: 4
+    churn_rate: 0
+    message_loss: 0
+tracker:
+  name: "epto-tracker"
+repository:
+  name: "swarm-m:5000"

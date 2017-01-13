@@ -23,7 +23,6 @@ from datetime import datetime
 from docker import errors
 from docker import types
 from docker import utils
-from logging import config
 from nodes_trace import NodesTrace
 
 
@@ -31,11 +30,7 @@ cli = docker.Client(base_url='unix://var/run/docker.sock')
 MANAGER_IP = '172.16.2.119'
 LOCAL_DATA = '/home/jocelyn/tmp/data'
 CLUSTER_DATA = '/home/debian/data'
-DISTANT_REPOSITORY = 'swarm-m:5000/'
-SERVICE_NAME = 'epto'
-TRACKER_NAME = 'epto-tracker'
-NETWORK_NAME = 'epto_network'
-SUBNET = '172.130.0.0/16'
+CONFIG = None
 
 
 def create_service(service_name, image, env=None, mounts=None, placement=None, replicas=1):
@@ -47,7 +42,7 @@ def create_service(service_name, image, env=None, mounts=None, placement=None, r
                                    placement=placement)
     logger.debug(task_tmpl)
     cli.create_service(task_tmpl, name=service_name, mode={'Replicated': {'Replicas': replicas}},
-                       networks=[{'Target': NETWORK_NAME}])
+                       networks=[{'Target': CONFIG['service']['network']['name']}])
 
 
 def run_churn(time_to_start):
@@ -66,10 +61,10 @@ def run_churn(time_to_start):
         repository = ''
     else:
         hosts_fname = 'hosts'
-        repository = DISTANT_REPOSITORY
+        repository = CONFIG['repository']['name']
 
     delta = args.period
-    churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME, repository=repository)
+    churn = Churn(hosts_filename=hosts_fname, service_name=CONFIG['service']['name'], repository=repository)
     churn.set_logger_level(log_level)
 
     # Add initial cluster
@@ -136,16 +131,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run benchmarks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('peer_number', type=int, help='With how many peer should it be ran')
-    parser.add_argument('delta', type=int, help='Period for an EpTO round in ms')
     parser.add_argument('time_add', type=int, help='Delay experiments start in seconds')
     parser.add_argument('time_to_run', type=int, help='For how long should the experiment run in seconds')
-    parser.add_argument('rate', type=int, help='At which frequency should a peer send an event in ms')
-    parser.add_argument('-x', '--fixed-rate', type=int, default=None,
-                        help='Fix the rate at which a peer will send events')
+    parser.add_argument('config', type=argparse.FileType('r'), help='Configuration file')
     parser.add_argument('-l', '--local', action='store_true',
                         help='Run locally')
     parser.add_argument('-n', '--runs', type=int, default=1, help='How many experiments should be ran')
-    parser.add_argument('-c', '--constant', type=int, default=4, help='EpTO constant to determine K and TTL')
     parser.add_argument('--verbose', '-v', action='store_true', help='Switch DEBUG logging on')
 
     subparsers = parser.add_subparsers(dest='churn', help='Specify churn and its arguments')
@@ -157,19 +148,11 @@ if __name__ == '__main__':
                               help='Pass the synthetic list (to_kill,to_create)(example: 0,100 0,1 1,0)')
     churn_parser.add_argument('--delay', '-d', type=int, default=0,
                               help='With how much delay compared to the tester should the tester start in ms')
-    churn_parser.add_argument('--churn-rate', '-r', type=int, default=0,
-                              help='Specifies the upper bound of peers removed/added per round')
-    churn_parser.add_argument('--message-loss', '-m', type=normalized_double, default=0.0,
-                              help='Specifies the message loss of the network as a float value between 0 and 1')
 
     args = parser.parse_args()
+    global CONFIG
+    CONFIG = yaml.load(args.config)
 
-    if not args.churn:
-        args.churn_rate = 0
-        args.message_loss = 0.0
-
-    if not args.fixed_rate:
-        args.fixed_rate = args.peer_number
     if args.verbose:
         log_level = logging.DEBUG
     else:
@@ -204,16 +187,16 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
 
     if args.local:
-        service_image = SERVICE_NAME
-        tracker_image = TRACKER_NAME
+        service_image = CONFIG['service']['name']
+        tracker_image = CONFIG['tracker']['name']
         with subprocess.Popen(['../gradlew', '-p', '..', 'docker'],
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True) as p:
             for line in p.stdout:
                 print(line, end='')
     else:
-        service_image = DISTANT_REPOSITORY + SERVICE_NAME
-        tracker_image = DISTANT_REPOSITORY + TRACKER_NAME
+        service_image = CONFIG['repository'] + CONFIG['service']['name']
+        tracker_image = CONFIG['repository'] + CONFIG['tracker']['name']
         for line in cli.pull(service_image, stream=True, decode=True):
             print(line)
         for line in cli.pull(tracker_image, stream=True):
@@ -225,18 +208,18 @@ if __name__ == '__main__':
             token = cli.inspect_swarm()['JoinTokens']['Worker']
             subprocess.call(['parallel-ssh', '-t', '0', '-h', 'hosts', 'docker', 'swarm',
                              'join', '--token', token, '{:s}:2377'.format(MANAGER_IP)])
-        ipam_pool = utils.create_ipam_pool(subnet=SUBNET)
+        ipam_pool = utils.create_ipam_pool(subnet=CONFIG['service']['network']['subnet'])
         ipam_config = utils.create_ipam_config(pool_configs=[ipam_pool])
-        cli.create_network(NETWORK_NAME, 'overlay', ipam=ipam_config)
+        cli.create_network(CONFIG['service']['network']['name'], 'overlay', ipam=ipam_config)
     except errors.APIError:
         logger.info('Host is already part of a swarm')
-        if not cli.networks(names=[NETWORK_NAME]):
+        if not cli.networks(names=[CONFIG['service']['network']['name']]):
             logger.error('Network  doesn\'t exist!')
             exit(1)
 
     for run_nb, _ in enumerate(range(args.runs), 1):
-        create_service(TRACKER_NAME, tracker_image, placement={'Constraints': ['node.role == manager']})
-        wait_on_service(TRACKER_NAME, 1)
+        create_service(CONFIG['tracker']['name'], tracker_image, placement={'Constraints': ['node.role == manager']})
+        wait_on_service(CONFIG['tracker']['name'], 1)
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
         environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
@@ -249,32 +232,32 @@ if __name__ == '__main__':
 
         service_replicas = 0 if args.churn else args.peer_number
         log_storage = LOCAL_DATA if args.local else CLUSTER_DATA
-        create_service(SERVICE_NAME, service_image, env=environment_vars,
+        create_service(CONFIG['service']['name'], service_image, env=environment_vars,
                        mounts=[types.Mount(target='/data', source=log_storage, type='bind')], replicas=service_replicas)
 
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
             thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
             thread.start()
-            wait_on_service(SERVICE_NAME, 0, inverse=True)
+            wait_on_service(CONFIG['service']['name'], 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
                 # Wait for some peers to at least start
                 time.sleep(120)
                 total = [sum(x) for x in zip(*args.synthetic)]
                 # Wait until only stopped containers are still alive
-                wait_on_service(SERVICE_NAME, containers_nb=total[0], total_nb=total[1])
+                wait_on_service(CONFIG['service']['name'], containers_nb=total[0], total_nb=total[1])
             else:
                 thread.join()  # Wait for churn to finish
                 time.sleep(600)  # Wait 10 more minutes
 
         else:
-            wait_on_service(SERVICE_NAME, 0, inverse=True)
+            wait_on_service(CONFIG['service']['name'], 0, inverse=True)
             logger.info('Running without churn')
-            wait_on_service(SERVICE_NAME, 0)
+            wait_on_service(CONFIG['service']['name'], 0)
 
-        cli.remove_service(TRACKER_NAME)
-        cli.remove_service(SERVICE_NAME)
+        cli.remove_service(CONFIG['tracker']['name'])
+        cli.remove_service(CONFIG['service']['name'])
 
         logger.info('Services removed')
         time.sleep(30)
