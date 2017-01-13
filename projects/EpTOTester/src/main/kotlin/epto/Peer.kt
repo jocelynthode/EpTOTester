@@ -60,6 +60,7 @@ class Peer(application: Application, ttl: Int, k: Int, p: Int, delta: Long, myIp
         isRunning = true
         while (isRunning) {
             try {
+                //TODO fix array as right now we allow bigger packet size
                 val buf = ByteArray(core.gossip.maxSize)
                 val bb = ByteBuffer.wrap(buf)
                 val address = core.gossipChannel.receive(bb)
