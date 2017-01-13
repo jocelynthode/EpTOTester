@@ -14,3 +14,9 @@ tracker:
   name: "epto-tracker"
 repository:
   name: "swarm-m:5000"
+real_churn:
+  database: "websites02.db"
+  epoch: 730755.4827527029
+  start_time: 22200
+  duration: 7200
+  time_factor: 2

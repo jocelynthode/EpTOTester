@@ -51,10 +51,15 @@ def run_churn(time_to_start):
         logger.info(args.synthetic)
         nodes_trace = NodesTrace(synthetic=args.synthetic)
     else:
-        # Website02.db epoch starts 1st January 201. Exact formula obtained from Sebastien Vaucher
-        websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
-        nodes_trace = NodesTrace(database='websites02.db', min_time=websites_epoch + 22200,
-                                 max_time=websites_epoch + 22200 + 7200, time_factor=2)
+        real_churn_params = CONFIG['real_churn']
+        # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
+        # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
+        nodes_trace = NodesTrace(database='websites02.db', min_time=real_churn_params['epoch'] +
+                                                                    real_churn_params['start_time'],
+                                 max_time=real_churn_params['epoch'] +
+                                          real_churn_params['start_time'] +
+                                          real_churn_params['duration'],
+                                 time_factor=real_churn_params['time_factor'])
 
     if args.local:
         hosts_fname = None
@@ -168,8 +173,8 @@ if __name__ == '__main__':
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
         try:
-            cli.remove_service(TRACKER_NAME)
-            cli.remove_service(SERVICE_NAME)
+            cli.remove_service(CONFIG['tracker']['name'])
+            cli.remove_service(CONFIG['service']['name'])
             if not args.local:
                 time.sleep(15)
                 with open('hosts', 'r') as file:
@@ -222,11 +227,11 @@ if __name__ == '__main__':
         wait_on_service(CONFIG['tracker']['name'], 1)
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
-        environment_vars = {'PEER_NUMBER': args.peer_number, 'DELTA': args.delta,
-                            'TIME': time_to_start, 'TIME_TO_RUN': args.time_to_run,
-                            'RATE': args.rate, 'FIXED_RATE': args.fixed_rate,
-                            'CONSTANT': args.constant, 'CHURN_RATE': args.churn_rate,
-                            'MESSAGE_LOSS': args.message_loss}
+        # TODO check
+        environment_vars = {**CONFIG['service']['parameters'],
+                            **{'PEER_NUMBER': args.peer_number,
+                               'TIME': time_to_start,
+                               'TIME_TO_RUN': args.time_to_run}}
         environment_vars = ['{:s}={}'.format(k, v) for k, v in environment_vars.items()]
         logger.debug(environment_vars)
 
