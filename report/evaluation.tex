@@ -8,7 +8,7 @@
 %\pgfplotstableread[col sep=comma]{csv-data/plot-local-time-cdf.csv}\tablelocaltime
 In this section we present our results. In the following benchmarks \epto uses a constant $c$ to set the probability of a hole appearing. We set $c = 4$ in all our benchmarks so as to not experience any holes as \jgroups does not produce holes under normal conditions. We use a $\delta$ period of \SI{100}{\milli\second} for tests with no churn or synthethic churn and \SI{250}{\milli\second} for tests following a real trace.
 \par 
-We used specific settings recommended by \jgroups for a big cluster.
+We used specific settings recommended by \jgroups for a big cluster \autocite{udp-largecluster}.
 \par
 Every \jgroups test run with churn is run once killing the coordinator and once not killing it. We use the following nomenclature to differentiate both tests:
 \begin{description}[\IEEEsetlabelwidth{\jgroups-nocoord: }]
@@ -16,12 +16,13 @@ Every \jgroups test run with churn is run once killing the coordinator and once 
 	\item[\textbf{\jgroups-nocoord}:] The coordinator is purposely kept alive throughout the experiment.
 \end{description}
 \par
-\textbf{Testbed.} Our work uses the same cluster first used in \autocite{vaucher2016erasure}. It consists of 20 machines interconnected by a \SI{1}{\gbps} switched network. Each machine has an 8-core Intel Xeon CPU and \SI{8}{\giga\byte} of RAM. We deploy 12 virtual machines on these hosts. Each virtual machine has access 4 VCPUs as well as \SI{7}{\giga\byte} of RAM. We use KVM as our hypervisor. Each VM uses Debian as its O/S. \eptotester is packaged as docker images. We use Docker 1.12 and its new functionality Docker Swarm to orchestrate our services. Each docker container has a memory restriction of \SI{300}{\mega\byte} of RAM to be able to run them all together.
+\textbf{Testbed.} \mm{this sentence is not necessary} \jt{I specified it as the following text is really close to the one in Sebastien work as we use the same cluster and I don't want any problem being accused of copy}Our work uses the same cluster first used in \autocite{vaucher2016erasure}. It consists of 20 machines interconnected by a \SI{1}{\gbps} switched network. Each machine has an 8-core Intel Xeon CPU and \SI{8}{\giga\byte} of RAM. We deploy 12 virtual machines on these hosts. Each virtual machine has access 4 VCPUs as well as \SI{7}{\giga\byte} of RAM. We use KVM as our hypervisor. Each VM uses Debian as its O/S. \eptotester is packaged as docker images. We use Docker 1.12 and its new functionality Docker Swarm to orchestrate our services. Each docker container has a memory restriction of \SI{300}{\mega\byte} of RAM to be able to run them all together.
 \par
 \textbf{Experiment parameters.} Every benchmark except the one following a real trace are run 10 times, each during \SI{20}{\minute}. When there is synthetic churn, the churn starts \SI{30}{\second} after the benchmark and run for \SI{17}{\minute}. The benchmarks following a real trace are run 5 times. The trace is speed-up 2x, which means we follow \SI{2}{\hour} worth of trace in \SI{1}{\hour}. Every benchmark run with churn is run with the $(100,50)$ parameters. When we have a global event throughput lower than the number of actual peers, we use a uniform random number generator to artificially reduce the global event throughput. For example, using $(100,50)$ parameters, each peer has a 50\% probability of sending an event at each second.
 \par
 We compare \epto and \jgroups based on their bandwidth, the local and global time to deliver every expected events, their local dissemination stretch and finally the number of events sent on average.
 \subsection{Bandwidth}
+The bandwidth metric shows the instantaneous bandwidth, where the bandwidth is the addition of the upload and the download speed.
 The initial bandwidth peaks observed for \epto are due to the PSS initialization. When a node starts, it receives an initial view and then quickly runs the PSS active thread four times to jump-start itself.
  \begin{figure}[hpt]
  	\centering
@@ -35,7 +36,7 @@ In \autoref{fig:bandwidth} we observe that \epto has a worse baseline compared t
 
 Comparing \epto and \jgroups in terms of bandwidth when we increase the number of events sent per second, we can see the bandwidth doubling in both cases. In lower peers scenario such as the ones presented in \autoref{fig:bandwidth} \jgroups is clearly at an advantage. Since \epto has a worse baseline we will reach the maximum bandwidth available much quicker when increasing the event throughput.
 
-Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto scales better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it marginally \jt{logarithmic I think as was expected}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum available bandwidth on a given node.
+Comparing \epto and \jgroups in terms of bandwidth when we increase the number of peers, \epto scales better than \jgroups. Where \jgroups basically has to double the bandwidth usage of the coordinator, \epto only increases it marginally \jt{logarithmic I think as was expected}. Thus in a scenario where we have many peers \epto will be more efficient than \jgroups at not reaching the maximum available bandwidth on a given node.\mm{it would be perfect if we could experimentally show this.}
  \begin{figure}[hpt]
  	\centering
  	\includegraphics[width=\linewidth]{figures/bandwidth-synth-churn.pdf}
@@ -54,7 +55,8 @@ On the other hand, when killing the coordinator in \jgroups we can see a huge sp
 Even when not killing the coordinator, \jgroups suffers from the churn. We can see that each time the view changes, it generates an almost 100\% increase in bandwidth usage. This is due to \jgroups having to update the view and propagate it to every peer.
 
 \subsection{Total GigaBytes sent/received}
-In all cases, \jgroups receives more bytes than it sends. This is due to the fact that we do not measure the bandwidth on the TCPGOSSIP, which is in charge of view changes.
+This metric shows the Total number of bytes sent and received on average during an experiment.
+In all cases, \jgroups receives more bytes than it sends. This is due to the fact that we do not measure the bandwidth on the TCPGOSSIP, which is in charge of view changes. Thus, when a new peer joins the cluster, the TCPGOSSIP will send a new view to every peer already in the cluster.
 \par
 \begin{table}[hpt]
 	\centering
@@ -103,6 +105,7 @@ In \autoref{table:total-bandwidth}, \epto has a worse baseline than \jgroups. Th
 In \autoref{table:total-bandwidth-churn} we see that \jgroups total bandwidth usage is smaller when there is churn. One hypothesis for this is that a \jgroups replica takes a longer time to start up compared to stopping a replica. Therefore the overall benchmark has a longer time with less than 100 replicas. We also do not see a difference whether we kill the coordinator or not. This can be explained by the fact that before the detection of a faulty coordinator \jgroups is forced to a halt for period of up to \SI{20}{\second}. The big spike afterwards compensates for this hole.
 \subsection{Local Times}
 \label{sub:local-times}
+The local time represents the total time it takes for a peer to deliver every events sent.
  \begin{figure*}[hpt]
  	\centering
  	\includegraphics[width=\linewidth]{figures/local-times-nochurn.pdf}
@@ -120,8 +123,9 @@ In \autoref{table:total-bandwidth-churn} we see that \jgroups total bandwidth us
  	\vspace{-2mm} 
  	\label{fig:local-times-churn} 
  \end{figure}
-In \autoref{fig:local-times}, \jgroups delivers all events quicker than \epto in all scenarios, even when churn is involved as is shown in \autoref{fig:local-times-churn}. However, \epto is not too far behind. The difference between \epto and \jgroups is likely to be even smaller when running them in a real WAN network due to the latency. \epto in our configuration has a $\delta$ period of \SI{100}{\milli\second} and is thus handicapped against \jgroups in a LAN environment, because it only increments the TTL of an event every \SI{100}{\milli\second}. We expect \epto to outperform \jgroups in this situation when we have a high number of peers in the system or when the network has a higher latency.
+In \autoref{fig:local-times}, \jgroups delivers all events quicker than \epto in all scenarios, even when churn is involved as is shown in \autoref{fig:local-times-churn}. However, \epto is not too far behind. The difference between \epto and \jgroups is likely to be even smaller when running them in a real WAN network due to the latency. \epto in our configuration has a $\delta$ period of \SI{100}{\milli\second} and is thus handicapped against \jgroups in a LAN environment, because it only increments the TTL of an event every \SI{100}{\milli\second}. We expect \epto to outperform \jgroups in this situation when we have a high number of peers in the system or when the network has a higher latency.\mm{we could try to setup an AWS test in mutliple availability zones to see what happens.} \jt{Yes I though about it too. Unfortunately we can't make it work for the moment :/}
 \subsection{Global Times}
+The global time represents the total time it takes for all peers to deliver every events sent.
  \begin{figure*}[hpt]
  	\centering
  	\includegraphics[width=\linewidth]{figures/global-times-nochurn.pdf}
@@ -143,6 +147,7 @@ Global times are represented in \autoref{fig:global-times} and \autoref{fig:glob
 
 Nonetheless, here too we can see that \epto is consistently slower than \jgroups for the same reason as stated in \autoref{sub:local-times}.
 \subsection{Local Dissemination stretch}
+The local dissemination stretch is the time measurement between the sending of an event by a peer and the delivery of this event locally.
  \begin{figure}[hpt]
  	\centering
  	\includegraphics[width=\linewidth]{figures/local-diss-stretch-nochurn.pdf}
@@ -151,7 +156,7 @@ Nonetheless, here too we can see that \epto is consistently slower than \jgroups
  	\vspace{-2mm}
  	\label{fig:local-delta}  
  \end{figure}
-In \autoref{fig:local-delta}, We see the percentiles of the local dissemination stretch. The local dissemination stretch is the time measurement between the sending of an event by a peer and the delivery of this event locally.
+In \autoref{fig:local-delta}, We see the percentiles of the local dissemination stretch.
 \par
 \jgroups is usually much faster than \epto in a perfect environment. This is expected as the benchmarks involve a small number of nodes and are performed in a LAN environment with minimal latency. The median dissemination stretch of \jgroups is around \SI{7}{\milli\second} where as the median dissemination stretch of \epto is around \SI{630}{\milli\second} for $(100,50)$. When increasing the number of peers, \jgroups starts to have longer delivery times for some outliers. A small portion of the local dissemination stretches are really fast (\SI{1}{\milli\second} or lower). This happens when the coordinator itself sends an event. Since it has to deliver it to himself the local dissemination stretch is intra-process and thus extremely fast.
 
@@ -285,6 +290,6 @@ In \autoref{fig:local-delta-real-churn}, \epto as worse outliers than before and
 \end{table}
 \autoref{table:total-bandwidth-real-churn} is interesting. We see that on average \jgroups seems to deliver more events than \epto, but its standard deviation is way higher than that of \epto, suggesting \epto to be more stable and consistent.
 \subsection{Problems encountered}
-The \epto simulation and theory is assuming we can have balls of infinite size. In practice, packet loss happens. We must therefore limit the ball size to a practical number. We use balls with a maximum size of \SI{1432}{\byte}. We choose this number as the default MTU on Ethernet is \SI{1500}{\byte}. We then subtract the bytes required for the IPv4 and UDP headers.
-\par
-When running \jgroups we sometimes get failed runs, where either some peers will experience holes or peer will deliver out of order events. This only happens when there is churn happening and when the coordinator dies. We have not investigated these problems further. This points to either \jgroups failing when there is too much churn or a bug present in the SEQUENCER implementation.
+When running \jgroups we sometimes get failed runs, where either some peers will experience holes or peer will deliver out of order events. We measure  These failed runs only happen when there is churn happening, specifically when we add and remove peers and when the coordinator dies. These problems appeared 3 times out of 13 runs for \jgroups $1\{kill,add\}/minute$ and 2 times out of 7 for \jgroups with real churn. We have not investigated these problems further. This points to either \jgroups failing when there is too much churn or a bug present in the SEQUENCER implementation.
+
+We measure holes as one or more events that were delivered by at least one peer in the cluster but not on the peer containing the hole. As stated earlier, we specifically choose a $c$ high enough to never experience holes in \epto as \jgroups should never suffer from holes. If either a \jgroups or \epto fails to deliver every event sent during the run, the run is considered as having a problem.
