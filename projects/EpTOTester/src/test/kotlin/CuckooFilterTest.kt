@@ -21,8 +21,8 @@ import net.jpountz.lz4.LZ4Factory
  */
 class CuckooFilterTest {
     private val uuids = ArrayList<Event>()
-    private val MAX_KEYS = 500000
-    private val FPP = 1.0 / (Math.pow(1000.0, 4.0))
+    private val MAX_KEYS = 500
+    private val FPP = Math.pow(10.0, -3.0)//1.0 / (Math.pow(1000.0, 4.0))
     private object EventFunnel : Funnel<Event> {
         override fun funnel(from: Event, into: PrimitiveSink) {
             //We only use the identifier
@@ -39,7 +39,7 @@ class CuckooFilterTest {
     fun setup() {
         val sourceUUIDS = Array(200, {EventCreator()})
         val rand = Random()
-        (1..500000).forEach {
+        (1..MAX_KEYS).forEach {
             val creator = sourceUUIDS[rand.nextInt(sourceUUIDS.size)]
             uuids.add(Event(UUID.randomUUID(), creator.incrementAndGet(),
                     (Math.random()*100).toInt(), creator.sourceID))
@@ -50,7 +50,7 @@ class CuckooFilterTest {
 
     @Test
     fun testCuckooSize() {
-        println("Cuckoo storage size: ${cuckooFilter.storageSize / 8.0 / 1000000} MB")
+        println("Cuckoo storage size: ${cuckooFilter.storageSize / 8.0 } MB")
         println("Cuckoo max elems: ${cuckooFilter.actualCapacity}")
 
         uuids.forEach {
