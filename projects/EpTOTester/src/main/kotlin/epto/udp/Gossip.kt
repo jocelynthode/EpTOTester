@@ -48,10 +48,11 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         logger.debug("Max Events: {}", maxEvents)
         logger.debug("KView size: {}, KView:  [{}]", kView.size, kView.joinToString())
         if (ballsToSend > 1) {
-            relaySplitted(nextBall, ballsToSend, kView)
+            relaySplitted(nextBall, ballsToSend, kView, MessageType.GOSSIP)
         } else {
-            sendRelay(nextBall, kView)
+            sendRelay(nextBall, kView, MessageType.GOSSIP)
         }
+        core.gossipMessagesSent += ballsToSend
     }
 
     /**
@@ -91,31 +92,22 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
      * @param target the requester address
      */
     fun  sendPullReply(eventsToSend: ArrayList<Event>, target: InetSocketAddress) {
-        val byteOut = ByteArrayOutputStream()
-        val out = Application.conf.getObjectOutput(byteOut)
-        try {
-            out.writeInt(MessageType.PULL_REPLY.ordinal)
-            out.writeInt(eventsToSend.size)
-            eventsToSend.forEach { it.serialize(out) }
-            out.flush()
-        } catch (e: IOException) {
-            logger.error("Exception while sending pull reply", e)
-        } finally {
-            out.close()
+        val viewToSend = arrayListOf(PeerInfo(target.address)) //TODO refactor this part
+        val ballsToSend = Math.ceil(eventsToSend.size / maxEvents.toDouble()).toInt()
+        if (ballsToSend > 1) {
+            relaySplitted(eventsToSend, ballsToSend, viewToSend, MessageType.PULL_REPLY)
+        } else {
+            sendRelay(eventsToSend, viewToSend, MessageType.PULL_REPLY)
         }
-        if (byteOut.size() > maxSize) {
-            logger.warn("Ball size is too big !")
-        }
-        core.send(byteOut.toByteArray(), target.address)
-        core.pullReplySent++
+        core.pullReplySent += ballsToSend
     }
 
-    private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>) {
+    private fun sendRelay(nextBall: List<Event>, kView: ArrayList<PeerInfo>, messageType: MessageType) {
         logger.debug("Relay Ball size in Events: {}", nextBall.size)
         val byteOut = ByteArrayOutputStream()
         val out = Application.conf.getObjectOutput(byteOut)
         try {
-            out.writeInt(MessageType.GOSSIP.ordinal)
+            out.writeInt(messageType.ordinal)
             out.writeInt(nextBall.size)
             nextBall.forEach { it.serialize(out) }
             out.flush()
@@ -132,11 +124,11 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         kView.forEach {
             core.send(byteOut.toByteArray(), it.address)
         }
-        core.gossipMessagesSent++
         logger.debug("Sent Ball")
     }
 
-    private fun relaySplitted(values: List<Event>, ballsToSend: Int, kView: ArrayList<PeerInfo>) {
+    private fun relaySplitted(values: List<Event>, ballsToSend: Int, kView: ArrayList<PeerInfo>,
+                              messageType: MessageType) {
         var ballsNumber = ballsToSend
         totalSplits += ballsToSend
         var i = 0
@@ -144,9 +136,9 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         while (ballsNumber > 0) {
             logger.debug("ballsToSend: {}", ballsNumber)
             if (ballsNumber > 1) {
-                sendRelay(values.subList(i, i + maxEvents), kView)
+                sendRelay(values.subList(i, i + maxEvents), kView, messageType)
             } else {
-                sendRelay(values.subList(i, values.size), kView)
+                sendRelay(values.subList(i, values.size), kView, messageType)
             }
             ballsNumber--
             i += maxEvents

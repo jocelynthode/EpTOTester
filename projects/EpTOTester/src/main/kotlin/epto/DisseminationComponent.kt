@@ -43,8 +43,8 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     private val periodicDissemination: Runnable
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
     private val myExecutor = Executors.newCachedThreadPool()
-    private val MAX_KEYS = 2000000
-    private val FPP = Math.pow(10.0, -9.0) //TODO use the c from EpTO
+    private val MAX_KEYS = 300
+    private val FPP = Math.pow(10.0, -3.0) //TODO use the c from EpTO
     private object EventFunnel : Funnel<Event> {
         override fun funnel(from: Event, into: PrimitiveSink) {
             //We only use the identifier

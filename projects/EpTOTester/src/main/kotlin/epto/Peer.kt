@@ -133,5 +133,3 @@ class Peer(application: Application, ttl: Int, k: Int, p: Int, delta: Long, myIp
         core.pullReplyReceived++
     }
 }
-
-

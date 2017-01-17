@@ -3,6 +3,7 @@ package epto
 
 import epto.libs.Utilities.logger
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Implementation of the Ordering Component.
@@ -25,8 +26,8 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
 
     private val logger by logger()
 
-    internal val received = HashMap<String, Event>()
-    internal val delivered = HashMap<String, Event>()
+    internal val received = ConcurrentHashMap<String, Event>()
+    internal val delivered = ConcurrentHashMap<String, Event>()
     internal var lastDeliveredTs: Int = -1
     private var lastDeliveredEvent: Event = Event()
 
@@ -78,7 +79,7 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      * this is the main function, OrderEvents procedure. Dissemination component will invoke this method periodically.
      *
      */
-    @Synchronized fun orderEvents() { //TODO Synchronize is probably overkill
+    fun orderEvents() {
         updateReceived()
 
         // collect deliverable events and determine smallest
@@ -120,14 +121,18 @@ class OrderingComponent(private val oracle: StabilityOracle, internal var applic
      *
      * @param ball the received ball
      */
-    @Synchronized fun receiveEvents(ball: HashMap<String, Event>) {//TODO Synchronize is probably overkill
+    fun receiveEvents(ball: HashMap<String, Event>) {
         // update set of received events with events in the ball
         ball.filter { entry -> !delivered.containsKey(entry.key) && entry.value.timestamp >= lastDeliveredTs }
                 .forEach { entry ->
                     val receivedEvent = received[entry.key]
                     if (receivedEvent != null) {
-                        if (receivedEvent.ttl.get() < entry.value.ttl.get()) {
-                            receivedEvent.ttl.set(entry.value.ttl.get())
+                        var receivedEventTtl = receivedEvent.ttl.get()
+                        while (receivedEventTtl < entry.value.ttl.get()) {
+                            if(receivedEvent.ttl.compareAndSet(receivedEventTtl, entry.value.ttl.get())) {
+                                break
+                            }
+                            receivedEventTtl = receivedEvent.ttl.get()
                         }
                     } else {
                         received.put(entry.key, entry.value)
