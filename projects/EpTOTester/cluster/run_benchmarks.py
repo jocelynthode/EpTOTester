@@ -141,6 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('config', type=argparse.FileType('r'), help='Configuration file')
     parser.add_argument('-l', '--local', action='store_true',
                         help='Run locally')
+    parser.add_argument('-t', '--tracker', action='store_true', help='Specify whether the app uses a tracker')
     parser.add_argument('-n', '--runs', type=int, default=1, help='How many experiments should be ran')
     parser.add_argument('--verbose', '-v', action='store_true', help='Switch DEBUG logging on')
 
@@ -173,7 +174,8 @@ if __name__ == '__main__':
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
         try:
-            cli.remove_service(CONFIG['tracker']['name'])
+            if args.tracker:
+                cli.remove_service(CONFIG['tracker']['name'])
             cli.remove_service(CONFIG['service']['name'])
             if not args.local:
                 time.sleep(15)
@@ -193,7 +195,8 @@ if __name__ == '__main__':
 
     if args.local:
         service_image = CONFIG['service']['name']
-        tracker_image = CONFIG['tracker']['name']
+        if args.tracker:
+            tracker_image = CONFIG['tracker']['name']
         with subprocess.Popen(['../gradlew', '-p', '..', 'docker'],
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True) as p:
@@ -201,11 +204,12 @@ if __name__ == '__main__':
                 print(line, end='')
     else:
         service_image = CONFIG['repository'] + CONFIG['service']['name']
-        tracker_image = CONFIG['repository'] + CONFIG['tracker']['name']
         for line in cli.pull(service_image, stream=True, decode=True):
             print(line)
-        for line in cli.pull(tracker_image, stream=True):
-            print(line)
+        if args.tracker:
+            tracker_image = CONFIG['repository'] + CONFIG['tracker']['name']
+            for line in cli.pull(tracker_image, stream=True):
+                print(line)
     try:
         cli.init_swarm()
         if not args.local:
@@ -223,8 +227,9 @@ if __name__ == '__main__':
             exit(1)
 
     for run_nb, _ in enumerate(range(args.runs), 1):
-        create_service(CONFIG['tracker']['name'], tracker_image, placement={'Constraints': ['node.role == manager']})
-        wait_on_service(CONFIG['tracker']['name'], 1)
+        if args.tracker:
+            create_service(CONFIG['tracker']['name'], tracker_image, placement={'Constraints': ['node.role == manager']})
+            wait_on_service(CONFIG['tracker']['name'], 1)
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
         # TODO check
@@ -240,6 +245,7 @@ if __name__ == '__main__':
         create_service(CONFIG['service']['name'], service_image, env=environment_vars,
                        mounts=[types.Mount(target='/data', source=log_storage, type='bind')], replicas=service_replicas)
 
+        # TODO clean text
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
             thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
@@ -260,8 +266,8 @@ if __name__ == '__main__':
             wait_on_service(CONFIG['service']['name'], 0, inverse=True)
             logger.info('Running without churn')
             wait_on_service(CONFIG['service']['name'], 0)
-
-        cli.remove_service(CONFIG['tracker']['name'])
+        if args.tracker:
+            cli.remove_service(CONFIG['tracker']['name'])
         cli.remove_service(CONFIG['service']['name'])
 
         logger.info('Services removed')
