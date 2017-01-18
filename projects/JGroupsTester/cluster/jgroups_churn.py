@@ -4,21 +4,9 @@ import logging
 import random
 import re
 import subprocess
+import threading
 
 from churn import Churn
-
-
-def get_peer_list(path='../data/*.txt'):
-    with open(glob.glob(path)[0], 'r') as f:
-        a_list = []
-        for line in f.readlines():
-            match = re.match(r'\d+ - View: (.+)', line)
-            if match:
-                a_list = match.group(1).split(',')
-                break
-        if not a_list:
-            raise LookupError('No view found in file {}'.format(f.name))
-        return a_list
 
 
 class JGroupsChurn(Churn):
@@ -28,7 +16,8 @@ class JGroupsChurn(Churn):
     A class in charge of adding/suspending nodes to create churn in a JGroups SEQUENCER cluster
     """
 
-    def __init__(self, hosts_filename=None, service_name='', repository='', kill_coordinator_round=None):
+    def __init__(self, hosts_filename=None, service_name='', repository='', kill_coordinator_round=None,
+                 delay=0, file_path=''):
         self.containers = {}
         self.coordinator = None
         self.peer_list = []
@@ -48,6 +37,7 @@ class JGroupsChurn(Churn):
             self.kill_coordinator_round = kill_coordinator_round
         self.kill_index = 0
         self.cluster_size = 0
+        threading.Timer(delay, self._get_peer_list, args=(file_path,)).start()
 
     def suspend_processes(self, to_suspend_nb):
         """
@@ -202,3 +192,17 @@ class JGroupsChurn(Churn):
 
         self.containers[host] = subprocess.check_output(command_ps,
                                                         universal_newlines=True).splitlines()
+
+    # TODO check where Error is caught
+    def _get_peer_list(self, path='../data/*.txt'):
+        with open(glob.glob(path)[0], 'r') as f:
+            a_list = []
+            for line in f.readlines():
+                match = re.match(r'\d+ - View: (.+)', line)
+                if match:
+                    a_list = match.group(1).split(',')
+                    break
+            if not a_list:
+                raise LookupError('No view found in file {}'.format(f.name))
+            self.peer_list = a_list
+            self.coordinator = a_list[0]

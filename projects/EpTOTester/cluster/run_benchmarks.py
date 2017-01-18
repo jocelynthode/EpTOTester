@@ -18,6 +18,7 @@ import time
 import yaml
 
 from churn import Churn
+from benchmark import Benchmark
 from datetime import datetime
 from docker import errors
 from docker import types
@@ -26,98 +27,12 @@ from logging import config
 from nodes_trace import NodesTrace
 
 
-cli = docker.Client(base_url='unix://var/run/docker.sock')
 with open('config.yaml', 'r') as f:
     config = yaml.load(f)
     MANAGER_IP = config['manager_ip']
     LOCAL_MANAGER_IP = config['local_manager_ip']
     LOCAL_DATA = config['local_data']
     CLUSTER_DATA = config['cluster_data']
-
-
-def create_service(service_name, image, env=None, mounts=None, placement=None, replicas=1, mem_limit=314572800):
-    container_spec = types.ContainerSpec(image=image, env=env, mounts=mounts)
-    logger.debug(container_spec)
-    task_tmpl = types.TaskTemplate(container_spec,
-                                   resources=types.Resources(mem_limit=mem_limit),
-                                   restart_policy=types.RestartPolicy(),
-                                   placement=placement)
-    logger.debug(task_tmpl)
-    cli.create_service(task_tmpl, name=service_name, mode={'Replicated': {'Replicas': replicas}},
-                       networks=[{'Target': APP_CONFIG['service']['network']['name']}])
-
-
-def run_churn(time_to_start):
-    logger.debug('Time to start churn: {:d}'.format(time_to_start))
-    if args.synthetic:
-        logger.info(args.synthetic)
-        nodes_trace = NodesTrace(synthetic=args.synthetic)
-    else:
-        real_churn_params = APP_CONFIG['real_churn']
-        # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
-        # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
-        nodes_trace = NodesTrace(database=real_churn_params['database'], min_time=real_churn_params['epoch'] +
-                                                                    real_churn_params['start_time'],
-                                 max_time=real_churn_params['epoch'] +
-                                          real_churn_params['start_time'] +
-                                          real_churn_params['duration'],
-                                 time_factor=real_churn_params['time_factor'])
-
-    if args.local:
-        hosts_fname = None
-        repository = ''
-    else:
-        hosts_fname = 'hosts'
-        repository = APP_CONFIG['repository']['name']
-
-    delta = args.period
-    churn = Churn(hosts_filename=hosts_fname, service_name=APP_CONFIG['service']['name'], repository=repository)
-    churn.set_logger_level(log_level)
-
-    # Add initial cluster
-    logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
-    churn.add_processes(nodes_trace.initial_size())
-    delay = int((time_to_start - (time.time() * 1000)) / 1000)
-    logger.debug('Delay: {:d}'.format(delay))
-    logger.info('Starting churn at {:s} UTC'
-                .format(datetime.utcfromtimestamp(time_to_start // 1000).isoformat()))
-    time.sleep(delay)
-    logger.info('Starting churn')
-    nodes_trace.next()
-    for size, to_kill, to_create in nodes_trace:
-        logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
-                     .format(size, len(to_kill), len(to_create)))
-        churn.add_suspend_processes(len(to_kill), len(to_create))
-        time.sleep(delta / 1000)
-
-    logger.info('Churn finished')
-
-
-def wait_on_service(service_name, containers_nb, total_nb=None, inverse=False):
-    def get_nb():
-        output = subprocess.check_output(['docker', 'service', 'ls', '-f', 'name={:s}'.format(service_name)],
-                                         universal_newlines=True).splitlines()[1]
-        match = re.match(r'.+ (\d+)/(\d+)', output)
-        return int(match.group(1)), int(match.group(2))
-
-    if inverse:  # Wait while current nb is equal to containers_nb
-        current_nb = containers_nb
-        while current_nb == containers_nb:
-            logger.debug('current_nb={:d}, containers_nb={:d}'.format(current_nb, containers_nb))
-            time.sleep(1)
-            current_nb = get_nb()[0]
-    else:
-        current_nb = -1
-        current_total_nb = -1
-        while current_nb > containers_nb or current_total_nb != total_nb:
-            logger.debug('current_nb={:d}, containers_nb={:d}'.format(current_nb, containers_nb))
-            logger.debug('current_total_nb={:d}'.format(current_total_nb))
-            time.sleep(5)
-            current_nb, current_total_nb = get_nb()
-            if not total_nb:
-                total_nb = current_total_nb
-            else:
-                logger.debug('current_total_nb={:d}, total_nb={:d}'.format(current_total_nb, total_nb))
 
 
 def create_logger():
@@ -158,7 +73,6 @@ if __name__ == '__main__':
                               help='With how much delay compared to the tester should the tester start in ms')
 
     args = parser.parse_args()
-    global APP_CONFIG
     APP_CONFIG = yaml.load(args.config)
 
     if args.verbose:
@@ -170,27 +84,24 @@ if __name__ == '__main__':
     logger.setLevel(log_level)
 
     logger.info('START')
+    if args.local:
+        hosts_fname = None
+        repository = ''
+    else:
+        hosts_fname = 'hosts'
+        repository = APP_CONFIG['repository']['name']
+
+    churn = Churn(hosts_filename=hosts_fname, service_name=APP_CONFIG['service']['name'], repository=repository)
+    churn.set_logger_level(log_level)
+    benchmark = Benchmark(APP_CONFIG, args.local, log_level, churn)
+    benchmark.set_logger_level(log_level)
+    benchmark.run()
     args.time_add *= 1000
     args.time_to_run *= 1000
 
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
-        try:
-            if args.tracker:
-                cli.remove_service(APP_CONFIG['tracker']['name'])
-            cli.remove_service(APP_CONFIG['service']['name'])
-            if not args.local:
-                time.sleep(15)
-                with open('hosts', 'r') as file:
-                    for host in file.read().splitlines():
-                        subprocess.call('rsync --remove-source-files '
-                                        '-av {:s}:{:s}/*.txt ../data'
-                                        .format(host, CLUSTER_DATA), shell=True)
-                        subprocess.call('rsync --remove-source-files '
-                                        '-av {:s}:{:s}/capture/*.csv ../data/capture'
-                                        .format(host, CLUSTER_DATA), shell=True)
-        except errors.NotFound:
-            pass
+        benchmark.stop()
         exit(0)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
