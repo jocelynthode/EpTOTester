@@ -250,8 +250,7 @@ if __name__ == '__main__':
                        mounts=[types.Mount(target='/data', source=log_storage, type='bind')],
                        replicas=service_replicas, mem_limit=APP_CONFIG['service']['mem_limit'])
 
-        # TODO clean text
-        logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
+        logger.info('Running Benchmark -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
             thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
             thread.start()
