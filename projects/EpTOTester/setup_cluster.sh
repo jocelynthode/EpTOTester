@@ -2,6 +2,7 @@
 # This scripts  will build the images, push them to the repository run the tests
 # Credits : https://github.com/sebyx31/ErasureBench/blob/master/projects/erasure-tester/benchmark_on_cluster.sh
 
+USERNAME="debian"
 MANAGER_IP=172.16.2.119
 
 trap "kill ${ssh_pid}" TERM INT
@@ -21,4 +22,4 @@ docker push localhost:5000/epto-tracker:latest
 
 kill ${ssh_pid}
 
-rsync -av --copy-links cluster/ debian@${MANAGER_IP}:~/epto
+rsync -av --copy-links cluster/ ${USERNAME}@${MANAGER_IP}:~/epto
