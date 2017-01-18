@@ -18,13 +18,11 @@ import time
 import yaml
 
 from churn import Churn
-from churn import churn_tuple
 from churn import get_peer_list
 from datetime import datetime
 from docker import errors
 from docker import types
 from docker import utils
-from logging import config
 from nodes_trace import NodesTrace
 
 
@@ -72,8 +70,8 @@ def run_churn(time_to_start):
 
     delta = args.delta
     logging.debug("Kill_coordinator = {}".format(args.kill_coordinator))
-    churn = Churn(hosts_filename=hosts_fname, kill_coordinator_round=args.kill_coordinator, service_name=SERVICE_NAME,
-                  repository=repository)
+    churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME,
+                  repository=repository, kill_coordinator_round=args.kill_coordinator)
     churn.set_logger_level(log_level)
     logger.debug("Kill coordinator rounds: {}".format(churn.kill_coordinator_round))
 
@@ -139,6 +137,14 @@ def create_logger():
     with open('logger.yaml') as f:
         conf = yaml.load(f)
         logging.config.dictConfig(conf)
+
+
+def churn_tuple(s):
+    try:
+        _to_kill, _to_create = map(int, s.split(','))
+        return _to_kill, _to_create
+    except:
+        raise TypeError("Tuples must be (int, int)")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run benchmarks',

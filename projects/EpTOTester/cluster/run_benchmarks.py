@@ -18,31 +18,33 @@ import time
 import yaml
 
 from churn import Churn
-from churn import churn_tuple
 from datetime import datetime
 from docker import errors
 from docker import types
 from docker import utils
+from logging import config
 from nodes_trace import NodesTrace
 
 
 cli = docker.Client(base_url='unix://var/run/docker.sock')
-MANAGER_IP = '172.16.2.119'
-LOCAL_DATA = '/home/jocelyn/tmp/data'
-CLUSTER_DATA = '/home/debian/data'
-CONFIG = None
+with open('config.yaml', 'r') as f:
+    config = yaml.load(f)
+    MANAGER_IP = config['manager_ip']
+    LOCAL_MANAGER_IP = config['local_manager_ip']
+    LOCAL_DATA = config['local_data']
+    CLUSTER_DATA = config['cluster_data']
 
 
-def create_service(service_name, image, env=None, mounts=None, placement=None, replicas=1):
+def create_service(service_name, image, env=None, mounts=None, placement=None, replicas=1, mem_limit=314572800):
     container_spec = types.ContainerSpec(image=image, env=env, mounts=mounts)
     logger.debug(container_spec)
     task_tmpl = types.TaskTemplate(container_spec,
-                                   resources=types.Resources(mem_limit=314572800),
+                                   resources=types.Resources(mem_limit=mem_limit),
                                    restart_policy=types.RestartPolicy(),
                                    placement=placement)
     logger.debug(task_tmpl)
     cli.create_service(task_tmpl, name=service_name, mode={'Replicated': {'Replicas': replicas}},
-                       networks=[{'Target': CONFIG['service']['network']['name']}])
+                       networks=[{'Target': APP_CONFIG['service']['network']['name']}])
 
 
 def run_churn(time_to_start):
@@ -51,10 +53,10 @@ def run_churn(time_to_start):
         logger.info(args.synthetic)
         nodes_trace = NodesTrace(synthetic=args.synthetic)
     else:
-        real_churn_params = CONFIG['real_churn']
+        real_churn_params = APP_CONFIG['real_churn']
         # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
         # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
-        nodes_trace = NodesTrace(database='websites02.db', min_time=real_churn_params['epoch'] +
+        nodes_trace = NodesTrace(database=real_churn_params['database'], min_time=real_churn_params['epoch'] +
                                                                     real_churn_params['start_time'],
                                  max_time=real_churn_params['epoch'] +
                                           real_churn_params['start_time'] +
@@ -66,10 +68,10 @@ def run_churn(time_to_start):
         repository = ''
     else:
         hosts_fname = 'hosts'
-        repository = CONFIG['repository']['name']
+        repository = APP_CONFIG['repository']['name']
 
     delta = args.period
-    churn = Churn(hosts_filename=hosts_fname, service_name=CONFIG['service']['name'], repository=repository)
+    churn = Churn(hosts_filename=hosts_fname, service_name=APP_CONFIG['service']['name'], repository=repository)
     churn.set_logger_level(log_level)
 
     # Add initial cluster
@@ -124,12 +126,12 @@ def create_logger():
         logging.config.dictConfig(conf)
 
 
-def normalized_double(s):
-    n = float(s)
-    if n < 0.0 or n > 1.0:
-        raise argparse.ArgumentTypeError("Message loss must be in the interval [0,1]")
-
-    return n
+def churn_tuple(s):
+    try:
+        _to_kill, _to_create = map(int, s.split(','))
+        return _to_kill, _to_create
+    except:
+        raise TypeError("Tuples must be (int, int)")
 
 
 if __name__ == '__main__':
@@ -156,8 +158,8 @@ if __name__ == '__main__':
                               help='With how much delay compared to the tester should the tester start in ms')
 
     args = parser.parse_args()
-    global CONFIG
-    CONFIG = yaml.load(args.config)
+    global APP_CONFIG
+    APP_CONFIG = yaml.load(args.config)
 
     if args.verbose:
         log_level = logging.DEBUG
@@ -175,8 +177,8 @@ if __name__ == '__main__':
         logger.info('Stopping Benchmarks')
         try:
             if args.tracker:
-                cli.remove_service(CONFIG['tracker']['name'])
-            cli.remove_service(CONFIG['service']['name'])
+                cli.remove_service(APP_CONFIG['tracker']['name'])
+            cli.remove_service(APP_CONFIG['service']['name'])
             if not args.local:
                 time.sleep(15)
                 with open('hosts', 'r') as file:
@@ -194,20 +196,20 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
 
     if args.local:
-        service_image = CONFIG['service']['name']
+        service_image = APP_CONFIG['service']['name']
         if args.tracker:
-            tracker_image = CONFIG['tracker']['name']
+            tracker_image = APP_CONFIG['tracker']['name']
         with subprocess.Popen(['../gradlew', '-p', '..', 'docker'],
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True) as p:
             for line in p.stdout:
                 print(line, end='')
     else:
-        service_image = CONFIG['repository'] + CONFIG['service']['name']
+        service_image = APP_CONFIG['repository'] + APP_CONFIG['service']['name']
         for line in cli.pull(service_image, stream=True, decode=True):
             print(line)
         if args.tracker:
-            tracker_image = CONFIG['repository'] + CONFIG['tracker']['name']
+            tracker_image = APP_CONFIG['repository'] + APP_CONFIG['tracker']['name']
             for line in cli.pull(tracker_image, stream=True):
                 print(line)
     try:
@@ -217,23 +219,25 @@ if __name__ == '__main__':
             token = cli.inspect_swarm()['JoinTokens']['Worker']
             subprocess.call(['parallel-ssh', '-t', '0', '-h', 'hosts', 'docker', 'swarm',
                              'join', '--token', token, '{:s}:2377'.format(MANAGER_IP)])
-        ipam_pool = utils.create_ipam_pool(subnet=CONFIG['service']['network']['subnet'])
+        ipam_pool = utils.create_ipam_pool(subnet=APP_CONFIG['service']['network']['subnet'])
         ipam_config = utils.create_ipam_config(pool_configs=[ipam_pool])
-        cli.create_network(CONFIG['service']['network']['name'], 'overlay', ipam=ipam_config)
+        cli.create_network(APP_CONFIG['service']['network']['name'], 'overlay', ipam=ipam_config)
     except errors.APIError:
         logger.info('Host is already part of a swarm')
-        if not cli.networks(names=[CONFIG['service']['network']['name']]):
+        if not cli.networks(names=[APP_CONFIG['service']['network']['name']]):
             logger.error('Network  doesn\'t exist!')
             exit(1)
 
     for run_nb, _ in enumerate(range(args.runs), 1):
         if args.tracker:
-            create_service(CONFIG['tracker']['name'], tracker_image, placement={'Constraints': ['node.role == manager']})
-            wait_on_service(CONFIG['tracker']['name'], 1)
+            create_service(APP_CONFIG['tracker']['name'], tracker_image,
+                           placement={'Constraints': ['node.role == manager']},
+                           mem_limit=APP_CONFIG['service']['mem_limit'])
+            wait_on_service(APP_CONFIG['tracker']['name'], 1)
         time_to_start = int((time.time() * 1000) + args.time_add)
         logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
-        # TODO check
-        environment_vars = {**CONFIG['service']['parameters'],
+
+        environment_vars = {**APP_CONFIG['service']['parameters'],
                             **{'PEER_NUMBER': args.peer_number,
                                'TIME': time_to_start,
                                'TIME_TO_RUN': args.time_to_run}}
@@ -242,33 +246,34 @@ if __name__ == '__main__':
 
         service_replicas = 0 if args.churn else args.peer_number
         log_storage = LOCAL_DATA if args.local else CLUSTER_DATA
-        create_service(CONFIG['service']['name'], service_image, env=environment_vars,
-                       mounts=[types.Mount(target='/data', source=log_storage, type='bind')], replicas=service_replicas)
+        create_service(APP_CONFIG['service']['name'], service_image, env=environment_vars,
+                       mounts=[types.Mount(target='/data', source=log_storage, type='bind')],
+                       replicas=service_replicas, mem_limit=APP_CONFIG['service']['mem_limit'])
 
         # TODO clean text
         logger.info('Running EpTO tester -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
         if args.churn:
             thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
             thread.start()
-            wait_on_service(CONFIG['service']['name'], 0, inverse=True)
+            wait_on_service(APP_CONFIG['service']['name'], 0, inverse=True)
             logger.info('Running with churn')
             if args.synthetic:
                 # Wait for some peers to at least start
                 time.sleep(120)
                 total = [sum(x) for x in zip(*args.synthetic)]
                 # Wait until only stopped containers are still alive
-                wait_on_service(CONFIG['service']['name'], containers_nb=total[0], total_nb=total[1])
+                wait_on_service(APP_CONFIG['service']['name'], containers_nb=total[0], total_nb=total[1])
             else:
                 thread.join()  # Wait for churn to finish
-                time.sleep(600)  # Wait 10 more minutes
+                time.sleep(300)  # Wait 5 more minutes
 
         else:
-            wait_on_service(CONFIG['service']['name'], 0, inverse=True)
+            wait_on_service(APP_CONFIG['service']['name'], 0, inverse=True)
             logger.info('Running without churn')
-            wait_on_service(CONFIG['service']['name'], 0)
+            wait_on_service(APP_CONFIG['service']['name'], 0)
         if args.tracker:
-            cli.remove_service(CONFIG['tracker']['name'])
-        cli.remove_service(CONFIG['service']['name'])
+            cli.remove_service(APP_CONFIG['tracker']['name'])
+        cli.remove_service(APP_CONFIG['service']['name'])
 
         logger.info('Services removed')
         time.sleep(30)

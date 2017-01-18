@@ -1,21 +1,40 @@
 #!/usr/bin/env python3
+import glob
 import logging
 import random
+import re
 import subprocess
 
+from churn import Churn
 
-class Churn:
+
+def get_peer_list(path='../data/*.txt'):
+    with open(glob.glob(path)[0], 'r') as f:
+        a_list = []
+        for line in f.readlines():
+            match = re.match(r'\d+ - View: (.+)', line)
+            if match:
+                a_list = match.group(1).split(',')
+                break
+        if not a_list:
+            raise LookupError('No view found in file {}'.format(f.name))
+        return a_list
+
+
+class JGroupsChurn(Churn):
     """
     Author: Jocelyn Thode
 
-    A class in charge of adding/suspending nodes to create churn in a EpTO cluster
+    A class in charge of adding/suspending nodes to create churn in a JGroups SEQUENCER cluster
     """
 
-    def __init__(self, hosts_filename=None, service_name='', repository=''):
+    def __init__(self, hosts_filename=None, service_name='', repository='', kill_coordinator_round=None):
         self.containers = {}
+        self.coordinator = None
         self.peer_list = []
-        self.logger = logging.getLogger('churn')
+        self.periods = 0
         self.suspended_containers = []
+        self.logger = logging.getLogger('churn')
 
         self.service_name = service_name
         self.repository = repository
@@ -23,6 +42,11 @@ class Churn:
         if hosts_filename is not None:
             with open(hosts_filename, 'r') as file:
                 self.hosts += list(line.rstrip() for line in file)
+        if kill_coordinator_round is None:
+            self.kill_coordinator_round = []
+        else:
+            self.kill_coordinator_round = kill_coordinator_round
+        self.kill_index = 0
         self.cluster_size = 0
 
     def suspend_processes(self, to_suspend_nb):
@@ -39,14 +63,48 @@ class Churn:
 
         for i in range(to_suspend_nb):
             command_suspend = ["docker", "kill", '--signal=SIGUSR1']
+            self.logger.info("Variables: {} {}".format(self.periods, self.kill_coordinator_round))
+            # If we missed kill period kill the coord at the next chance
+            if self.periods in self.kill_coordinator_round or \
+                    (self.kill_index < len(self.kill_coordinator_round) and
+                     self.periods > self.kill_coordinator_round[self.kill_index]):
+                self.logger.info("Killing coordinator")
+                command_suspend += [self.coordinator]
+                for host in self.hosts:
+                    self._refresh_host_containers(host)
+                for host, containers in self.containers.items():
+                    if self.coordinator in containers:
+                        if host != 'localhost':
+                            command_suspend = ["ssh", host] + command_suspend
+
+                        count = 0
+                        while count < 3:
+                            try:
+                                subprocess.check_call(command_suspend, stdout=subprocess.DEVNULL)
+                                self.logger.info('Coordinator {:s} on host {:s} was suspended'.format(self.coordinator, host))
+                                self.suspended_containers.append(self.coordinator)
+                            except subprocess.CalledProcessError:
+                                count += 1
+                                self.logger.error("Container couldn't be removed, retrying...")
+                                if count >= 3:
+                                    self.logger.error("Container couldn't be removed", exc_info=True)
+                                    raise
+                                continue
+                            break
+
+                self.coordinator = self.peer_list.pop(0)
+                self.kill_index += 1
+                continue
+
             # Retry until we find a working choice
             count = 0
-            while count < 3:
+            while count < 5:
                 try:
                     choice = random.choice(self.hosts)
                     self._refresh_host_containers(choice)
                     container, command_suspend = self._choose_container(command_suspend, choice)
-                    while container in self.suspended_containers:
+                    self.logger.debug('container: {:s}, coordinator: {:s}'.format(container, self.coordinator))
+                    while container in self.suspended_containers or container == self.coordinator:
                         command_suspend = ["docker", "kill", '--signal=SIGUSR1']
                         choice = random.choice(self.hosts)
                         self._refresh_host_containers(choice)
@@ -56,7 +114,7 @@ class Churn:
                     if not self.containers[choice]:
                         self.hosts.remove(choice)
                     self.logger.error('Error when trying to pick a container')
-                    if count == 3:
+                    if count == 5:
                         self.logger.error('Stopping churn because no container was found')
                         raise
                     continue
@@ -69,6 +127,7 @@ class Churn:
                     subprocess.check_call(command_suspend, stdout=subprocess.DEVNULL)
                     self.logger.info('Container {} on host {} was suspended'
                                      .format(container, choice))
+                    self.peer_list.remove(container)
                     self.suspended_containers.append(container)
                 except subprocess.CalledProcessError:
                     count += 1
@@ -77,6 +136,8 @@ class Churn:
                         self.logger.error("Container couldn't be removed", exc_info=True)
                         raise
                     continue
+                except ValueError:
+                    pass
                 break
 
     def add_processes(self, to_create_nb):
@@ -92,18 +153,18 @@ class Churn:
             return
         self.cluster_size += to_create_nb
         i = 0
-        while i < 5:
+        while True:
             try:
                 subprocess.check_call(["docker", "service", "scale",
                                        "{:s}={:d}".format(self.service_name, self.cluster_size)],
                                       stdout=subprocess.DEVNULL)
+                break
             except subprocess.CalledProcessError:
-                i += 1
                 if i >= 5:
                     raise
                 self.logger.error("Couldn't scale service")
+                i += 1
                 continue
-            break
 
         self.logger.info('Service scaled up to {:d}'.format(self.cluster_size))
 
@@ -115,8 +176,11 @@ class Churn:
         :param to_create_nb:
         :return:
         """
+        if to_suspend_nb == 0 and to_create_nb == 0:
+            return
         self.suspend_processes(to_suspend_nb)
         self.add_processes(to_create_nb)
+        self.periods += 1
 
     def set_logger_level(self, log_level):
         self.logger.setLevel(log_level)

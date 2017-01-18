@@ -3,19 +3,22 @@ service:
   network:
     name: "epto_network"
     subnet: "172.130.0.0/16"
+  mem_limit: 314572800
   parameters:
-    delta: 100
-    rate: 1000
-    fixed_rate: 50
-    constant: 4
-    churn_rate: 0
-    message_loss: 0
-tracker:
-  name: "epto-tracker"
+    DELTA: 500
+    RATE: 1000
+    FIXED_RATE: 26
+    CONSTANT: 4
+    CHURN_RATE: 0
+    MESSAGE_LOSS: 0
 repository:
   name: "swarm-m:5000"
+tracker:
+  name: "epto-tracker"
 real_churn:
   database: "websites02.db"
+  # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
+  # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
   epoch: 730755.4827527029
   start_time: 22200
   duration: 7200

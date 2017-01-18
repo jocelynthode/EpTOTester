@@ -3,21 +3,14 @@
 
 MY_IP_ADDR=$(/bin/hostname -i)
 
-echo 'Starting epto peer'
+echo 'Starting Peer'
 MY_IP_ADDR=($MY_IP_ADDR)
 echo "${MY_IP_ADDR[0]}"
-echo "${PEER_NUMBER}"
-echo "$DELTA"
-echo "$TIME"
-echo "${TIME_TO_RUN}"
-echo "$RATE"
-echo "$CONSTANT"
-echo "$FIXED_RATE"
-echo "$CHURN_RATE"
-echo "$MESSAGE_LOSS"
 
 dstat_pid=0
-java_pid=0
+app_pid=0
+
+mkdir -p /data/capture
 
 signal_handler() {
     curl "http://epto-tracker:4321/terminate"
@@ -26,8 +19,8 @@ signal_handler() {
         kill $dstat_pid
     fi
 
-    if [ $java_pid -ne 0 ]; then
-        kill $java_pid
+    if [ $app_pid -ne 0 ]; then
+        kill $app_pid
     fi
     echo "KILLED PROCESSES"
 
@@ -45,7 +38,7 @@ dstat_pid=${!}
 java -Xms100m -Xmx210m -cp ./epto-1.0-SNAPSHOT-all.jar -Dlogfile.name="${MY_IP_ADDR[0]}" -Djava.net.preferIPv4Stack=true utilities.Main --delta "$DELTA" \
 --rate "$RATE" -c "$CONSTANT" --fixed-rate "$FIXED_RATE" --churn-rate "$CHURN_RATE" --message-loss "$MESSAGE_LOSS" \
 "${MY_IP_ADDR[0]}" "http://epto-tracker:4321" "${PEER_NUMBER}" "$TIME" "$TIME_TO_RUN" &
-java_pid=${!}
+app_pid=${!}
 
-wait ${java_pid}
+wait ${app_pid}
 kill ${dstat_pid}
