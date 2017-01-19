@@ -10,10 +10,3 @@ A ball is an abstraction taken from the balls-and-bins problem. In practice, we 
 The number of rounds needed to deliver an event, the fan-out and the number of messages transmitted per process per round are all logarithmic in the number of processes. \autocite{matos2015epto}
 \par
 Since \epto uses a probabilistic agreement instead of a deterministic agreement, there is a nonzero probability that a peer does not receive an event. In this instance there will be a hole in the sequence of delivered events, but the order of delivered events is protected by \epto's deterministic ordering algorithm, thus the total order property is preserved. The probability that a peer does not receive an event is controlled by \epto and depends on various parameters such as the fan-out, the number of rounds (time to live), the number of nodes, and the network conditions. In particular, this probability can be made smaller than the probability of catastrophic network failure. %\hm{I rewrote this paragraph. Please reread.}\jt{Done.}
-\par
-We write the cluster parameters as $(n,e)$, where $n$ designates the total number of peers and $e$ denominates the global event throughput per second. We tested \epto and \jgroups with three different cluster parameters:
-\begin{description}[\IEEEsetlabelwidth{$(100,100)$:}]
-	\item[\textbf{$(50,50)$}:] 50 peers with a global event throughput of 50 events per second.
-	\item[\textbf{$(50,100)$}:] 50 peers with a global event throughput of 100 events per second.
-	\item[\textbf{$(100,50)$}:] 100 peers with a global event throughput of 50 events per second. These parameters were also used for all synthetic churns.
-\end{description}
