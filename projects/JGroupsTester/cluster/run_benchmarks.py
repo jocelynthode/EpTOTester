@@ -17,8 +17,7 @@ import threading
 import time
 import yaml
 
-from churn import Churn
-from churn import get_peer_list
+from jgroups_churn import JGroupsChurn
 from datetime import datetime
 from docker import errors
 from docker import types
@@ -31,6 +30,7 @@ MANAGER_IP = '172.16.2.119'
 LOCAL_DATA = '/home/jocelyn/tmp/data'
 CLUSTER_DATA = '/home/debian/data'
 LOCAL_DATA_FILES = '{:s}/*.txt'.format(LOCAL_DATA)
+CLUSTER_DATA_FILES = '{:s}/*.txt'.format(CLUSTER_DATA)
 DISTANT_REPOSITORY = 'swarm-m:5000/'
 SERVICE_NAME = 'jgroups'
 TRACKER_NAME = 'jgroups-tracker'
@@ -69,32 +69,26 @@ def run_churn(time_to_start):
         repository = DISTANT_REPOSITORY
 
     delta = args.delta
-    logging.debug("Kill_coordinator = {}".format(args.kill_coordinator))
-    churn = Churn(hosts_filename=hosts_fname, service_name=SERVICE_NAME,
-                  repository=repository, kill_coordinator_round=args.kill_coordinator)
+    if args.local:
+        the_path = LOCAL_DATA_FILES
+    else:
+        the_path = CLUSTER_DATA_FILES
+    delay = int((time_to_start - (time.time() * 1000)) / 1000)
+    # TODO be able to use the right class here
+    churn = JGroupsChurn(hosts_filename=hosts_fname, service_name=SERVICE_NAME,
+                  repository=repository, kill_coordinator_round=args.kill_coordinator,
+                  delay=delay, file_path=the_path)
+
     churn.set_logger_level(log_level)
-    logger.debug("Kill coordinator rounds: {}".format(churn.kill_coordinator_round))
 
     # Add initial cluster
     logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
     churn.add_processes(nodes_trace.initial_size())
-    delay = int((time_to_start - (time.time() * 1000)) / 1000)
     logger.debug('Delay: {:d}'.format(delay))
     logger.info('Starting churn at {:s} UTC'
                 .format(datetime.utcfromtimestamp(time_to_start // 1000).isoformat()))
     time.sleep(delay)
     logger.info('Starting churn')
-    try:
-        if args.local:
-            churn.peer_list = get_peer_list(LOCAL_DATA_FILES)
-        else:
-            churn.peer_list = get_peer_list()
-    except LookupError:
-        logger.error('Experiment failed because not all peers started')
-        return
-
-    logger.debug(churn.peer_list)
-    churn.coordinator = churn.peer_list.pop(0)
 
     nodes_trace.next()
     for size, to_kill, to_create in nodes_trace:

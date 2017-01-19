@@ -36,9 +36,11 @@ class Benchmark:
         self.use_tracker = use_tracker
 
     def run(self):
-        if args.local:
+        args.time_add *= 1000
+        args.time_to_run *= 1000
+        if self.local:
             service_image = self.config['service']['name']
-            if args.tracker:
+            if self.use_tracker:
                 tracker_image = self.config['tracker']['name']
             with subprocess.Popen(['../gradlew', '-p', '..', 'docker'],
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -68,6 +70,70 @@ class Benchmark:
                 if not self.cli.networks(names=[self.config['service']['network']['name']]):
                     self.logger.error('Network  doesn\'t exist!')
                     exit(1)
+
+        for run_nb, _ in enumerate(range(args.runs), 1):
+            if args.tracker:
+                create_service(APP_CONFIG['tracker']['name'], tracker_image,
+                               placement={'Constraints': ['node.role == manager']},
+                               mem_limit=APP_CONFIG['service']['mem_limit'])
+                wait_on_service(APP_CONFIG['tracker']['name'], 1)
+            time_to_start = int((time.time() * 1000) + args.time_add)
+            logger.debug(datetime.utcfromtimestamp(time_to_start / 1000).isoformat())
+
+            environment_vars = {**APP_CONFIG['service']['parameters'],
+                                **{'PEER_NUMBER': args.peer_number,
+                                   'TIME': time_to_start,
+                                   'TIME_TO_RUN': args.time_to_run}}
+            environment_vars = ['{:s}={}'.format(k, v) for k, v in environment_vars.items()]
+            logger.debug(environment_vars)
+
+            service_replicas = 0 if args.churn else args.peer_number
+            log_storage = LOCAL_DATA if args.local else CLUSTER_DATA
+            create_service(APP_CONFIG['service']['name'], service_image, env=environment_vars,
+                           mounts=[types.Mount(target='/data', source=log_storage, type='bind')],
+                           replicas=service_replicas, mem_limit=APP_CONFIG['service']['mem_limit'])
+
+            logger.info('Running Benchmark -> Experiment: {:d}/{:d}'.format(run_nb, args.runs))
+            if args.churn:
+                thread = threading.Thread(target=run_churn, args=[time_to_start + args.delay], daemon=True)
+                thread.start()
+                wait_on_service(APP_CONFIG['service']['name'], 0, inverse=True)
+                logger.info('Running with churn')
+                if args.synthetic:
+                    # Wait for some peers to at least start
+                    time.sleep(120)
+                    total = [sum(x) for x in zip(*args.synthetic)]
+                    # Wait until only stopped containers are still alive
+                    wait_on_service(APP_CONFIG['service']['name'], containers_nb=total[0], total_nb=total[1])
+                else:
+                    thread.join()  # Wait for churn to finish
+                    time.sleep(300)  # Wait 5 more minutes
+
+            else:
+                wait_on_service(APP_CONFIG['service']['name'], 0, inverse=True)
+                logger.info('Running without churn')
+                wait_on_service(APP_CONFIG['service']['name'], 0)
+            if args.tracker:
+                cli.remove_service(APP_CONFIG['tracker']['name'])
+            cli.remove_service(APP_CONFIG['service']['name'])
+
+            logger.info('Services removed')
+            time.sleep(30)
+
+            if not args.local:
+                subprocess.call('parallel-ssh -t 0 -h hosts "mkdir -p {path}/test-{nb}/capture &&'
+                                ' mv {path}/*.txt {path}/test-{nb}/ &&'
+                                ' mv {path}/capture/*.csv {path}/test-{nb}/capture/"'
+                                .format(path=CLUSTER_DATA, nb=run_nb), shell=True)
+
+            subprocess.call('mkdir -p {path}/test-{nb}/capture'.format(path=log_storage, nb=run_nb),
+                            shell=True)
+            subprocess.call('mv {path}/*.txt {path}/test-{nb}/'.format(path=log_storage, nb=run_nb),
+                            shell=True)
+            subprocess.call('mv {path}/capture/*.csv {path}/test-{nb}/capture/'.format(path=log_storage, nb=run_nb),
+                            shell=True)
+
+        logger.info('Benchmark done!')
 
     def stop(self):
         try:
@@ -109,12 +175,10 @@ class Benchmark:
 
 
         delta = self.churn.period
-        #churn = Churn(hosts_filename=hosts_fname, service_name=self.config['service']['name'], repository=repository)
-
 
         # Add initial cluster
         self.logger.debug('Initial size: {}'.format(nodes_trace.initial_size()))
-        churn.add_processes(nodes_trace.initial_size())
+        self.churn.add_processes(nodes_trace.initial_size())
         delay = int((time_to_start - (time.time() * 1000)) / 1000)
         self.logger.debug('Delay: {:d}'.format(delay))
         self.logger.info('Starting churn at {:s} UTC'
@@ -125,7 +189,7 @@ class Benchmark:
         for size, to_kill, to_create in nodes_trace:
             self.logger.debug('curr_size: {:d}, to_kill: {:d}, to_create {:d}'
                          .format(size, len(to_kill), len(to_create)))
-            churn.add_suspend_processes(len(to_kill), len(to_create))
+            self.churn.add_suspend_processes(len(to_kill), len(to_create))
             time.sleep(delta / 1000)
 
         self.logger.info('Churn finished')
