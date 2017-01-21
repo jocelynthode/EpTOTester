@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 import logging
+
 import random
 import subprocess
 
@@ -8,10 +8,10 @@ class Churn:
     """
     Author: Jocelyn Thode
 
-    A class in charge of adding/suspending nodes to create churn in a EpTO cluster
+    A class in charge of adding/suspending nodes to create churn in a cluster
     """
 
-    def __init__(self, hosts_filename=None, service_name='', repository=''):
+    def __init__(self, hosts_filename=None, service_name='', repository='', delay=0, synthetic=None):
         self.containers = {}
         self.peer_list = []
         self.logger = logging.getLogger('churn')
@@ -19,6 +19,8 @@ class Churn:
 
         self.service_name = service_name
         self.repository = repository
+        self.delay = delay
+        self.synthetic = synthetic
         self.hosts = ['localhost']
         if hosts_filename is not None:
             with open(hosts_filename, 'r') as file:
@@ -41,7 +43,7 @@ class Churn:
             command_suspend = ["docker", "kill", '--signal=SIGUSR1']
             # Retry until we find a working choice
             count = 0
-            while count < 3:
+            while count < 5:
                 try:
                     choice = random.choice(self.hosts)
                     self._refresh_host_containers(choice)
@@ -56,7 +58,7 @@ class Churn:
                     if not self.containers[choice]:
                         self.hosts.remove(choice)
                     self.logger.error('Error when trying to pick a container')
-                    if count == 3:
+                    if count == 5:
                         self.logger.error('Stopping churn because no container was found')
                         raise
                     continue
@@ -92,18 +94,18 @@ class Churn:
             return
         self.cluster_size += to_create_nb
         i = 0
-        while i < 5:
+        while True:
             try:
                 subprocess.check_call(["docker", "service", "scale",
                                        "{:s}={:d}".format(self.service_name, self.cluster_size)],
                                       stdout=subprocess.DEVNULL)
+                break
             except subprocess.CalledProcessError:
-                i += 1
                 if i >= 5:
                     raise
                 self.logger.error("Couldn't scale service")
+                i += 1
                 continue
-            break
 
         self.logger.info('Service scaled up to {:d}'.format(self.cluster_size))
 
@@ -115,6 +117,8 @@ class Churn:
         :param to_create_nb:
         :return:
         """
+        if to_suspend_nb == 0 and to_create_nb == 0:
+            return
         self.suspend_processes(to_suspend_nb)
         self.add_processes(to_create_nb)
 

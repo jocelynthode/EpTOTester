@@ -8,31 +8,16 @@ It creates the network, services and the churn if we need it.
 
 """
 import argparse
-import docker
 import logging
-import re
 import signal
-import subprocess
-import threading
-import time
-import yaml
-
-from churn import Churn
-from benchmark import Benchmark
-from datetime import datetime
-from docker import errors
-from docker import types
-from docker import utils
 from logging import config
-from nodes_trace import NodesTrace
 
+import yaml
+from benchmark import Benchmark
+from churn import Churn
 
 with open('config.yaml', 'r') as f:
-    config = yaml.load(f)
-    MANAGER_IP = config['manager_ip']
-    LOCAL_MANAGER_IP = config['local_manager_ip']
-    LOCAL_DATA = config['local_data']
-    CLUSTER_DATA = config['cluster_data']
+    CLUSTER_PARAMETERS = yaml.load(f)
 
 
 def create_logger():
@@ -91,19 +76,23 @@ if __name__ == '__main__':
         hosts_fname = 'hosts'
         repository = APP_CONFIG['repository']['name']
 
-    churn = Churn(hosts_filename=hosts_fname, service_name=APP_CONFIG['service']['name'], repository=repository)
-    churn.set_logger_level(log_level)
-    benchmark = Benchmark(APP_CONFIG, args.local, log_level, churn)
+    if args.churn:
+        churn = Churn(hosts_filename=hosts_fname, service_name=APP_CONFIG['service']['name'],
+                      repository=repository, delay=args.delay, synthetic=args.synthetic)
+        churn.set_logger_level(log_level)
+    else:
+        churn = None
+    benchmark = Benchmark(APP_CONFIG, CLUSTER_PARAMETERS, args.local, log_level, churn)
     benchmark.set_logger_level(log_level)
-    benchmark.run()
+
 
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
         benchmark.stop()
         exit(0)
+
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-
-
+    benchmark.run(args.time_add, args.time_to_run, args.peer_number, args.runs)
 
