@@ -1,5 +1,5 @@
 service:
-  name: "tracker"
+  name: "jgroups"
   network:
     name: "jgroups_network"
     subnet: "172.112.0.0/16"
@@ -7,8 +7,11 @@ service:
   parameters:
     RATE: 1000
     FIXED_RATE: 26
+  special_parameters:
+    kill_coordinator_round:
+      - 2
 repository:
-  name: "swarm-m:5000"
+  name: "swarm-m:5000/"
 tracker:
   name: "jgroups-tracker"
 real_churn:

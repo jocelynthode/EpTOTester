@@ -11,7 +11,8 @@ class Churn:
     A class in charge of adding/suspending nodes to create churn in a cluster
     """
 
-    def __init__(self, hosts_filename=None, service_name='', repository='', delay=0, synthetic=None):
+    def __init__(self, hosts_filename=None, service_name='', repository='',
+                 period=5000, delay=0, synthetic=None):
         self.containers = {}
         self.peer_list = []
         self.logger = logging.getLogger('churn')
@@ -19,6 +20,7 @@ class Churn:
 
         self.service_name = service_name
         self.repository = repository
+        self.period = period
         self.delay = delay
         self.synthetic = synthetic
         self.hosts = ['localhost']
@@ -35,7 +37,8 @@ class Churn:
         :return:
         """
         if to_suspend_nb < 0:
-            raise ArithmeticError('Suspend number must be greater or equal to 0')
+            raise ArithmeticError(
+                'Suspend number must be greater or equal to 0')
         if to_suspend_nb == 0:
             return
 
@@ -47,19 +50,23 @@ class Churn:
                 try:
                     choice = random.choice(self.hosts)
                     self._refresh_host_containers(choice)
-                    container, command_suspend = self._choose_container(command_suspend, choice)
+                    container, command_suspend = self._choose_container(
+                        command_suspend, choice)
                     while container in self.suspended_containers:
-                        command_suspend = ["docker", "kill", '--signal=SIGUSR1']
+                        command_suspend = [
+                            "docker", "kill", '--signal=SIGUSR1']
                         choice = random.choice(self.hosts)
                         self._refresh_host_containers(choice)
-                        container, command_suspend = self._choose_container(command_suspend, choice)
+                        container, command_suspend = self._choose_container(
+                            command_suspend, choice)
                 except (ValueError, IndexError):
                     count += 1
                     if not self.containers[choice]:
                         self.hosts.remove(choice)
                     self.logger.error('Error when trying to pick a container')
                     if count == 5:
-                        self.logger.error('Stopping churn because no container was found')
+                        self.logger.error(
+                            'Stopping churn because no container was found')
                         raise
                     continue
                 break
@@ -68,15 +75,18 @@ class Churn:
             count = 0
             while count < 3:
                 try:
-                    subprocess.check_call(command_suspend, stdout=subprocess.DEVNULL)
+                    subprocess.check_call(
+                        command_suspend, stdout=subprocess.DEVNULL)
                     self.logger.info('Container {} on host {} was suspended'
                                      .format(container, choice))
                     self.suspended_containers.append(container)
                 except subprocess.CalledProcessError:
                     count += 1
-                    self.logger.error("Container couldn't be removed, retrying...")
+                    self.logger.error(
+                        "Container couldn't be removed, retrying...")
                     if count >= 3:
-                        self.logger.error("Container couldn't be removed", exc_info=True)
+                        self.logger.error(
+                            "Container couldn't be removed", exc_info=True)
                         raise
                     continue
                 break
@@ -97,7 +107,8 @@ class Churn:
         while True:
             try:
                 subprocess.check_call(["docker", "service", "scale",
-                                       "{:s}={:d}".format(self.service_name, self.cluster_size)],
+                                       "{:s}={:d}".format(self.service_name,
+                                                          self.cluster_size)],
                                       stdout=subprocess.DEVNULL)
                 break
             except subprocess.CalledProcessError:
@@ -111,7 +122,8 @@ class Churn:
 
     def add_suspend_processes(self, to_suspend_nb, to_create_nb):
         """
-        Abstraction letting the user create and suspend containers in the same round
+        Abstraction letting the user create and suspend containers in
+        the same round
 
         :param to_suspend_nb:
         :param to_create_nb:
@@ -134,11 +146,15 @@ class Churn:
         return container, command_suspend
 
     def _refresh_host_containers(self, host):
-        command_ps = ["docker", "ps", "-qf",
-                      "name={service},status=running,ancestor={repo}{service}".format(
-                          service=self.service_name, repo=self.repository)]
+        command_ps = [
+            "docker",
+            "ps",
+            "-qf",
+            "name={service},status=running,ancestor={repo}{service}".format(
+                service=self.service_name,
+                repo=self.repository)]
         if host != 'localhost':
             command_ps = ["ssh", host] + command_ps
 
-        self.containers[host] = subprocess.check_output(command_ps,
-                                                        universal_newlines=True).splitlines()
+        self.containers[host] = subprocess.check_output(
+            command_ps, universal_newlines=True).splitlines()

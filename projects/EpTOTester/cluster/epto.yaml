@@ -12,7 +12,7 @@ service:
     CHURN_RATE: 0
     MESSAGE_LOSS: 0
 repository:
-  name: "swarm-m:5000"
+  name: "swarm-m:5000/"
 tracker:
   name: "epto-tracker"
 real_churn:
