@@ -3,7 +3,7 @@ import random
 import re
 import subprocess
 
-from churn import Churn
+from lsdssuite import Churn
 
 
 class JGroupsChurn(Churn):
@@ -15,7 +15,7 @@ class JGroupsChurn(Churn):
     """
 
     def __init__(self, hosts_filename=None, service_name='', repository='',
-                 period=5000, time_add=120, delay=0, synthetic=None,
+                 period=5000, delay=0, synthetic=None,
                  file_path='', kill_coordinator_round=None):
         super().__init__(hosts_filename, service_name, repository, period,
                          delay, synthetic)

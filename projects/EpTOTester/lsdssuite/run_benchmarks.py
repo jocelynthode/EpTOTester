@@ -14,15 +14,15 @@ import signal
 from logging import config
 
 import yaml
-from benchmark import Benchmark
-from jgroups_churn import JGroupsChurn
+from lsdssuite import Benchmark
+from lsdssuite import Churn
 
-with open('config.yaml', 'r') as f:
+with open('config/config.yaml', 'r') as f:
     CLUSTER_PARAMETERS = yaml.load(f)
 
 
 def create_logger():
-    with open('logger.yaml') as f:
+    with open('config/logger.yaml') as f:
         conf = yaml.load(f)
         logging.config.dictConfig(conf)
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
              'should the tester start in ms')
 
     args = parser.parse_args()
-    APP_CONFIG = yaml.load(args.app_config)
+    APP_CONFIG = yaml.load(args.config)
 
     if args.verbose:
         log_level = logging.DEBUG
@@ -113,24 +113,18 @@ if __name__ == '__main__':
     if args.local:
         hosts_fname = None
         repository = ''
-        file_path = CLUSTER_PARAMETERS['local_data'] + '/*.txt'
     else:
-        hosts_fname = 'hosts'
+        hosts_fname = 'config/hosts'
         repository = APP_CONFIG['repository']['name']
-        file_path = CLUSTER_PARAMETERS['cluster_data'] + '/*.txt'
 
     if args.churn:
-        churn = JGroupsChurn(
+        churn = Churn(
             hosts_filename=hosts_fname,
             service_name=APP_CONFIG['service']['name'],
             repository=repository,
             period=args.period,
-            time_add=args.time_add,
             delay=args.delay,
-            synthetic=args.synthetic,
-            file_path=file_path,
-            kill_coordinator_round=APP_CONFIG['service']
-            ['special_parameters']['kill_coordinator_round'])
+            synthetic=args.synthetic)
         churn.set_logger_level(log_level)
     else:
         churn = None

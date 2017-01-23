@@ -9,7 +9,7 @@ import docker
 from docker import errors
 from docker import types
 from docker import utils
-from nodes_trace import NodesTrace
+from .nodes_trace import NodesTrace
 
 
 class Benchmark:

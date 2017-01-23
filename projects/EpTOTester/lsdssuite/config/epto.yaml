@@ -7,7 +7,7 @@ service:
   parameters:
     DELTA: 500
     RATE: 1000
-    FIXED_RATE: 26
+    FIXED_RATE: 50
     CONSTANT: 4
     CHURN_RATE: 0
     MESSAGE_LOSS: 0
@@ -16,7 +16,7 @@ repository:
 tracker:
   name: "epto-tracker"
 real_churn:
-  database: "websites02.db"
+  database: "databases/websites02.db"
   # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
   # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
   epoch: 730755.4827527029

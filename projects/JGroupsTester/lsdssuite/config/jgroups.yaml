@@ -6,7 +6,7 @@ service:
   mem_limit: 314572800
   parameters:
     RATE: 1000
-    FIXED_RATE: 26
+    FIXED_RATE: 50
   special_parameters:
     kill_coordinator_round:
       - 2

@@ -9,7 +9,7 @@ trap "kill ${ssh_pid}" TERM INT
 
 ./gradlew docker
 
-ssh -N -L 5000:localhost:5000 debian@${MANAGER_IP} &
+ssh -N -L 5000:localhost:5000 ${USERNAME}@${MANAGER_IP} &
 ssh_pid=$!
 
 sleep 5s

@@ -14,15 +14,15 @@ import signal
 from logging import config
 
 import yaml
-from benchmark import Benchmark
-from churn import Churn
+from lsdssuite import Benchmark
+from jgroups_churn import JGroupsChurn
 
-with open('config.yaml', 'r') as f:
+with open('config/config.yaml', 'r') as f:
     CLUSTER_PARAMETERS = yaml.load(f)
 
 
 def create_logger():
-    with open('logger.yaml') as f:
+    with open('config/logger.yaml') as f:
         conf = yaml.load(f)
         logging.config.dictConfig(conf)
 
@@ -52,9 +52,9 @@ if __name__ == '__main__':
         type=int,
         help='For how long should the experiment run in seconds')
     parser.add_argument(
-        'config',
+        'app_config',
         type=argparse.FileType('r'),
-        help='Configuration file')
+        help='Application configuration file')
     parser.add_argument('-l', '--local', action='store_true',
                         help='Run locally')
     parser.add_argument(
@@ -99,7 +99,7 @@ if __name__ == '__main__':
              'should the tester start in ms')
 
     args = parser.parse_args()
-    APP_CONFIG = yaml.load(args.config)
+    APP_CONFIG = yaml.load(args.app_config)
 
     if args.verbose:
         log_level = logging.DEBUG
@@ -113,18 +113,23 @@ if __name__ == '__main__':
     if args.local:
         hosts_fname = None
         repository = ''
+        file_path = CLUSTER_PARAMETERS['local_data'] + '/*.txt'
     else:
-        hosts_fname = 'hosts'
+        hosts_fname = 'config/hosts'
         repository = APP_CONFIG['repository']['name']
+        file_path = CLUSTER_PARAMETERS['cluster_data'] + '/*.txt'
 
     if args.churn:
-        churn = Churn(
+        churn = JGroupsChurn(
             hosts_filename=hosts_fname,
             service_name=APP_CONFIG['service']['name'],
             repository=repository,
             period=args.period,
             delay=args.delay,
-            synthetic=args.synthetic)
+            synthetic=args.synthetic,
+            file_path=file_path,
+            kill_coordinator_round=APP_CONFIG['service']
+            ['special_parameters']['kill_coordinator_round'])
         churn.set_logger_level(log_level)
     else:
         churn = None

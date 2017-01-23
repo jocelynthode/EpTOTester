@@ -9,7 +9,7 @@ import docker
 from docker import errors
 from docker import types
 from docker import utils
-from nodes_trace import NodesTrace
+from .nodes_trace import NodesTrace
 
 
 class Benchmark:
@@ -157,7 +157,7 @@ class Benchmark:
                 else:
                     # TODO not the most elegant solution
                     thread.join()  # Wait for churn to finish
-                    time.sleep(600)  # Wait 5 more minutes
+                    time.sleep(300)  # Wait 5 more minutes
 
             else:
                 self._wait_on_service(
@@ -215,7 +215,7 @@ class Benchmark:
                         subprocess.call(
                             'rsync --remove-source-files '
                             '-av {:s}:{:s}/capture/*.csv ../data/capture'
-                            .format(host, self.cluster_config['cluster_data']),
+                                .format(host, self.cluster_config['cluster_data']),
                             shell=True)
         except errors.NotFound:
             pass
