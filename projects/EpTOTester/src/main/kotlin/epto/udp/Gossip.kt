@@ -77,7 +77,7 @@ class Gossip(val core: Core, val K: Int, val P: Int) {
         }
 
         if (byteOut.size() > maxSize) {
-            logger.warn("Packet size is too big !")
+            logger.warn("Filter size is too big !")
         }
         pView.forEach {
             core.send(byteOut.toByteArray(), it.address)

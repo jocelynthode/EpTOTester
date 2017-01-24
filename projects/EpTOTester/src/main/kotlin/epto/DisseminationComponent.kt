@@ -43,9 +43,10 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
     private val periodicDissemination: Runnable
     private var periodicDisseminationFuture: ScheduledFuture<*>? = null
     private val myExecutor = Executors.newCachedThreadPool()
-    private val MAX_KEYS = 300
+    private val MAX_KEYS_DELTA = 10
     private val FPP = Math.pow(10.0, -3.0) //TODO use the c from EpTO
-    private object EventFunnel : Funnel<Event> {
+    private enum class EventFunnel : Funnel<Event> {
+        INSTANCE;
         override fun funnel(from: Event, into: PrimitiveSink) {
             //We only use the identifier
             into.putLong(from.sourceId!!.mostSignificantBits)
@@ -74,11 +75,17 @@ class DisseminationComponent(private val oracle: StabilityOracle, private val pe
                         nonPushedEvents.clear()
                     }
                     val timestamp = orderingComponent.lastDeliveredTs
+                    val max_keys = orderingComponent.delivered.size
+                                   + orderingComponent.received.size
+                                   + MAX_KEYS_DELTA
                     //TODO Maybe do earlier in a thread
-                    val filter = CuckooFilter.Builder(EventFunnel, MAX_KEYS).withFalsePositiveRate(FPP).build()
+                    //TODO set ExpectedConcurrency to 1 for the time being
+                    val filter = CuckooFilter.Builder(EventFunnel.INSTANCE, max_keys)
+                            .withFalsePositiveRate(FPP)
+                            .withExpectedConcurrency(1).build()
                     orderingComponent.delivered.values.filter { it.timestamp == timestamp }
-                            .forEach {filter.put(it)}
-                    orderingComponent.received.values.forEach {filter.put(it)}
+                            .forEach { filter.put(it) }
+                    orderingComponent.received.values.forEach { filter.put(it) }
 
                     gossip.sendPullRequest(timestamp, filter)
                 }
