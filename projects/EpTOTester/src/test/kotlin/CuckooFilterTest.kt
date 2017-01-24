@@ -22,8 +22,9 @@ import net.jpountz.lz4.LZ4Factory
  */
 class CuckooFilterTest {
     private val uuids = ArrayList<Event>()
-    private val MAX_KEYS = 150000
-    private val FPP = 1.0 / (Math.pow(200.0, 4.0))
+    private val MAX_KEYS = 100
+    private val PEER_NUMBER = 1000.0
+    private val FPP = 1.0 / (Math.pow(PEER_NUMBER, 4.0))
     private enum class EventFunnel : Funnel<Event> {
         INSTANCE;
         override fun funnel(from: Event, into: PrimitiveSink) {
@@ -40,7 +41,7 @@ class CuckooFilterTest {
     @Before
     @Throws(IOException::class)
     fun setup() {
-        val sourceUUIDS = Array(200, {EventCreator()})
+        val sourceUUIDS = Array(PEER_NUMBER.toInt(), {EventCreator()})
         val rand = Random()
         (1..MAX_KEYS).forEach {
             val creator = sourceUUIDS[rand.nextInt(sourceUUIDS.size)]
