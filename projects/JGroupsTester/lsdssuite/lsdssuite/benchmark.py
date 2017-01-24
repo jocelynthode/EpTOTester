@@ -1,3 +1,4 @@
+# coding: utf-8
 import logging
 import re
 import subprocess
@@ -21,8 +22,9 @@ class Benchmark:
 
     def __init__(self, app_config, cluster_config, local, use_tracker,
                  churn=None,
-                 cli=docker.Client(base_url='unix://var/run/docker.sock')):
-        self.cli = cli
+                 client=docker.DockerClient(
+                     base_url='unix://var/run/docker.sock')):
+        self.client = client
         self.app_config = app_config
         self.cluster_config = cluster_config
         self.local = local
@@ -55,18 +57,20 @@ class Benchmark:
         else:
             service_image = (self.app_config['repository']['name']
                              + self.app_config['service']['name'])
-            for line in self.cli.pull(service_image, stream=True, decode=True):
+            for line in self.client.images.pull(service_image, stream=True,
+                                                decode=True):
                 print(line)
             if self.use_tracker:
                 tracker_image = (self.app_config['repository']['name']
                                  + self.app_config['tracker']['name'])
-                for line in self.cli.pull(tracker_image, stream=True):
+                for line in self.client.images.pull(tracker_image,
+                                                    stream=True):
                     print(line)
             try:
-                self.cli.init_swarm()
+                self.client.swarm.init()
                 if not self.local:
                     self.logger.info('Joining Swarm on every hosts:')
-                    token = self.cli.inspect_swarm()['JoinTokens']['Worker']
+                    token = self.client.swarm.attrs['JoinTokens']['Worker']
                     subprocess.call(
                         [
                             'parallel-ssh',
@@ -85,12 +89,12 @@ class Benchmark:
                     subnet=self.app_config['service']['network']['subnet'])
                 ipam_config = utils.create_ipam_config(
                     pool_configs=[ipam_pool])
-                self.cli.create_network(
+                self.client.networks.create(
                     self.app_config['service']['network']['name'],
-                    'overlay', ipam=ipam_config)
+                    driver='overlay', ipam=ipam_config)
             except errors.APIError:
                 self.logger.info('Host is already part of a swarm')
-                if not self.cli.networks(
+                if not self.client.networks.list(
                         names=[self.app_config['service']['network']['name']]):
                     self.logger.error('Network  doesn\'t exist!')
                     exit(1)
@@ -100,8 +104,7 @@ class Benchmark:
                 self._create_service(
                     self.app_config['tracker']['name'],
                     tracker_image,
-                    placement={
-                        'Constraints': ['node.role == manager']},
+                    placement=['node.role == manager'],
                     mem_limit=self.app_config['service']['mem_limit'])
                 self._wait_on_service(self.app_config['tracker']['name'], 1)
             time_to_start = int((time.time() * 1000) + time_add)
@@ -110,10 +113,12 @@ class Benchmark:
                     time_to_start /
                     1000).isoformat())
 
-            environment_vars = self.app_config['service']['parameters'].copy()
-            environment_vars.update({'PEER_NUMBER': peer_number,
-                                     'TIME': time_to_start,
-                                     'TIME_TO_RUN': time_to_run})
+            environment_vars = {'PEER_NUMBER': peer_number,
+                                'TIME': time_to_start,
+                                'TIME_TO_RUN': time_to_run}
+            if 'parameters' in self.app_config['service']:
+                environment_vars.update(
+                    self.app_config['service']['parameters'])
             environment_vars = [
                 '{:s}={}'.format(k, v) for k, v in environment_vars.items()]
             self.logger.debug(environment_vars)
@@ -122,17 +127,30 @@ class Benchmark:
             log_storage = (self.cluster_config['local_data']
                            if self.local
                            else self.cluster_config['cluster_data'])
-            self._create_service(
-                self.app_config['service']['name'],
-                service_image,
-                env=environment_vars,
-                mounts=[
-                    types.Mount(
-                        target='/data',
-                        source=log_storage,
-                        type='bind')],
-                replicas=service_replicas,
-                mem_limit=self.app_config['service']['mem_limit'])
+
+            if 'mem_limit' in self.app_config['service']:
+                self._create_service(
+                    self.app_config['service']['name'],
+                    service_image,
+                    env=environment_vars,
+                    mounts=[
+                        types.Mount(
+                            target='/data',
+                            source=log_storage,
+                            type='bind')],
+                    replicas=service_replicas,
+                    mem_limit=self.app_config['service']['mem_limit'])
+            else:
+                self._create_service(
+                    self.app_config['service']['name'],
+                    service_image,
+                    env=environment_vars,
+                    mounts=[
+                        types.Mount(
+                            target='/data',
+                            source=log_storage,
+                            type='bind')],
+                    replicas=service_replicas)
 
             self.logger.info(
                 'Running Benchmark -> Experiment: {:d}/{:d}'.format(
@@ -148,7 +166,8 @@ class Benchmark:
                 if self.churn.synthetic:
                     # Wait for some peers to at least start
                     time.sleep(120)
-                    total = [sum(x) for x in zip(*self.churn.synthetic)]
+                    total = [sum(x) for x
+                             in zip(*self.churn.churn_params['synthetic'])]
                     # Wait until only stopped containers are still alive
                     self._wait_on_service(
                         self.app_config['service']['name'],
@@ -164,9 +183,7 @@ class Benchmark:
                     self.app_config['service']['name'], 0, inverse=True)
                 self.logger.info('Running without churn')
                 self._wait_on_service(self.app_config['service']['name'], 0)
-            if self.use_tracker:
-                self.cli.remove_service(self.app_config['tracker']['name'])
-            self.cli.remove_service(self.app_config['service']['name'])
+            self.stop()
 
             self.logger.info('Services removed')
             time.sleep(30)
@@ -194,7 +211,7 @@ class Benchmark:
 
         self.logger.info('Benchmark done!')
 
-    def stop(self):
+    def stop(self, is_signal=False):
         """
         Stop the benchmark and get every logs
 
@@ -202,9 +219,9 @@ class Benchmark:
         """
         try:
             if self.use_tracker:
-                self.cli.remove_service(self.app_config['tracker']['name'])
-            self.cli.remove_service(self.app_config['service']['name'])
-            if not self.local:
+                self.client.api.remove_service(self.app_config['tracker']['name'])
+            self.client.api.remove_service(self.app_config['service']['name'])
+            if not self.local and is_signal:
                 time.sleep(15)
                 with open('hosts', 'r') as file:
                     for host in file.read().splitlines():
@@ -232,17 +249,18 @@ class Benchmark:
     def _run_churn(self, time_to_start):
         self.logger.debug('Time to start churn: {:d}'.format(time_to_start))
         if self.churn.synthetic:
-            self.logger.info(self.churn.synthetic)
-            nodes_trace = NodesTrace(synthetic=self.churn.synthetic)
+            self.logger.info(self.churn.churn_params['synthetic'])
+            nodes_trace = NodesTrace(
+                synthetic=self.churn.churn_params['synthetic'])
         else:
-            real_churn_params = self.app_config['real_churn']
+            real_churn_params = self.churn.churn_params['real_churn']
             nodes_trace = NodesTrace(
                 database=real_churn_params['database'],
-                min_time=real_churn_params['epoch'] +
-                         real_churn_params['start_time'],
-                max_time=real_churn_params['epoch'] +
-                         real_churn_params['start_time'] +
-                         real_churn_params['duration'],
+                min_time=real_churn_params['epoch']
+                         + real_churn_params['start_time'],
+                max_time=real_churn_params['epoch']
+                         + real_churn_params['start_time']
+                         + real_churn_params['duration'],
                 time_factor=real_churn_params['time_factor'])
 
         delta = self.churn.period
@@ -279,18 +297,16 @@ class Benchmark:
             placement=None,
             replicas=1,
             mem_limit=314572800):
-        container_spec = types.ContainerSpec(
-            image=image, env=env, mounts=mounts)
-        self.logger.debug(container_spec)
-        task_tmpl = types.TaskTemplate(container_spec,
-                                       resources=types.Resources(
-                                           mem_limit=mem_limit),
-                                       restart_policy=types.RestartPolicy(),
-                                       placement=placement)
-        self.logger.debug(task_tmpl)
-        self.cli.create_service(task_tmpl, name=service_name,
-                                mode={'Replicated': {'Replicas': replicas}},
-                                networks=[{'Target': self.app_config['service']['network']['name']}])
+        network = self.app_config['service']['network']['name']
+        self.client.services.create(image,
+                                    name=service_name,
+                                    restart_policy=types.RestartPolicy(),
+                                    env=env,
+                                    mode={'Replicated': {'Replicas': replicas}},
+                                    networks=[network],
+                                    resources=types.Resources(mem_limit=mem_limit),
+                                    mounts=mounts,
+                                    constraints=placement)
 
     def _wait_on_service(self, service_name, containers_nb,
                          total_nb=None, inverse=False):

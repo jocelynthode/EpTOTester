@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding: utf-8
 """
 Author: Jocelyn Thode
 
@@ -27,14 +28,6 @@ def create_logger():
         logging.config.dictConfig(conf)
 
 
-def churn_tuple(s):
-    try:
-        _to_kill, _to_create = map(int, s.split(','))
-        return _to_kill, _to_create
-    except:
-        raise TypeError("Tuples must be (int, int)")
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Run benchmarks',
@@ -58,11 +51,6 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--local', action='store_true',
                         help='Run locally')
     parser.add_argument(
-        '-t',
-        '--tracker',
-        action='store_true',
-        help='Specify whether the app uses a tracker')
-    parser.add_argument(
         '-n',
         '--runs',
         type=int,
@@ -85,11 +73,8 @@ if __name__ == '__main__':
     churn_parser.add_argument(
         '--synthetic',
         '-s',
-        metavar='N',
-        type=churn_tuple,
-        nargs='+',
-        help='Pass the synthetic list (to_kill,to_create)'
-             '(example: 0,100 0,1 1,0)')
+        action='store_true',
+        help='Whether to use synthetic churn or not')
     churn_parser.add_argument(
         '--delay',
         '-d',
@@ -100,6 +85,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     APP_CONFIG = yaml.load(args.app_config)
+    use_tracker = True if 'tracker' in APP_CONFIG else False
 
     if args.verbose:
         log_level = logging.DEBUG
@@ -128,8 +114,8 @@ if __name__ == '__main__':
             delay=args.delay,
             synthetic=args.synthetic,
             file_path=file_path,
-            kill_coordinator_round=APP_CONFIG['service']
-            ['special_parameters']['kill_coordinator_round'])
+            kill_coordinator_rounds=APP_CONFIG['service']
+            ['special_parameters']['kill_coordinator_rounds'])
         churn.set_logger_level(log_level)
     else:
         churn = None
@@ -137,13 +123,13 @@ if __name__ == '__main__':
         APP_CONFIG,
         CLUSTER_PARAMETERS,
         args.local,
-        args.tracker,
+        use_tracker,
         churn)
     benchmark.set_logger_level(log_level)
 
     def signal_handler(signal, frame):
         logger.info('Stopping Benchmarks')
-        benchmark.stop()
+        benchmark.stop(is_signal=True)
         exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)

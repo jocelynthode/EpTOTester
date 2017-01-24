@@ -16,7 +16,7 @@ class JGroupsChurn(Churn):
 
     def __init__(self, hosts_filename=None, service_name='', repository='',
                  period=5000, delay=0, synthetic=None,
-                 file_path='', kill_coordinator_round=None):
+                 file_path='', kill_coordinator_rounds=None):
         super().__init__(hosts_filename, service_name, repository, period,
                          delay, synthetic)
         self.coordinator = None
@@ -24,10 +24,10 @@ class JGroupsChurn(Churn):
         self.periods = 0
         self._file_path = file_path
 
-        if kill_coordinator_round is None:
-            self.kill_coordinator_round = []
+        if kill_coordinator_rounds is None:
+            self.kill_coordinator_rounds = []
         else:
-            self.kill_coordinator_round = kill_coordinator_round
+            self.kill_coordinator_rounds = kill_coordinator_rounds
         self.kill_index = 0
 
     def suspend_processes(self, to_suspend_nb):
@@ -48,11 +48,11 @@ class JGroupsChurn(Churn):
             self.logger.debug(
                 "Variables: {} {}".format(
                     self.periods,
-                    self.kill_coordinator_round))
+                    self.kill_coordinator_rounds))
             # If we missed kill period kill the coord at the next chance
-            if (self.periods in self.kill_coordinator_round
-                or (self.kill_index < len(self.kill_coordinator_round)
-                    and self.periods > self.kill_coordinator_round[self.kill_index])):
+            if (self.periods in self.kill_coordinator_rounds
+                or (self.kill_index < len(self.kill_coordinator_rounds)
+                    and self.periods > self.kill_coordinator_rounds[self.kill_index])):
                 self.logger.info("Killing coordinator")
                 command_suspend += [self.coordinator]
                 for host in self.hosts:

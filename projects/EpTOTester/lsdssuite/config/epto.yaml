@@ -15,11 +15,3 @@ repository:
   name: "swarm-m:5000/"
 tracker:
   name: "epto-tracker"
-real_churn:
-  database: "databases/websites02.db"
-  # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
-  # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
-  epoch: 730755.4827527029
-  start_time: 22200
-  duration: 7200
-  time_factor: 2
