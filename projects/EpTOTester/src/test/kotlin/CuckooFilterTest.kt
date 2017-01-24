@@ -22,7 +22,7 @@ import net.jpountz.lz4.LZ4Factory
  */
 class CuckooFilterTest {
     private val uuids = ArrayList<Event>()
-    private val MAX_KEYS = 500
+    private val MAX_KEYS = 150000
     private val FPP = 1.0 / (Math.pow(200.0, 4.0))
     private enum class EventFunnel : Funnel<Event> {
         INSTANCE;
@@ -90,8 +90,8 @@ class CuckooFilterTest {
         println("Cuckoo size: ${byteOut.size()} B")
 
         val byteOut1 = ByteArrayOutputStream()
-        //val lz4Out1 = LZ4BlockOutputStream(byteOut1)
-        val out1 = Application.conf.getObjectOutput(byteOut1)
+        val lz4Out1 = LZ4BlockOutputStream(byteOut1)
+        val out1 = Application.conf.getObjectOutput(lz4Out1)
         try {
 
             out1.writeObject(cuckooFilterDelta)
