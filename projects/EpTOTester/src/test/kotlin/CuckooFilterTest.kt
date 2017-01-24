@@ -1,4 +1,5 @@
 import com.github.mgunlogson.cuckoofilter4j.CuckooFilter
+import com.github.mgunlogson.cuckoofilter4j.Utils
 import com.google.common.hash.Funnel
 import com.google.common.hash.PrimitiveSink
 import epto.Application
@@ -22,8 +23,9 @@ import net.jpountz.lz4.LZ4Factory
 class CuckooFilterTest {
     private val uuids = ArrayList<Event>()
     private val MAX_KEYS = 500
-    private val FPP = Math.pow(10.0, -3.0)//1.0 / (Math.pow(1000.0, 4.0))
-    private object EventFunnel : Funnel<Event> {
+    private val FPP = 1.0 / (Math.pow(200.0, 4.0))
+    private enum class EventFunnel : Funnel<Event> {
+        INSTANCE;
         override fun funnel(from: Event, into: PrimitiveSink) {
             //We only use the identifier
             into.putLong(from.sourceId!!.mostSignificantBits)
@@ -32,6 +34,7 @@ class CuckooFilterTest {
         }
     }
     private lateinit var cuckooFilter: CuckooFilter<Event>
+    private lateinit var cuckooFilterDelta: CuckooFilter<Event>
 
 
     @Before
@@ -44,17 +47,32 @@ class CuckooFilterTest {
             uuids.add(Event(UUID.randomUUID(), creator.incrementAndGet(),
                     (Math.random()*100).toInt(), creator.sourceID))
         }
-        cuckooFilter = CuckooFilter.Builder(EventFunnel, MAX_KEYS)
-                .withFalsePositiveRate(FPP).build()
+        cuckooFilter = CuckooFilter.Builder(EventFunnel.INSTANCE, MAX_KEYS)
+                .withFalsePositiveRate(FPP)
+                .withExpectedConcurrency(1).build()
+        cuckooFilterDelta = CuckooFilter.Builder(EventFunnel.INSTANCE, MAX_KEYS + 10)
+                .withFalsePositiveRate(FPP)
+                .withExpectedConcurrency(1).build()
+    }
+
+    @Test
+    fun testCuckooInsertAll() {
+        uuids.forEach {
+            Assert.assertTrue("Cuckoo could not insert an event",
+                    cuckooFilter.put(it))
+        }
     }
 
     @Test
     fun testCuckooSize() {
-        println("Cuckoo storage size: ${cuckooFilter.storageSize / 8.0 } MB")
-        println("Cuckoo max elems: ${cuckooFilter.actualCapacity}")
+        //println("Cuckoo storage size: ${cuckooFilter.storageSize / 8.0 } B")
+        //println("Cuckoo max elems: ${cuckooFilter.actualCapacity}")
 
         uuids.forEach {
-            Assert.assertTrue("Cuckoo could not insert an event", cuckooFilter.put(it))
+            Assert.assertTrue("Cuckoo could not insert an event",
+                    cuckooFilter.put(it))
+            Assert.assertTrue("CuckooDelta could not insert an event",
+                    cuckooFilterDelta.put(it))
         }
 
         //TODO maybe use other compression algorithm
@@ -69,14 +87,42 @@ class CuckooFilterTest {
         } finally {
             out.close()
         }
-        println("Cuckoo size: ${byteOut.size()/ 1000000.0} MB")
+        println("Cuckoo size: ${byteOut.size()} B")
+
+        val byteOut1 = ByteArrayOutputStream()
+        //val lz4Out1 = LZ4BlockOutputStream(byteOut1)
+        val out1 = Application.conf.getObjectOutput(byteOut1)
+        try {
+
+            out1.writeObject(cuckooFilterDelta)
+            out1.flush()
+        } catch (e: IOException) {
+            throw e
+        } finally {
+            out1.close()
+        }
+        println("CuckooDelta size: ${byteOut1.size()} B")
     }
 
     @Test
-    fun testCuckooInsertAll() {
-        uuids.forEach {
-            Assert.assertTrue("Cuckoo could not insert an event", cuckooFilter.put(it))
+    fun testNormalSize() {
+        val byteOut = ByteArrayOutputStream()
+        val lz4Out = LZ4BlockOutputStream(byteOut)
+        val out = Application.conf.getObjectOutput(lz4Out)
+        try {
+            out.writeInt(uuids.size)
+            uuids.forEach {
+                out.writeLong(it.sourceId!!.mostSignificantBits)
+                out.writeLong(it.sourceId!!.leastSignificantBits)
+                out.writeInt(it.timestamp)
+            }
+            out.flush()
+        } catch (e: IOException) {
+            throw e
+        } finally {
+            out.close()
         }
+        println("Normal size: ${byteOut.size()} B")
     }
 
     class EventCreator(val sourceID: UUID = UUID.randomUUID(), var timestamp: Int = 0) {
