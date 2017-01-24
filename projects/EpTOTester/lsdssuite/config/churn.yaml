@@ -8,7 +8,7 @@ real_churn:
   time_factor: 2
 synthetic:
   # First tuple must always specify the starting size
-  - !!python/tuple [0,26]
+  - !!python/tuple [0,50]
   - !!python/tuple [1,0]
   - !!python/tuple [1,0]
   - !!python/tuple [1,0]

@@ -22,4 +22,4 @@ docker push localhost:5000/epto-tracker:latest
 
 kill ${ssh_pid}
 
-rsync -av --copy-links cluster/ ${USERNAME}@${MANAGER_IP}:~/epto
+rsync -av --copy-links lsdssuite/ ${USERNAME}@${MANAGER_IP}:~/epto

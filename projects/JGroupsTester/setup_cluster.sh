@@ -21,4 +21,4 @@ docker push localhost:5000/jgroups-tracker:latest
 
 kill ${ssh_pid}
 
-rsync -av --copy-links cluster/ ${USERNAME}@${MANAGER_IP}:~/jgroups
+rsync -av --copy-links lsdssuite/ ${USERNAME}@${MANAGER_IP}:~/jgroups

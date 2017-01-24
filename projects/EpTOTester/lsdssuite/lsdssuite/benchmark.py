@@ -57,15 +57,13 @@ class Benchmark:
         else:
             service_image = (self.app_config['repository']['name']
                              + self.app_config['service']['name'])
-            for line in self.client.images.pull(service_image, stream=True,
-                                                decode=True):
-                print(line)
+            self.logger.info(self.client.images.pull(service_image))
+
             if self.use_tracker:
                 tracker_image = (self.app_config['repository']['name']
                                  + self.app_config['tracker']['name'])
-                for line in self.client.images.pull(tracker_image,
-                                                    stream=True):
-                    print(line)
+                self.logger.info(self.client.images.pull(tracker_image))
+
             try:
                 self.client.swarm.init()
                 if not self.local:
@@ -77,7 +75,7 @@ class Benchmark:
                             '-t',
                             '0',
                             '-h',
-                            'hosts',
+                            'config/hosts',
                             'docker',
                             'swarm',
                             'join',
@@ -190,7 +188,8 @@ class Benchmark:
 
             if not self.local:
                 subprocess.call(
-                    'parallel-ssh -t 0 -h hosts "mkdir -p {path}/test-{nb}/capture &&'
+                    'parallel-ssh -t 0 -h config/hosts'
+                    ' "mkdir -p {path}/test-{nb}/capture &&'
                     ' mv {path}/*.txt {path}/test-{nb}/ &&'
                     ' mv {path}/capture/*.csv {path}/test-{nb}/capture/"'
                     .format(path=self.cluster_config['cluster_data'],
@@ -223,7 +222,7 @@ class Benchmark:
             self.client.api.remove_service(self.app_config['service']['name'])
             if not self.local and is_signal:
                 time.sleep(15)
-                with open('hosts', 'r') as file:
+                with open('config/hosts', 'r') as file:
                     for host in file.read().splitlines():
                         subprocess.call('rsync --remove-source-files '
                                         '-av {:s}:{:s}/*.txt ../data'
