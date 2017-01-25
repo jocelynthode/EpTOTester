@@ -8,14 +8,14 @@
 %\pgfplotstableread[col sep=comma]{csv-data/plot-local-time-cdf.csv}\tablelocaltime
 In this section we present our results. In the following benchmarks \epto uses a constant $c$ to set the probability of a hole appearing. We set $c = 4$ in all our benchmarks so as to not experience any holes as \jgroups does not produce holes under normal conditions. We use a $\delta$ period of \SI{100}{\milli\second} for tests with no churn or synthethic churn and \SI{250}{\milli\second} for tests following a real trace.
 \par
-We write the cluster parameters as $(n,e)$, where $n$ designates the total number of peers and $e$ denominates the global event throughput per second. We tested \epto and \jgroups with three different cluster parameters:
+We write the cluster parameters as $(n,e)$, where $n$ designates the total number of peers and $e$ denominates the global event throughput per second. We test \epto and \jgroups with three different cluster parameters:
 \begin{description}[\IEEEsetlabelwidth{$(100,100)$:}]
 	\item[\textbf{$(50,50)$}:] 50 peers with a global event throughput of 50 events per second.
 	\item[\textbf{$(50,100)$}:] 50 peers with a global event throughput of 100 events per second.
 	\item[\textbf{$(100,50)$}:] 100 peers with a global event throughput of 50 events per second. These parameters were also used for all synthetic churns.
 \end{description}
 \par 
-We used specific settings recommended by \jgroups for a big cluster \autocite{udp-largecluster}.
+We use specific settings recommended by \jgroups for a big cluster \autocite{udp-largecluster}.
 \par
 Every \jgroups test run with churn is run once killing the coordinator and once not killing it. We use the following nomenclature to differentiate both tests:
 \begin{description}[\IEEEsetlabelwidth{\jgroups-nocoord: }]
