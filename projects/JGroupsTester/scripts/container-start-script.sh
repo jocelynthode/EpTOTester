@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # This script needs to run in the container
 MY_IP_ADDR=$(/bin/hostname -i)
-TRACKER_IP=$(dig +short jgroups-tracker)
+TRACKER_IP=jgroups-tracker #$(dig +short jgroups-tracker)
 
 echo 'Starting Peer'
 MY_IP_ADDR=($MY_IP_ADDR)
 echo "${MY_IP_ADDR[0]}"
+
+mkdir -p /data/capture
 
 dstat_pid=0
 app_pid=0
