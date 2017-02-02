@@ -1,0 +1,16 @@
+real_churn:
+  database: "databases/websites02.db"
+  # Website02.db epoch starts 1st January 2001. Exact formula obtained from Sebastien Vaucher
+  # websites_epoch = 730753 + 1 + 86400. / (16 * 3600 + 11 * 60 + 10)
+  epoch: 730755.4827527029
+  start_time: 22200
+  duration: 7200
+  time_factor: 2
+synthetic:
+  # First tuple must always specify the starting size
+  - !!python/tuple [0,50]
+  - !!python/tuple [1,0]
+  - !!python/tuple [1,0]
+  - !!python/tuple [1,0]
+  - !!python/tuple [1,1]
+  - !!python/tuple [0,1]

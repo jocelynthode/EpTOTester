@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-'''
+"""
 __author__ = "Jocelyn Thode"
 
 inspired from a script from Sebastien Vaucher
-'''
+"""
 
 # import pydevd
 import random

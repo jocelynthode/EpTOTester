@@ -1,0 +1,4 @@
+manager_ip: '172.16.2.119'
+local_manager_ip: '172.16.2.119'
+local_data: '/home/jocelyn/tmp/data'
+cluster_data: '/home/debian/data'

@@ -1,0 +1,16 @@
+service:
+  name: "jgroups"
+  network:
+    name: "jgroups_network"
+    subnet: "172.112.0.0/16"
+  mem_limit: 314572800
+  parameters:
+    RATE: 1000
+    FIXED_RATE: 50
+  special_parameters:
+    kill_coordinator_rounds:
+      - 2
+repository:
+  name: "swarm-m:5000/"
+tracker:
+  name: "jgroups-tracker"

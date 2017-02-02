@@ -190,7 +190,7 @@ report/generated-figures/*
 
 **/results/**/*.txt
 **/*.tar.gz
-**/cluster/hosts
+**/lsdssuite/config/hosts
 **/results/**/*.csv
 **/__pycache__
 !**/results/**/requirements.txt

@@ -1,0 +1,17 @@
+service:
+  name: "epto"
+  network:
+    name: "epto_network"
+    subnet: "172.130.0.0/16"
+  mem_limit: 314572800
+  parameters:
+    DELTA: 500
+    RATE: 1000
+    FIXED_RATE: 50
+    CONSTANT: 4
+    CHURN_RATE: 0
+    MESSAGE_LOSS: 0
+repository:
+  name: "swarm-m:5000/"
+tracker:
+  name: "epto-tracker"
