@@ -174,24 +174,6 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Global Times}
-	\begin{figure}
-		\includegraphics[scale=0.60]{global-times-nochurn}
-	\end{figure}
-\end{frame}
-
-\begin{frame}{Global Times Synthetic Churn}
-	\begin{figure}
-		\includegraphics[scale=1]{global-times-synth-churn}
-	\end{figure}
-\end{frame}
-
-\begin{frame}{Global Times Real Churn}
-	\begin{figure}
-		\includegraphics[scale=1]{global-times-real-churn}
-	\end{figure}
-\end{frame}
-
 \begin{frame}{Total \si{\giga\byte} sent/received}
 \begin{table}
 	\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
@@ -309,6 +291,14 @@
 \section{Conclusion}
 \subtitle[Conclusion]{Conclusion}
 
+\begin{frame}{Limitations}
+	\begin{itemize}
+		\item Difference not strong enough at 100 peers scale
+		\item High CPU usage
+		\item Docker problems on AWS/GCE
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Future Work}
     \begin{itemize}
         \item Obtain more resources to have stronger results
@@ -320,6 +310,25 @@
 
 \begin{frame}[standout]
 	Questions?
+\end{frame}
+\section{Appendix}
+\subtitle[Appendix]{Appendix}
+\begin{frame}{Global Times}
+	\begin{figure}
+		\includegraphics[scale=0.60]{global-times-nochurn}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Global Times Synthetic Churn}
+	\begin{figure}
+		\includegraphics[scale=1]{global-times-synth-churn}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Global Times Real Churn}
+	\begin{figure}
+		\includegraphics[scale=1]{global-times-real-churn}
+	\end{figure}
 \end{frame}
 
 % -------------------------------------------------------------------------------
