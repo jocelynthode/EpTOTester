@@ -32,55 +32,24 @@
 \usepackage{algorithm,algorithmic}
 \usepackage{framed} % Put frames around text
 \usepackage{textpos} % Put text on slides with (pos_x, pos_y)
+\usepackage{multirow}
 
 \usepackage{mdframed}
 
 \usepackage[binary-units,per-mode=symbol]{siunitx}
 \usepackage{todonotes}
 \usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{booktabs}
 
 \usepackage{caption}
 \captionsetup[figure]{labelformat=empty}%
 
 \graphicspath{{figures/}}
-\pgfplotsset{
-    compat=1.12,
-    tick label style={font=\small},
-    label style={font=\small},
-    legend style={font=\small},
-    /pgfplots/short line legend/.style={
-        legend image code/.code={
-            \draw[mark repeat=2,mark phase=2,##1]
-            plot coordinates {
-                (0cm,0cm)
-                (0.2cm,0cm)
-                (0.4cm,0cm)
-            };%
-        }
-    },
-    /pgfplots/xtick pos=left,
-}
-
-\usepgfplotslibrary{dateplot, groupplots, units, colorbrewer}
 
 \setlength{\unitlength}{1cm}
 
 % -------------------------------------------------------------------------------
-
-% Generates a section frame with the title as an input argument
-\newcommand{\sectionframe}[1]
-{
-\section[aaa]{#1}
-\begin{frame}[plain]
-\Large
-  \begin{snugshade}
-    \begin{center}
-    \tc{#1}
-  \end{center}
-\end{snugshade}
-\vspace{3cm}\mbox{}
-\end{frame}
-}
 
 % -------------------------------------------------------------------------------
 
@@ -181,14 +150,24 @@
 
 \setbeamertemplate{navigation symbols}{}
 
-\title[\sys]{\textbf{EpTOTester: \\ Implementation of Large-Scale\\ Epidemic Total Order Algorithms}}
+\title[\sys]{\textbf{\sys: \\ Implementation of Large-Scale\\ Epidemic Total Order Algorithms}}
 
 \author[]{\textbf{Jocelyn Thode}, Hugues Mercier, Miguel Matos}
 
 \subtitle[]{Master Thesis}
-
-\institute[]{Department of Informatics \\ University of Fribourg, Switzerland \\  \href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@unifr.ch}} 
 \date[\today]{Neuchâtel, Switzerland, \today}
+\author{Jocelyn Thode\inst{1} \and Hugues Mercier\inst{2} \and Miguel Matos\inst{3}}
+\institute[Universities of Fribourg and Neuchâtel and Minho]{
+	\tiny{\inst{1}Department of Informatics, University of Fribourg, Switzerland\\
+	\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@unifr.ch}
+	\and
+	\inst{2}Institute of Computer Science, University of Neuchâtel, Switzerland\\
+	\hspace*{4pt}\href{mailto:hugues.mercier@unine.ch}{hugues.mercier@unine.ch}
+	\and
+	\inst{3} HASLab - INESC TEC, University of Minho, Portugal\\
+	\hspace*{4pt}\href{mailto:miguelmatos@di.uminho.pt}{miguelmatos@di.uminho.pt}}
+}
+
 
 \setbeamertemplate{frame footer}{%
 	\parbox{\linewidth}{Master Thesis \hfill \insertshorttitle\ \ - \  \insertshortsubtitle \hfill \href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@unifr.ch}}} 
