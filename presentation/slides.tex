@@ -126,7 +126,7 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Bandwidth Synthetic Churn}
+\begin{frame}{Bandwidth Synthetic Churn $(100,50)$}
 	\begin{figure}
 		\includegraphics[scale=0.68]{bandwidth-synth-churn}
 	\end{figure}
@@ -144,7 +144,7 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Local Dissemination Stretch Synthetic Churn}
+\begin{frame}{Local Dissemination Stretch Synthetic Churn $(100,50)$}
 	\begin{figure}
 		\includegraphics[scale=1]{local-diss-stretch-synth-churn}
 	\end{figure}
@@ -162,7 +162,7 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Local Times Synthetic Churn}
+\begin{frame}{Local Times Synthetic Churn $(100,50)$}
 	\begin{figure}
 		\includegraphics[scale=1]{local-times-synth-churn}
 	\end{figure}
@@ -193,50 +193,6 @@
 \end{table}
 \end{frame}
 
-\begin{frame}{Total \si{\giga\byte} sent/received}
-	\begin{table}
-		\centering
-		\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
-			\begin{tabular}{lSSS}
-				\toprule
-				&& \multicolumn{2}{c}{Churn parameters} \\
-				\cmidrule{3-4}
-				{Protocol}&& {1 kill/minute} & {1\{kill,add\}/minute} \\
-				\midrule
-				\multirow{2}{*}{\epto}&{Receive}& 21.00(024) & 26.32(032)\\
-				&{Sending}& 21.21(025) & 26.57(032)\\
-				\midrule
-				\multirow{2}{*}{\jgroups-coord}&{Receive}& 1.47(002) & 1.75(002)\\&{Sending}& 1.43(002) & 1.70(002)\\
-				\midrule
-				\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 1.45(001) & 1.73(002)\\&{Sending}& 1.41(001) & 1.68(002)\\
-				\bottomrule
-			\end{tabular}
-	\end{table}
-\end{frame}
-
-\begin{frame}{Total \si{\giga\byte} sent/received}
-\begin{table}[hpt]
-	\centering
-	\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
-	\begin{tabular}{lSS}
-		\toprule
-		&& \multicolumn{1}{c}{Churn parameters} \\
-		\cmidrule{3-3}
-		{Protocol}&& {Real Trace} \\
-		\midrule
-		\multirow{2}{*}{\epto}&{Receive}& 81.41(108)\\
-		&{Sending}& 82.67(108)\\
-		\midrule
-		\multirow{2}{*}{\jgroups-coord}&{Receive}& 5.56(008)\\
-		&{Sending}& 5.40(008)\\
-		\midrule
-		\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 5.58(005)\\
-		&{Sending}& 5.43(005)\\
-		\bottomrule
-	\end{tabular}
-\end{table}
-\end{frame}
-
 \begin{frame}{Total events sent in a stable environment}
 	\begin{table}
 		\centering
@@ -254,7 +210,7 @@
 	\end{table}
 \end{frame}
 
-\begin{frame}{Total events sent with a synthetic churn}
+\begin{frame}{Total events sent with a synthetic churn $(100,50)$}
 	\begin{table}
 		\centering
 		\sisetup{table-format=6.1, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
@@ -313,6 +269,51 @@
 \end{frame}
 
 \appendix
+
+\begin{frame}{Total \si{\giga\byte} sent/received Synthetic Churn $(100,50)$}
+	\begin{table}
+		\centering
+		\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+		\begin{tabular}{lSSS}
+			\toprule
+			&& \multicolumn{2}{c}{Churn parameters} \\
+			\cmidrule{3-4}
+			{Protocol}&& {1 kill/minute} & {1\{kill,add\}/minute} \\
+			\midrule
+			\multirow{2}{*}{\epto}&{Receive}& 21.00(024) & 26.32(032)\\
+			&{Sending}& 21.21(025) & 26.57(032)\\
+			\midrule
+			\multirow{2}{*}{\jgroups-coord}&{Receive}& 1.47(002) & 1.75(002)\\&{Sending}& 1.43(002) & 1.70(002)\\
+			\midrule
+			\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 1.45(001) & 1.73(002)\\&{Sending}& 1.41(001) & 1.68(002)\\
+			\bottomrule
+		\end{tabular}
+	\end{table}
+\end{frame}
+
+\begin{frame}{Total \si{\giga\byte} sent/received Real Churn}
+	\begin{table}[hpt]
+		\centering
+		\sisetup{table-format=2.2, separate-uncertainty, table-figures-uncertainty = 2, table-align-uncertainty}
+		\begin{tabular}{lSS}
+			\toprule
+			&& \multicolumn{1}{c}{Churn parameters} \\
+			\cmidrule{3-3}
+			{Protocol}&& {Real Trace} \\
+			\midrule
+			\multirow{2}{*}{\epto}&{Receive}& 81.41(108)\\
+			&{Sending}& 82.67(108)\\
+			\midrule
+			\multirow{2}{*}{\jgroups-coord}&{Receive}& 5.56(008)\\
+			&{Sending}& 5.40(008)\\
+			\midrule
+			\multirow{2}{*}{\jgroups-nocoord}&{Receive}& 5.58(005)\\
+			&{Sending}& 5.43(005)\\
+			\bottomrule
+		\end{tabular}
+	\end{table}
+\end{frame}
+
 \begin{frame}{Global Times}
 	\begin{figure}
 		\includegraphics[scale=0.65]{global-times-nochurn}
