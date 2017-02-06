@@ -1,6 +1,5 @@
 \section{Future Work}
 \label{sec:future-work}
-\jt{Do we have Push-Pull references?}
-Future work should focus on testing \epto on a bigger cluster, preferably at a point where \jgroups can no longer function, as \epto is designed to work on very large number of peers. As it is, \epto does indeed work as intended in our infrastructure and under churn, but a larger test would showcase \epto's ability to handle large peer numbers.
+Future work should focus on testing \epto on a bigger cluster, preferably at a point where \jgroups can no longer function, as \epto is designed to work on very large number of peers. As it is, \epto does indeed work as intended in our infrastructure and under churn, but a larger test would showcase \epto's ability to handle large peer numbers. Some preliminary tests were done on AWS EC2\footnote{https://aws.amazon.com/}. Unfortunately we encountered a Docker bug that would not let us run our benchmarks. Some preliminary work have been done on the framework to use Kubernetes\footnote{https://kubernetes.io/} with some success.
 \par
 Future work also includes working on an alternate \epto dissemination algorithm. This algorithm would use a Push-Pull approach to further reduce the needed number of balls in the system and thus reduce the network load. An early prototype has been designed and implemented, but not yet tested.

@@ -27,7 +27,6 @@ group style={
 	xticklabels at=edge bottom,
 	ylabels at=edge left,
 },
-stack plots=y,area style, enlarge x limits=false, 
 ymin=0,
 xmin=0,
 xmax=61,
@@ -35,7 +34,7 @@ ylabel={Bandwidth $\left[\SI{}{\mbps}\right]$},
 xlabel={Time $\left[\si{\minute}\right]$},
 legend columns=5,
 legend cell align=left,
-legend style={at={(0.6,1.9)},anchor=north, font=\small, draw=none},]
+legend style={at={(0.5,1.9)},anchor=north, font=\small, draw=none, fill=none},]
 \nextgroupplot[height=2.3cm, 
 ylabel={Nodes}, 
 ymin=75,ymax=120,
@@ -46,9 +45,9 @@ yminorgrids,
 tick label style={font=\footnotesize},
 label style={font=\tiny}]
 \addplot[const plot, color=blue, mark=none,set layers,
-axis lines = middle,] table [x=minute, y=size, col sep=comma] {csv-data/real-trace.csv};
+axis lines = middle, axis on top=false] table [x=minute, y=size, col sep=comma] {csv-data/real-trace.csv};
 \nextgroupplot[ymax=4,ytick={0,1,2,3,4},
-yticklabels={0,1,2,3,4}]
+yticklabels={0,1,2,3,4},stack plots=y,area style, enlarge x limits=false, ]
 \addplot table[x=time,y=EpTO-real-trace-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=EpTO-real-trace-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=EpTO-real-trace-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
@@ -56,14 +55,14 @@ yticklabels={0,1,2,3,4}]
 \addplot table[x=time,y=EpTO-real-trace-1.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \legend{0, 0.25, 0.5, 0.75, 1}
 %
-\nextgroupplot%[ymax=4,ytick={0,1,2,3,4},]
+\nextgroupplot[stack plots=y,area style, enlarge x limits=false, ]
 \addplot table[x=time,y=JGroups-coord-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-coord-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-coord-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-coord-0.750000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-coord-1.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 %
-\nextgroupplot[ymax=4,ytick={0,1,2,3,4}]
+\nextgroupplot[ymax=4,ytick={0,1,2,3,4},stack plots=y,area style, enlarge x limits=false, ]
 \addplot table[x=time, y=JGroups-nocoord-0.000000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-nocoord-0.250000, col sep=comma]{\tableaveragereal} \closedcycle;
 \addplot table[x=time,y=JGroups-nocoord-0.500000, col sep=comma]{\tableaveragereal} \closedcycle;
