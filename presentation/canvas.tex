@@ -3,9 +3,9 @@
 % Génère deux pdf, avec et sans les overlays.
 
 \ifdefined\ishandout
-  \documentclass[handout]{beamer}
+  \documentclass[handout, usenames, svgnames]{beamer}
 \else
-  \documentclass{beamer}
+  \documentclass[usenames, svgnames]{beamer}
 \fi
 
 % -------------------------------------------------------------------------------
@@ -159,10 +159,10 @@
 \date[\today]{Neuchâtel, Switzerland, \today}
 \author{Jocelyn Thode\inst{1} \and Hugues Mercier\inst{2} \and Miguel Matos\inst{3}}
 \institute[Universities of Fribourg and Neuchâtel and Minho]{
-	\tiny{\inst{1}Department of Informatics, University of Fribourg, Switzerland\\
+	\tiny{\inst{1}Department of Informatics, Université de Fribourg, Switzerland\\
 	\hspace*{3pt}\href{mailto:jocelyn.thode@unifr.ch}{jocelyn.thode@unifr.ch}
 	\and
-	\inst{2}Institute of Computer Science, University of Neuchâtel, Switzerland\\
+	\inst{2}Institute of Computer Science, Université de Neuchâtel, Switzerland\\
 	\hspace*{3pt}\href{mailto:hugues.mercier@unine.ch}{hugues.mercier@unine.ch}
 	\and
 	\inst{3} INESC-ID/IST, Universidade de Lisboa, Portugal\\
