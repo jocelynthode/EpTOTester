@@ -88,7 +88,7 @@ In all cases, \jgroups receives more bytes than it sends. This is due to the fac
 	}
 	\label{table:total-bandwidth} 
 \end{table}
-In \autoref{table:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c*n*\log_2 n$ messages per events and \jgroups sends at least $n$ messages per event so we should have at least $c*\log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
+In \autoref{table:total-bandwidth}, \epto has a worse baseline than \jgroups. This is expected as \epto sends $c \cdot n \cdot \log_2 n$ messages per events and \jgroups sends at least $n$ messages per event so we should have at least $c  \cdot \log_2 n$ more messages sent in \epto if \jgroups is perfect. Here we are well within this ratio.
 \begin{table}[hpt]
 	\centering
 	\caption{Total \si{\giga\byte} sent/received with a synthetic churn}
@@ -254,7 +254,7 @@ This is explained by the fact that \jgroups nodes take longer to start but the d
 	\end{tabular}
 	\label{table:total-bandwidth-real-churn} 
 \end{table}
-\autoref{table:total-bandwidth-real-churn} also confirms our earlier results. \epto is still within the $c*log_2(n)$ ratio fixed earlier.
+\autoref{table:total-bandwidth-real-churn} also confirms our earlier results. \epto is still within the $c \cdot log_2(n)$ ratio fixed earlier.
 \par
 \begin{figure}[hpt]
 	\centering
@@ -300,6 +300,6 @@ In \autoref{fig:local-delta-real-churn}, \epto has worse outliers than before an
 \end{table}
 \autoref{table:total-bandwidth-real-churn} is interesting. We see that on average \jgroups seems to deliver more events than \epto, but its standard deviation is way higher than that of \epto, suggesting \epto to be more stable and consistent.
 \subsection{Problems encountered}
-When running \jgroups we sometimes get failed runs, where either some peers will experience holes or a peer will deliver out of order events. These failed runs only happen when there is churn happening, specifically when we add and remove peers and when the coordinator dies. These problems appeared 3 times out of 13 runs for \jgroups $1\{kill,add\}/minute$ and 2 times out of 7 for \jgroups with real churn. We have not investigated these problems further. This points to either \jgroups failing when there is too much churn or a bug present in the SEQUENCER implementation.
+When running \jgroups we sometimes get failed runs, where either some peers will experience holes or a peer will deliver out of order events. These failed runs only happen when there is churn happening, specifically when we add and remove peers and when the coordinator dies. These problems appeared 3 times out of 13 runs using the scenario and 2 times out of 7 for \jgroups following a real trace. We have not investigated these problems further. This points to either \jgroups failing when there is too much churn or a bug present in the SEQUENCER implementation.
 
 We measure holes as one or more events that were delivered by at least one peer in the cluster but not on the peer containing the hole. As stated earlier, we specifically choose a $c$ high enough to never experience holes in \epto as \jgroups should never suffer from holes. If either \jgroups or \epto fails to deliver every event sent during the run, the run is considered as having a problem.

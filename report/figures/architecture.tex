@@ -1,14 +1,19 @@
 \begin{tikzpicture}[transform shape,scale=0.6]
 \node[draw, text width=2.1cm, text centered] (bench) at (2.1, 2.6) {Benchmarks runner};
-\draw (0.8,3.4) node[below right,red,scale=0.8] {\textit{Python module}};
-\draw[dotted,red,thick] (0.8,2) rectangle (3.4,3.4);
+
+\draw (0.8,2.05) node[below right,red,scale=0.8] {\textit{LSDSuite module}};
+\draw[red] (0.9,0.1) rectangle (3.3,2.05);
+\node[draw, text width=2cm, text centered] (churnc) at (2.1,1.4) {Churn Class};
+\node[draw, text width=2cm, text centered] (benchc) at (2.1, 0.6) {Benchmark Class};
+\draw (0.8,3.4) node[below right,red,scale=0.8] {\textit{Python scripts}};
+\draw[dotted,red,thick] (0.8,0) rectangle (3.4,3.4);
 %
 \draw[loosely dashed,black] (3.7,4.3) rectangle (14.8,-0.8);
 \draw (3.7,4.3) node[below right,black,scale=0.8] {\textit{Swarm overlay}};
 %
 \node[draw] (tck) at (12.4, 2.5) {Tracker};
 \draw (11.6,3.25) node[below right,red,scale=0.8] {\textit{Python script}};
-\draw (11.5,3.65) node[below right,blue,scale=0.8] {\textit{Service:} \texttt{epto-tracker:}};
+\draw (11.5,3.65) node[below right,blue,scale=0.8] {\textit{Service:} \texttt{epto-tracker}};
 \draw[loosely dashed,blue] (11.5,1.9) rectangle (14.5,3.65);
 \draw[dotted,red,thick] (11.6,2) rectangle (14.4,3.25);
 %

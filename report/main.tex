@@ -49,7 +49,7 @@ densely dashed, color=red\\%
 
 %% Environment for comments: Set the boolean to false to produce a comment-free version.
 \newboolean{showcomments}
-\setboolean{showcomments}{true}
+\setboolean{showcomments}{false}
 \ifthenelse{\boolean{showcomments}}
 { \newcommand{\mynote}[3]{
 		\fbox{\bfseries\sffamily\scriptsize#1}
@@ -62,7 +62,7 @@ densely dashed, color=red\\%
 
 \newcommand{\epto}{\textsc{EpTO}\xspace}
 \newcommand{\jgroups}{\textsc{JGroups}\xspace}
-\newcommand{\sys}{\textsc{LSDSSuite}\xspace}
+\newcommand{\sys}{\textsc{LSDSuite}\xspace}
 
 \newif\ifjmcs
 % Change false to true to have the JMCS cover page
@@ -135,11 +135,6 @@ densely dashed, color=red\\%
 			\vspace{0.3in}
 			{\Large Université de Fribourg \par}
 			\vfill
-			\vspace{0.3in}
-			{\Large Supervisor: Dr. Hugues Mercier}
-			
-			\vspace{0.2in}
-			{\Large Co-Supervisor: Dr. Miguel Matos}
 			
 			\vspace{0.3in}
 			{\Large \today \par}
@@ -156,6 +151,22 @@ densely dashed, color=red\\%
 			% === // Logos ==========thun=================================
 			
 		\end{center}
+	
+	\pagebreak
+	
+	\section*{Abstract}
+	
+	\noindent 
+	\epto is one of the recently introduced total order algorithms for large-scale distributed systems, and provides total order and scalability at the same time. In this paper, we verify this claim by designing a framework to facilitate the evaluation of large scale distributed systems, implement \epto and evaluate its reliability in real-world conditions by comparing it to a deterministic total order algorithm provided by the \jgroups toolkit. We first compare them in a perfect environment assessing the scalability in terms of events throughput and number of peers. We then compare them using a synthetic churn trace and a real one using the same metrics. 
+	Our results show \epto is performing as expected, even though in the system sizes we tested \jgroups is still more efficient in a stable environment.
+	By extrapolating our results for larger system sizes we can clearly see that \jgroups starts to degrade with the system size. 
+	Still, further testing on a bigger cluster is required to evaluate how \epto performs when \jgroups is no longer able to keep up with scale.
+	
+	\bigskip
+	
+	Dr Hugues Mercier, Institutes of Computer Science and Mathematics, University of Neuchâtel, Supervisor
+	
+	Dr Miguel Matos, HASLab - INESC TEC \&, University of Minho, Portugal,  Co-supervisor
 
 	\end{otherlanguage}
 \end{titlepage}
@@ -173,5 +184,7 @@ densely dashed, color=red\\%
 \input{evaluation.tex}
 \input{future-work.tex}
 \input{conclusion.tex}
+
 \printbibliography
+
 \end{document}
