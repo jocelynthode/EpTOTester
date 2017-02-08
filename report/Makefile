@@ -3,6 +3,8 @@ READY = main_ready
 
 pdf: 
 	$(MAKE) single
+	biber $(SRC)
+	$(MAKE) single
 	$(MAKE) single
 	$(MAKE) single
 
@@ -11,7 +13,7 @@ single: $(SRC).tex
 
 bib:
 	$(MAKE) single
-	bibtex $(SRC)
+	biber $(SRC)
 	$(MAKE) pdf
 
 check:
@@ -24,7 +26,7 @@ deliver: bib
 
 deliverIEEE:
 	latex $(SRC).tex
-	bibtex $(SRC)
+	biber $(SRC)
 	latex $(SRC).tex
 	latex $(SRC).tex
 	latex $(SRC).tex
